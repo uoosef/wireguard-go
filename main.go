@@ -43,7 +43,7 @@ func main() {
 		pbind = *bindAddress
 		randomBind, err := findFreePort(*hostbind, *port)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("unable to find a free port :/")
 		}
 		bindAddress = &randomBind
 	}
