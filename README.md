@@ -35,7 +35,7 @@ Warp-Plus-Go is an open-source implementation of Cloudflare's Warp, enhanced wit
 Run the application with the following command:
 
 ```bash
-./warp-plus-go [-v] [-b addr:port] [-c config-file-path] [-e warp-ip] [-k license-key] [-country country-code] [-cfon]
+./warp-plus-go [-v] [-b addr:port] [-c config-file-path] [-e warp-ip] [-k license-key] [-h listen-host] [-p listen-port] [-country country-code] [-cfon] 
 ```
 
 - `-v`: Enable verbose logging.
@@ -43,6 +43,8 @@ Run the application with the following command:
 - `-c`: Path to the Warp configuration file.
 - `-e`: Specify the Warp endpoint IP.
 - `-k`: Your Warp license key.
+- `-h`: makes wiresock listen on specified host instead of `127.0.0.1`
+- `-p`: specifies port for wiresock instead of the random default
 - `-country`: ISO 3166-1 alpha-2 country code for Psiphon.
 - `-cfon`: Enable Psiphon over Warp.
 
