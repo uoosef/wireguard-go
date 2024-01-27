@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/uoosef/wireguard-go/device"
@@ -29,6 +30,7 @@ func main() {
 		hostbind       = flag.Bool("h", false, "bind to 0.0.0.0 instead of local host")
 		country        = flag.String("country", "", "psiphon country code in ISO 3166-1 alpha-2 format")
 		psiphonEnabled = flag.Bool("cfon", false, "enable psiphonEnabled over warp")
+		port           = flag.Int("p", 0, "port for wiresocks to listen on")
 		pbind          = "127.0.0.1:8086"
 	)
 
@@ -39,7 +41,7 @@ func main() {
 
 	if *psiphonEnabled {
 		pbind = *bindAddress
-		randomBind, err := findFreePort(*hostbind)
+		randomBind, err := findFreePort(*hostbind, *port)
 		if err != nil {
 			log.Fatal("unable to find a free port :/")
 		}
@@ -90,16 +92,16 @@ func main() {
 	log.Println("Bye!")
 }
 
-func findFreePort(hostflag bool) (string, error) {
+func findFreePort(hostflag bool, port int) (string, error) {
 	// Listen on TCP port 0, which tells the OS to pick a free port.
 
 	var listener net.Listener
 	var err error
 
-	listener, err = net.Listen("tcp", "127.0.0.1:0")
+	listener, err = net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(port))
 
 	if hostflag {
-		listener, err = net.Listen("tcp", "0.0.0.0:0")
+		listener, err = net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(port))
 	}
 
 	if err != nil {
