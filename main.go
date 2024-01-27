@@ -2,15 +2,16 @@ package main
 
 import (
 	"flag"
-	"github.com/uoosef/wireguard-go/device"
-	"github.com/uoosef/wireguard-go/psiphon"
-	"github.com/uoosef/wireguard-go/warp"
-	"github.com/uoosef/wireguard-go/wiresocks"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/uoosef/wireguard-go/device"
+	"github.com/uoosef/wireguard-go/psiphon"
+	"github.com/uoosef/wireguard-go/warp"
+	"github.com/uoosef/wireguard-go/wiresocks"
 )
 
 func usage() {
@@ -25,7 +26,7 @@ func main() {
 		configFile     = flag.String("c", "./wgcf-profile.ini", "ini config file path")
 		endpoint       = flag.String("e", "notset", "warp clean ip")
 		license        = flag.String("k", "notset", "license key")
-		hostbind       = flag.Bool("h" , false , "bind to 0.0.0.0 instead of local host" )
+		hostbind       = flag.Bool("h", false, "bind to 0.0.0.0 instead of local host")
 		country        = flag.String("country", "", "psiphon country code in ISO 3166-1 alpha-2 format")
 		psiphonEnabled = flag.Bool("cfon", false, "enable psiphonEnabled over warp")
 		pbind          = "127.0.0.1:8086"
@@ -91,12 +92,16 @@ func main() {
 
 func findFreePort(hostflag bool) (string, error) {
 	// Listen on TCP port 0, which tells the OS to pick a free port.
-	if  hostflag {
-		listener, err := net.Listen("tcp", "0.0.0.0:0")
-	} else
-	{
-		listener, err := net.Listen("tcp", "127.0.0.1:0")	
+
+	var listener net.Listener
+	var err error
+
+	listener, err = net.Listen("tcp", "127.0.0.1:0")
+
+	if hostflag {
+		listener, err = net.Listen("tcp", "0.0.0.0:0")
 	}
+
 	if err != nil {
 		return "", err // Return error if unable to listen on a port
 	}
