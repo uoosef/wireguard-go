@@ -90,7 +90,7 @@ func main() {
 
 func findFreePort() (string, error) {
 	// Listen on TCP port 0, which tells the OS to pick a free port.
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	listener, err := net.Listen("tcp", "0.0.0.0:0")
 	if err != nil {
 		return "", err // Return error if unable to listen on a port
 	}
