@@ -28,7 +28,7 @@ func main() {
 		configFile     = flag.String("c", "./wgcf-profile.ini", "ini config file path")
 		endpoint       = flag.String("e", "notset", "warp clean ip")
 		license        = flag.String("k", "notset", "license key")
-		hostbind       = flag.Bool("h", false, "bind to 0.0.0.0 instead of local host")
+		hostbind       = flag.String("h", "127.0.0.1", "bind to specified ip instead of local host")
 		country        = flag.String("country", "", "psiphon country code in ISO 3166-1 alpha-2 format")
 		psiphonEnabled = flag.Bool("cfon", false, "enable psiphonEnabled over warp")
 		port           = flag.Int("p", 0, "port for wiresocks to listen on")
@@ -98,16 +98,13 @@ func main() {
 	log.Println("Bye!")
 }
 
-func findFreePort(hostflag bool, port int) (string, error) {
+func findFreePort(hostip string, port int) (string, error) {
 	// Listen on TCP port 0, which tells the OS to pick a free port.
 
 	var listener net.Listener
 	var err error
-	var address string = "127.0.0.1:" + strconv.Itoa(port)
+	var address string = hostip + strconv.Itoa(port)
 
-	if hostflag {
-		address = "0.0.0.0:" + strconv.Itoa(port)
-	}
 
 	listener, err = net.Listen("tcp", address)
 
