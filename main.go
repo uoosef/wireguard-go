@@ -25,7 +25,7 @@ func main() {
 		configFile     = flag.String("c", "./wgcf-profile.ini", "ini config file path")
 		endpoint       = flag.String("e", "notset", "warp clean ip")
 		license        = flag.String("k", "notset", "license key")
-		hostbind       = flag.String("h" , false , "bind to 0.0.0.0 instead of local host" )
+		hostbind       = flag.Bool("h" , false , "bind to 0.0.0.0 instead of local host" )
 		country        = flag.String("country", "", "psiphon country code in ISO 3166-1 alpha-2 format")
 		psiphonEnabled = flag.Bool("cfon", false, "enable psiphonEnabled over warp")
 		pbind          = "127.0.0.1:8086"
