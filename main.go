@@ -97,12 +97,13 @@ func findFreePort(hostflag bool, port int) (string, error) {
 
 	var listener net.Listener
 	var err error
-
-	listener, err = net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(port))
+	var address string = "127.0.0.1:" + strconv.Itoa(port)
 
 	if hostflag {
-		listener, err = net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(port))
+		address = "0.0.0.0:" + strconv.Itoa(port)
 	}
+
+	listener, err = net.Listen("tcp", address)
 
 	if err != nil {
 		return "", err // Return error if unable to listen on a port
