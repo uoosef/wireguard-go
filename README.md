@@ -1,4 +1,4 @@
-# Warp-Plus-Go
+# Warp-Plus-Go | Youtube | @Amirinventor2010
 
 Warp-Plus-Go is an open-source implementation of Cloudflare's Warp, enhanced with Psiphon integration for circumventing censorship. This project aims to provide a robust and cross-platform VPN solution that can use psiphon on top of warp and warp-in-warp for changing the user virtual nat location.
 
