@@ -85,7 +85,6 @@ Run the application with the following command:
 
 ```
 bash <(curl -fsSL https://raw.githubusercontent.com/Amirinventor2010/wireguard-go/master/termux.sh)
-
 ```
 ![1](https://raw.githubusercontent.com/Amirinventor2010/files/main/media/2.jpg)
 
