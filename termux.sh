@@ -68,12 +68,12 @@ install() {
     pacman -Syu openssh = apt update; apt full-upgrade -y; apt install -y openssh
     check_dependencies
 
-    if wget https://github.com/bepass-org/wireguard-go/releases/download/v0.0.6-alpha/warp-android-arm64.ed853c.zip &&
-        unzip warp-android-arm64.ed853c.zip&&
+    if wget https://github.com/bepass-org/wireguard-go/releases/download/v0.0.16-alpha/warp-android-arm64.d950e9.zip &&
+        unzip warp-android-arm64.d950e9.zip &&
         chmod +x warp &&
         cp warp "$PREFIX/bin/usef" &&
         cp warp "$PREFIX/bin/warp"; then
-        rm "README.md" "LICENSE" "warp-android-arm64.ed853c.zip"
+        rm "README.md" "LICENSE" "warp-android-arm64.d950e9.zip"
         echo "================================================"
         echo -e "${green}Warp installed successfully.${rest}"
         socks
@@ -104,14 +104,14 @@ install_arm() {
         *) echo -e "${red}Unsupported architecture.${rest}"; return ;;
     esac
 
-    WARP_URL="https://github.com/bepass-org/wireguard-go/releases/download/v0.0.6-alpha/warp-linux-$ARCH.ed853c.zip"
+    WARP_URL="https://github.com/bepass-org/wireguard-go/releases/download/v0.0.16-alpha/warp-linux-$ARCH.d950e9.zip"
 
     if wget "$WARP_URL" &&
-        unzip "warp-linux-$ARCH.ed853c.zip" &&
+        unzip "warp-linux-$ARCH.d950e9.zip" &&
         chmod +x warp &&
         cp warp "$PREFIX/bin/usef" &&
         cp warp "$PREFIX/bin/warp"; then
-        rm "README.md" "LICENSE" "warp-linux-$ARCH.ed853c.zip"
+        rm "README.md" "LICENSE" "warp-linux-$ARCH.d950e9.zip"
         echo "================================================"
         echo -e "${green}Warp installed successfully.${rest}"
         socks
@@ -141,7 +141,7 @@ uninstall() {
     directory="/data/data/com.termux/files/home/wireguard-go"
     home="/data/data/com.termux/files/home"
     if [ -f "$warp" ]; then
-        rm -rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$home/wgcf-profile.ini" "$home/warp" "$home/wgcf-identity.json" > /dev/null 2>&1
+        rm -rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$home/wgcf-profile.ini" "$home/warp" "$home/stuff" "$home/wgcf-identity.json" > /dev/null 2>&1
         echo -e "${red}Uninstallation completed.${rest}"
     else
         echo -e "${yellow} ____________________________________${rest}"
