@@ -84,7 +84,8 @@ Run the application with the following command:
 ### Termux
 
 ```
-bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/wireguard-go/master/termux.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/Amirinventor2010/wireguard-go/master/termux.sh)
+
 ```
 ![1](https://github.com/Ptechgithub/configs/blob/main/media/18.jpg?raw=true)
 
