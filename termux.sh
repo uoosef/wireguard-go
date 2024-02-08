@@ -35,7 +35,7 @@ check_dependencies() {
 
 # Build
 build() {
-    if command -v warp &> /dev/null || command -v usef &> /dev/null; then
+    if command -v warp &> /dev/null || command -v amir &> /dev/null; then
         echo -e "${green}Warp is already installed.${rest}"
         return
     fi
@@ -48,7 +48,7 @@ build() {
         cd wireguard-go &&
         go build main.go &&
         chmod +x main &&
-        cp main "$PREFIX/bin/usef" &&
+        cp main "$PREFIX/bin/amir" &&
         cp main "$PREFIX/bin/warp"; then
         echo -e "${green}Warp installed successfully.${rest}"
     else
@@ -58,7 +58,7 @@ build() {
 
 # Install
 install() {
-    if command -v warp &> /dev/null || command -v usef &> /dev/null; then
+    if command -v warp &> /dev/null || command -v amir &> /dev/null; then
         echo -e "${green}Warp is already installed.${rest}"
         return
     fi
@@ -71,7 +71,7 @@ install() {
     if wget https://github.com/bepass-org/wireguard-go/releases/download/v0.0.16-alpha/warp-android-arm64.d950e9.zip &&
         unzip warp-android-arm64.d950e9.zip &&
         chmod +x warp &&
-        cp warp "$PREFIX/bin/usef" &&
+        cp warp "$PREFIX/bin/amir" &&
         cp warp "$PREFIX/bin/warp"; then
         rm "README.md" "LICENSE" "warp-android-arm64.d950e9.zip"
         echo "================================================"
@@ -84,7 +84,7 @@ install() {
 
 # Install arm
 install_arm() {
-    if command -v warp &> /dev/null || command -v usef &> /dev/null; then
+    if command -v warp &> /dev/null || command -v amir &> /dev/null; then
         echo -e "${green}Warp is already installed.${rest}"
         return
     fi
@@ -109,7 +109,7 @@ install_arm() {
     if wget "$WARP_URL" &&
         unzip "warp-linux-$ARCH.d950e9.zip" &&
         chmod +x warp &&
-        cp warp "$PREFIX/bin/usef" &&
+        cp warp "$PREFIX/bin/amir" &&
         cp warp "$PREFIX/bin/warp"; then
         rm "README.md" "LICENSE" "warp-linux-$ARCH.d950e9.zip"
         echo "================================================"
@@ -125,11 +125,11 @@ socks() {
    echo ""
    echo -e "${yellow}Copy this Config to ${purple}V2ray${green} Or ${purple}Nekobox ${yellow}and Exclude Termux${rest}"
    echo "================================================"
-   echo -e "${green}socks://Og==@127.0.0.1:8086#warp_(usef)${rest}"
+   echo -e "${green}socks://Og==@127.0.0.1:8086#warp_(https://youtube.com/@Amirinventor2010)${rest}"
    echo "or"
    echo -e "${green}Manually create a SOCKS configuration with IP ${purple}127.0.0.1 ${green}and port${purple} 8086..${rest}"
    echo "================================================"
-   echo -e "${yellow}To run again, type:${green} warp ${rest}or${green} usef ${rest}or${green} ./warp${rest}"
+   echo -e "${yellow}To run again, type:${green} warp ${rest}or${green} amir ${rest}or${green} ./warp${rest}"
    echo "================================================"
    echo -e "${green} If you get a 'Bad address' error, run ${yellow}[Arm]${rest}"
    echo ""
@@ -141,7 +141,7 @@ uninstall() {
     directory="/data/data/com.termux/files/home/wireguard-go"
     home="/data/data/com.termux/files/home"
     if [ -f "$warp" ]; then
-        rm -rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$home/wgcf-profile.ini" "$home/warp" "$home/stuff" "$home/wgcf-identity.json" > /dev/null 2>&1
+        rm -rf "$directory" "$PREFIX/bin/amir" "wa.py" "$PREFIX/bin/warp" "$home/wgcf-profile.ini" "$home/warp" "$home/stuff" "$home/wgcf-identity.json" > /dev/null 2>&1
         echo -e "${red}Uninstallation completed.${rest}"
     else
         echo -e "${yellow} ____________________________________${rest}"
