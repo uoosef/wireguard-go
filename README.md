@@ -87,7 +87,7 @@ Run the application with the following command:
 bash <(curl -fsSL https://raw.githubusercontent.com/Amirinventor2010/wireguard-go/master/termux.sh)
 
 ```
-![1](https://github.com/Ptechgithub/configs/blob/main/media/18.jpg?raw=true)
+![1](https://raw.githubusercontent.com/Amirinventor2010/files/main/media/2.jpg)
 
 - بعد از نصب برای اجرای مجدد فقط کافیه که `warp` یا `usef` یا `./warp` را وارد کنید . 
 - اگر با 1 نصب نشد و خطا گرفتید عدد 2 رو انتخاب کنید یعنی Arm.
