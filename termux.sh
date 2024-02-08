@@ -75,7 +75,7 @@ install() {
         cp warp "$PREFIX/bin/warp"; then
         rm "README.md" "LICENSE" "warp-android-arm64.d950e9.zip"
         echo "================================================"
-        echo -e "${green}Warp installed successfully.${rest}"
+        echo -e "${green}@Amirinventor2010 warp installed successfully.${rest}"
         socks
     else
         echo -e "${red}Error installing Warp.${rest}"
@@ -165,11 +165,11 @@ warp_plus() {
 # Menu
 menu() {
     clear
-    echo -e "${green}By --> Peyman * Github.com/Ptechgithub * ${rest}"
-    echo ""
-    echo -e "${yellow}❤️Github.com/${cyan}bepass-org${yellow}/wireguard-go❤️${rest}"
+    echo -e "${green}By --> Amirinventor | Github * Github.com/Amirinventor2010 * ${rest}"
+    echo -e "${green}Please subscrib me on ${red} Youtube ${rest}"
+    echo -e "${yellow}❤️youtube.com/${cyan}@Amirinventor2010${yellow}❤️${rest}"
     echo -e "${purple}*********************************${rest}"
-    echo -e "${blue}     ###${cyan} Warp in Termux ${blue}###${rest}   ${purple}  * ${rest}"
+    echo -e "${blue}     ###${cyan} Warp  in Termux ${blue}###${rest}   ${purple}  * ${rest}"
     echo -e "${purple}*********************************${rest}"
     echo -e "${cyan}1)${rest} ${green}Install Warp (vpn)${purple}           * ${rest}"
     echo -e "                              ${purple}  * ${rest}"
