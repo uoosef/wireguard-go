@@ -113,6 +113,8 @@ func validateFlags(f *Flags) error {
 
 		return fmt.Errorf("invalid country code: %s. Valid country codes: $s", f.Country, validCountries)
 	}
+
+	return nil
 }
 
 func main() {
