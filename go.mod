@@ -1,6 +1,8 @@
 module github.com/bepass-org/wireguard-go
 
-go 1.20
+go 1.21.1
+
+toolchain go1.21.6
 
 replace github.com/Psiphon-Labs/psiphon-tunnel-core => github.com/uoosef/psiphon-tunnel-core v0.0.0-20240126135009-9fbc37b0b068
 
