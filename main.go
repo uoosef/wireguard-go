@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"github.com/bepass-org/wireguard-go/app"
 	"log"
 	"os"
@@ -15,9 +16,12 @@ func usage() {
 	flag.PrintDefaults()
 }
 
+var currentVersion = "v1.0.3-rc2"
+
 func main() {
 	var (
 		verbose        = flag.Bool("v", false, "verbose")
+		version        = flag.Bool("version", false, "Show current version")
 		bindAddress    = flag.String("b", "127.0.0.1:8086", "socks bind address")
 		endpoint       = flag.String("e", "notset", "warp clean ip")
 		license        = flag.String("k", "notset", "license key")
@@ -30,6 +34,11 @@ func main() {
 
 	flag.Usage = usage
 	flag.Parse()
+
+	if *version {
+		fmt.Printf("Current Version: %v \n", currentVersion)
+		os.Exit(0)
+	}
 
 	sigchan := make(chan os.Signal)
 	signal.Notify(sigchan, os.Interrupt, syscall.SIGTERM)
