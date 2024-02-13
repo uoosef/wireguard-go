@@ -47,6 +47,7 @@ Run the application with the following command:
 - `-gool`: enable warp in warp.
 - `-country`: ISO 3166-1 alpha-2 country code for Psiphon.
 - `-cfon`: Enable Psiphon over Warp.
+- `-rtt`: scanner rtt threshold, default is `1000`
 
 ### Country Codes for Psiphon
 

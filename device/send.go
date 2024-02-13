@@ -637,7 +637,7 @@ func (peer *Peer) RoutineSequentialSender(maxBatchSize int) {
 func sendNoise(peer *Peer) error {
 	fakePackets := []int{8, 15}
 	fakePacketsSize := []int{40, 100}
-	fakePacketsDelays := []int{200, 500}
+	fakePacketsDelays := []int{20, 250}
 	numPackets := randomInt(fakePackets[0], fakePackets[1])
 	for i := 0; i < numPackets; i++ {
 		// Generate a random packet size between 10 and 40 bytes
