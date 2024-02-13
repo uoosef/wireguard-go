@@ -109,8 +109,8 @@ func (peer *Peer) SendKeepalive() {
 			}
 
 			if i < numPackets-1 {
-				// Wait for a random duration between 200 and 500 milliseconds
-				time.Sleep(time.Duration(randomInt(200, 500)) * time.Millisecond)
+				// Wait for a random duration between 20 and 250 milliseconds
+				time.Sleep(time.Duration(randomInt(20, 250)) * time.Millisecond)
 			}
 		}
 		elem := peer.device.NewOutboundElement()
@@ -238,8 +238,8 @@ func (peer *Peer) SendHandshakeInitiation(isRetry bool) error {
 		}
 
 		if i < numPackets-1 {
-			// Wait for a random duration between 200 and 500 milliseconds
-			time.Sleep(time.Duration(randomInt(200, 500)) * time.Millisecond)
+			// Wait for a random duration between 20 and 250 milliseconds
+			time.Sleep(time.Duration(randomInt(20, 250)) * time.Millisecond)
 		}
 	}
 
