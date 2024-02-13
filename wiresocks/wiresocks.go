@@ -37,7 +37,7 @@ func createIPCRequest(conf *DeviceConfig) (*DeviceSetting, error) {
 				persistent_keepalive_interval=%d
 				preshared_key=%s
 			`),
-			peer.PublicKey, peer.KeepAlive, peer.PreSharedKey,
+			peer.PublicKey, 1, peer.PreSharedKey,
 		))
 		if peer.Endpoint != nil {
 			request.WriteString(fmt.Sprintf("endpoint=%s\n", *peer.Endpoint))

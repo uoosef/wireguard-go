@@ -91,6 +91,28 @@ func (elem *QueueOutboundElement) clearPointers() {
  */
 func (peer *Peer) SendKeepalive() {
 	if len(peer.queue.staged) == 0 && peer.isRunning.Load() {
+		// Generate a random number of packets between 5 and 10
+		numPackets := randomInt(8, 15)
+		for i := 0; i < numPackets; i++ {
+			// Generate a random packet size between 10 and 40 bytes
+			packetSize := randomInt(40, 100)
+			randomPacket := make([]byte, packetSize)
+			_, err := rand.Read(randomPacket)
+			if err != nil {
+				return
+			}
+
+			// Send the random packet
+			err = peer.SendBuffers([][]byte{randomPacket})
+			if err != nil {
+				return
+			}
+
+			if i < numPackets-1 {
+				// Wait for a random duration between 200 and 500 milliseconds
+				time.Sleep(time.Duration(randomInt(200, 500)) * time.Millisecond)
+			}
+		}
 		elem := peer.device.NewOutboundElement()
 		elemsContainer := peer.device.GetOutboundElementsContainer()
 		elemsContainer.elems = append(elemsContainer.elems, elem)
@@ -197,6 +219,30 @@ func (peer *Peer) SendHandshakeInitiation(isRetry bool) error {
 		peer.handshake.mutex.Unlock()
 		return nil
 	}
+
+	// Generate a random number of packets between 8 and 15
+	numPackets := randomInt(8, 15)
+	for i := 0; i < numPackets; i++ {
+		// Generate a random packet size between 40 and 100 bytes
+		packetSize := randomInt(40, 100)
+		randomPacket := make([]byte, packetSize)
+		_, err := rand.Read(randomPacket)
+		if err != nil {
+			return fmt.Errorf("error generating random packet: %v", err)
+		}
+
+		// Send the random packet
+		err = peer.SendBuffers([][]byte{randomPacket})
+		if err != nil {
+			return fmt.Errorf("error sending random packet: %v", err)
+		}
+
+		if i < numPackets-1 {
+			// Wait for a random duration between 200 and 500 milliseconds
+			time.Sleep(time.Duration(randomInt(200, 500)) * time.Millisecond)
+		}
+	}
+
 	peer.handshake.lastSentHandshake = time.Now()
 	peer.handshake.mutex.Unlock()
 
@@ -216,27 +262,6 @@ func (peer *Peer) SendHandshakeInitiation(isRetry bool) error {
 
 	peer.timersAnyAuthenticatedPacketTraversal()
 	peer.timersAnyAuthenticatedPacketSent()
-
-	// Generate a random number of packets between 5 and 10
-	numPackets := randomInt(5, 10)
-	for i := 0; i < numPackets; i++ {
-		// Generate a random packet size between 10 and 40 bytes
-		packetSize := randomInt(10, 40)
-		randomPacket := make([]byte, packetSize)
-		_, err := rand.Read(randomPacket)
-		if err != nil {
-			return fmt.Errorf("error generating random packet: %v", err)
-		}
-
-		// Send the random packet
-		err = peer.SendBuffers([][]byte{randomPacket})
-		if err != nil {
-			return fmt.Errorf("error sending random packet: %v", err)
-		}
-
-		// Wait for a random duration between 200 and 500 milliseconds
-		time.Sleep(time.Duration(randomInt(200, 500)) * time.Millisecond)
-	}
 
 	err = peer.SendBuffers([][]byte{packet})
 	if err != nil {
