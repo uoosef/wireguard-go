@@ -265,7 +265,10 @@ func (peer *Peer) Stop() {
 	if !peer.isRunning.Swap(false) {
 		return
 	}
-	peer.stopCh <- 1
+	select {
+	case peer.stopCh <- 1:
+	default:
+	}
 	peer.device.log.Verbosef("%v - Stopping", peer)
 
 	peer.timersStop()
