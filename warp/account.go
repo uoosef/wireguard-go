@@ -634,3 +634,36 @@ func CheckProfileExists(license string) bool {
 	}
 	return isOk
 }
+
+func RemoveDevice(account AccountData) error {
+
+	headers := map[string]string{
+		"Content-Type":      "application/json",
+		"User-Agent":        "okhttp/3.12.1",
+		"CF-Client-Version": "a-6.30-3596",
+		"Authorization":     "Bearer " + account.AccessToken,
+	}
+
+	req, err := http.NewRequest("DELETE", "https://api.cloudflareclient.com/v0a3596/reg/"+account.AccountID, nil)
+	if err != nil {
+		return err
+	}
+
+	// Set headers
+	for k, v := range MergeMaps(defaultHeaders, headers) {
+		req.Header.Set(k, v)
+	}
+
+	// Create HTTP client and execute request
+	response, err := client.Do(req)
+	if err != nil {
+		fmt.Println("sending request to remote server", err)
+		return err
+	}
+
+	if response.StatusCode != 204 {
+		return fmt.Errorf("Error in deleting account %d %s", response.StatusCode, response.Status)
+	}
+
+	return nil
+}
