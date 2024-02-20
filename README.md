@@ -22,7 +22,7 @@ Warp-Plus-Go is an open-source implementation of Cloudflare's Warp, enhanced wit
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/warp-plus-go.git
+   git clone https://github.com/bepass-org/wireguard-go.git
    cd warp-plus-go
    ```
 
