@@ -207,6 +207,12 @@ func ParseInterface(cfg *ini.File, device *DeviceConfig) error {
 			return err
 		}
 		device.MTU = value
+	} else {
+		if dc == 0 {
+			device.MTU = 1420
+		} else {
+			device.MTU = 1300
+		}
 	}
 
 	if sectionKey, err := section.GetKey("ListenPort"); err == nil {

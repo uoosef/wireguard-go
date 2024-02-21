@@ -1,6 +1,7 @@
 package wiresocks
 
 import (
+	"context"
 	"crypto/rand"
 	"fmt"
 	"github.com/bepass-org/ipscanner"
@@ -24,10 +25,11 @@ func canConnectIPv6(remoteAddr string) bool {
 	return true
 }
 
-func RunScan() (result []string) {
+func RunScan(ctx *context.Context, rtt int) (result []string, err error) {
 	cfg, err := ini.Load("./primary/wgcf-profile.ini")
 	if err != nil {
-		log.Fatalf("Failed to read file: %v", err)
+		log.Printf("Failed to read file: %v", err)
+		return nil, fmt.Errorf("failed to read file: %v", err)
 	}
 
 	// Reading the private key from the 'Interface' section
@@ -43,7 +45,7 @@ func RunScan() (result []string) {
 		ipscanner.WithWarpPeerPublicKey(publicKey),
 		ipscanner.WithUseIPv6(canConnectIPv6("[2001:4860:4860::8888]:80")),
 		ipscanner.WithUseIPv4(true),
-		ipscanner.WithMaxDesirableRTT(500),
+		ipscanner.WithMaxDesirableRTT(rtt),
 		ipscanner.WithCidrList([]string{
 			"162.159.192.0/24",
 			"162.159.193.0/24",
@@ -57,19 +59,31 @@ func RunScan() (result []string) {
 		}),
 	)
 	scanner.Run()
-	var ipList []net.IP
+	timeoutTimer := time.NewTimer(2 * time.Minute)
+	defer timeoutTimer.Stop()
+
 	for {
-		ipList = scanner.GetAvailableIPS()
-		if len(ipList) > 1 {
+		select {
+		case <-(*ctx).Done():
+			// Context is done - canceled externally
 			scanner.Stop()
-			break
+			return nil, fmt.Errorf("user canceled the operation")
+		case <-timeoutTimer.C:
+			// Handle the internal timeout
+			scanner.Stop()
+			return nil, fmt.Errorf("scanner maximum time exceeded")
+		default:
+			ipList := scanner.GetAvailableIPS()
+			if len(ipList) > 1 {
+				scanner.Stop()
+				for i := 0; i < 2; i++ {
+					result = append(result, ipToAddress(ipList[i]))
+				}
+				return result, nil
+			}
+			time.Sleep(1 * time.Second) // Prevent the loop from spinning too fast
 		}
-		time.Sleep(1 * time.Second)
 	}
-	for i := 0; i < 2; i++ {
-		result = append(result, ipToAddress(ipList[i]))
-	}
-	return
 }
 
 func ipToAddress(ip net.IP) string {

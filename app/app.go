@@ -1,6 +1,8 @@
 package app
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/bepass-org/wireguard-go/psiphon"
@@ -9,128 +11,145 @@ import (
 	"log"
 	"net"
 	"os"
-	"os/signal"
 	"path/filepath"
-	"syscall"
 	"time"
 )
 
-func RunWarp(psiphonEnabled, gool, scan, verbose bool, country, bindAddress, endpoint, license string) {
+func RunWarp(psiphonEnabled, gool, scan, verbose bool, country, bindAddress, endpoint, license string, ctx context.Context, rtThreshold int) error {
 	// check if user input is not correct
 	if (psiphonEnabled && gool) || (!psiphonEnabled && country != "") {
-		log.Println("Wrong command!")
+		log.Println("Wrong combination of flags!")
 		flag.Usage()
-		return
+		return errors.New("wrong command")
 	}
 
 	//create necessary file structures
-	makeDirs()
+	if err := makeDirs(); err != nil {
+		return err
+	}
+
+	// Change the current working directory to 'stuff'
+	if err := os.Chdir("stuff"); err != nil {
+		log.Printf("Error changing to 'stuff' directory: %v\n", err)
+		return fmt.Errorf("Error changing to 'stuff' directory: %v\n", err)
+	}
+	log.Println("Changed working directory to 'stuff'")
+	defer func() {
+		// back where you where
+		if err := os.Chdir(".."); err != nil {
+			log.Fatal("Error changing to 'main' directory:", err)
+		}
+	}()
 
 	//create identities
-	createPrimaryAndSecondaryIdentities(license)
+	if err := createPrimaryAndSecondaryIdentities(license); err != nil {
+		return err
+	}
 
 	//Decide Working Scenario
 	endpoints := []string{endpoint, endpoint}
 
 	if scan {
-		endpoints = wiresocks.RunScan()
-		log.Println("Cooling down please wait 5 seconds...")
-		time.Sleep(5 * time.Second)
+		var err error
+		endpoints, err = wiresocks.RunScan(&ctx, rtThreshold)
+		if err != nil {
+			return err
+		}
 	}
 
 	if !psiphonEnabled && !gool {
 		// just run primary warp on bindAddress
-		runWarp(bindAddress, endpoints, "./primary/wgcf-profile.ini", verbose, true, true)
+		_, _, err := runWarp(bindAddress, endpoints, "./primary/wgcf-profile.ini", verbose, true, ctx, true)
+		return err
 	} else if psiphonEnabled && !gool {
 		// run primary warp on a random tcp port and run psiphon on bind address
-		runWarpWithPsiphon(bindAddress, endpoints, country, verbose)
+		return runWarpWithPsiphon(bindAddress, endpoints, country, verbose, ctx)
 	} else if !psiphonEnabled && gool {
 		// run warp in warp
-		runWarpInWarp(bindAddress, endpoints, verbose)
+		return runWarpInWarp(bindAddress, endpoints, verbose, ctx)
 	}
 
-	//End Decide Working Scenario
-
-	// back where you where
-	if err := os.Chdir(".."); err != nil {
-		log.Fatal("Error changing to 'main' directory:", err)
-	}
+	return fmt.Errorf("unknown error, it seems core related issue")
 }
 
-func runWarp(bindAddress string, endpoints []string, confPath string, verbose, wait bool, startProxy bool) (*wiresocks.VirtualTun, int) {
-	// Setup channel to listen for interrupt signal (Ctrl+C)
-	var sigChan chan os.Signal
-	if wait {
-		sigChan = make(chan os.Signal, 1)
-		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-	}
-
+func runWarp(bindAddress string, endpoints []string, confPath string, verbose, startProxy bool, ctx context.Context, showServing bool) (*wiresocks.VirtualTun, int, error) {
 	conf, err := wiresocks.ParseConfig(confPath, endpoints[0])
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, 0, err
 	}
 
-	tnet, err := wiresocks.StartWireguard(conf.Device, verbose)
+	tnet, err := wiresocks.StartWireguard(conf.Device, verbose, ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, 0, err
 	}
 
 	if startProxy {
-		go tnet.StartProxy(bindAddress)
+		tnet.StartProxy(bindAddress)
 	}
 
-	// Wait for interrupt signal
-	if wait {
+	if showServing {
 		log.Printf("Serving on %s\n", bindAddress)
-		<-sigChan
 	}
 
-	return tnet, conf.Device.MTU
+	return tnet, conf.Device.MTU, nil
 }
 
-func runWarpWithPsiphon(bindAddress string, endpoints []string, country string, verbose bool) {
+func runWarpWithPsiphon(bindAddress string, endpoints []string, country string, verbose bool, ctx context.Context) error {
 	// make a random bind address for warp
 	warpBindAddress, err := findFreePort("tcp")
 	if err != nil {
-		log.Fatal("There are no free tcp ports on Device!")
+		log.Println("There are no free tcp ports on Device!")
+		return err
 	}
 
-	runWarp(warpBindAddress, endpoints, "./primary/wgcf-profile.ini", verbose, false, true)
-
-	// Setup channel to listen for interrupt signal (Ctrl+C)
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	_, _, err = runWarp(warpBindAddress, endpoints, "./primary/wgcf-profile.ini", verbose, true, ctx, false)
+	if err != nil {
+		return err
+	}
 
 	// run psiphon
-	psiphonCtx := psiphon.RunPsiphon(warpBindAddress, bindAddress, country)
+	err = psiphon.RunPsiphon(warpBindAddress, bindAddress, country, ctx)
+	if err != nil {
+		log.Printf("unable to run psiphon %v", err)
+		return fmt.Errorf("unable to run psiphon %v", err)
+	}
 
 	log.Printf("Serving on %s\n", bindAddress)
-	// Wait for interrupt signal
-	<-sigChan
 
-	psiphonCtx.Done()
+	return nil
 }
 
-func runWarpInWarp(bindAddress string, endpoints []string, verbose bool) {
+func runWarpInWarp(bindAddress string, endpoints []string, verbose bool, ctx context.Context) error {
 	// run secondary warp
-	vTUN, mtu := runWarp("", endpoints, "./secondary/wgcf-profile.ini", verbose, false, false)
+	vTUN, mtu, err := runWarp("", endpoints, "./secondary/wgcf-profile.ini", verbose, false, ctx, false)
+	if err != nil {
+		return err
+	}
 
 	// run virtual endpoint
 	virtualEndpointBindAddress, err := findFreePort("udp")
 	if err != nil {
-		log.Fatal("There are no free udp ports on Device!")
+		log.Println("There are no free udp ports on Device!")
+		return err
 	}
 	addr := endpoints[1]
 	if addr == "notset" {
 		addr, _ = wiresocks.ResolveIPPAndPort("engage.cloudflareclient.com:2408")
 	}
-	err = wiresocks.NewVtunUDPForwarder(virtualEndpointBindAddress, addr, vTUN, mtu+100)
+	err = wiresocks.NewVtunUDPForwarder(virtualEndpointBindAddress, addr, vTUN, mtu+100, ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return err
 	}
 
 	// run primary warp
-	runWarp(bindAddress, []string{virtualEndpointBindAddress}, "./primary/wgcf-profile.ini", verbose, true, true)
+	_, _, err = runWarp(bindAddress, []string{virtualEndpointBindAddress}, "./primary/wgcf-profile.ini", verbose, true, ctx, true)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func findFreePort(network string) (string, error) {
@@ -161,7 +180,7 @@ func findFreePort(network string) (string, error) {
 	return addr, nil
 }
 
-func createPrimaryAndSecondaryIdentities(license string) {
+func createPrimaryAndSecondaryIdentities(license string) error {
 	// make primary identity
 	_license := license
 	if _license == "notset" {
@@ -171,7 +190,8 @@ func createPrimaryAndSecondaryIdentities(license string) {
 	if !warp.CheckProfileExists(license) {
 		err := warp.LoadOrCreateIdentity(_license)
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Printf("error: %v", err)
+			return fmt.Errorf("error: %v", err)
 		}
 	}
 	// make secondary
@@ -179,21 +199,24 @@ func createPrimaryAndSecondaryIdentities(license string) {
 	if !warp.CheckProfileExists(license) {
 		err := warp.LoadOrCreateIdentity(_license)
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Printf("error: %v", err)
+			return fmt.Errorf("error: %v", err)
 		}
 	}
+	return nil
 }
 
-func makeDirs() {
+func makeDirs() error {
 	stuffDir := "stuff"
 	primaryDir := "primary"
 	secondaryDir := "secondary"
 
 	// Check if 'stuff' directory exists, if not create it
 	if _, err := os.Stat(stuffDir); os.IsNotExist(err) {
-		fmt.Println("'stuff' directory does not exist, creating it...")
+		log.Println("'stuff' directory does not exist, creating it...")
 		if err := os.Mkdir(stuffDir, 0755); err != nil {
-			log.Fatal("Error creating 'stuff' directory:", err)
+			log.Println("Error creating 'stuff' directory:", err)
+			return errors.New("Error creating 'stuff' directory:" + err.Error())
 		}
 	}
 
@@ -202,17 +225,13 @@ func makeDirs() {
 		if _, err := os.Stat(filepath.Join(stuffDir, dir)); os.IsNotExist(err) {
 			log.Printf("Creating '%s' directory...\n", dir)
 			if err := os.Mkdir(filepath.Join(stuffDir, dir), 0755); err != nil {
-				log.Fatalf("Error creating '%s' directory: %v\n", dir, err)
+				log.Printf("Error creating '%s' directory: %v\n", dir, err)
+				return fmt.Errorf("Error creating '%s' directory: %v\n", dir, err)
 			}
 		}
 	}
 	log.Println("'primary' and 'secondary' directories are ready")
-
-	// Change the current working directory to 'stuff'
-	if err := os.Chdir(stuffDir); err != nil {
-		log.Fatal("Error changing to 'stuff' directory:", err)
-	}
-	log.Println("Changed working directory to 'stuff'")
+	return nil
 }
 func isPortOpen(address string, timeout time.Duration) bool {
 	// Try to establish a connection

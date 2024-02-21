@@ -1,10 +1,12 @@
 package wiresocks
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"net"
+	"sync"
 )
 
 type Socks5UDPForwarder struct {
@@ -16,7 +18,7 @@ type Socks5UDPForwarder struct {
 	clientAddr   *net.UDPAddr
 }
 
-func NewVtunUDPForwarder(localBind, dest string, vtun *VirtualTun, mtu int) error {
+func NewVtunUDPForwarder(localBind, dest string, vtun *VirtualTun, mtu int, ctx context.Context) error {
 	localAddr, err := net.ResolveUDPAddr("udp", localBind)
 	if err != nil {
 		return err
@@ -38,30 +40,50 @@ func NewVtunUDPForwarder(localBind, dest string, vtun *VirtualTun, mtu int) erro
 	}
 
 	var clientAddr *net.UDPAddr
+	var wg sync.WaitGroup
+	wg.Add(2)
+
 	go func() {
 		buffer := make([]byte, mtu)
 		for {
-			n, cAddr, err := listener.ReadFrom(buffer)
-			if err != nil {
-				continue
+			select {
+			case <-ctx.Done():
+				wg.Done()
+				return
+			default:
+				n, cAddr, err := listener.ReadFrom(buffer)
+				if err != nil {
+					continue
+				}
+
+				clientAddr = cAddr.(*net.UDPAddr)
+
+				rconn.WriteTo(buffer[:n], destAddr)
 			}
-
-			clientAddr = cAddr.(*net.UDPAddr)
-
-			rconn.WriteTo(buffer[:n], destAddr)
 		}
 	}()
 	go func() {
 		buffer := make([]byte, mtu)
 		for {
-			n, _, err := rconn.ReadFrom(buffer)
-			if err != nil {
-				continue
-			}
-			if clientAddr != nil {
-				listener.WriteTo(buffer[:n], clientAddr)
+			select {
+			case <-ctx.Done():
+				wg.Done()
+				return
+			default:
+				n, _, err := rconn.ReadFrom(buffer)
+				if err != nil {
+					continue
+				}
+				if clientAddr != nil {
+					listener.WriteTo(buffer[:n], clientAddr)
+				}
 			}
 		}
+	}()
+	go func() {
+		wg.Wait()
+		_ = listener.Close()
+		_ = rconn.Close()
 	}()
 	return nil
 }

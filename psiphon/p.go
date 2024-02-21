@@ -315,12 +315,11 @@ func (tunnel *Tunnel) Stop() {
 	psiphon.CloseDataStore()
 }
 
-func RunPsiphon(wgBind, localSocksPort, country string) context.Context {
-	ctx := context.Background()
+func RunPsiphon(wgBind, localSocksPort, country string, ctx context.Context) error {
 	// Embedded configuration
 	host, port, err := net.SplitHostPort(localSocksPort)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	if strings.HasPrefix(host, "127.0.0") {
 		host = ""
@@ -359,18 +358,28 @@ func RunPsiphon(wgBind, localSocksPort, country string) context.Context {
 	var tunnel *Tunnel
 	startTime := time.Now()
 
-	go func() {
-		for {
-			tunnel, err = StartTunnel(ctx, []byte(configJSON), "", p, nil, nil)
+	internalCtx := context.Background()
+
+	timeoutTimer := time.NewTimer(2 * time.Minute)
+	defer timeoutTimer.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			internalCtx.Done()
+			return fmt.Errorf("psiphon handshake operation canceled by user")
+		case <-timeoutTimer.C:
+			// Handle the internal timeout
+			internalCtx.Done()
+			return fmt.Errorf("psiphon handshake maximum time exceeded")
+		default:
+			tunnel, err = StartTunnel(internalCtx, []byte(configJSON), "", p, nil, nil)
 			if err == nil {
-				break
+				log.Println("Psiphon started successfully on port", tunnel.SOCKSProxyPort, "handshake operation took", int64(time.Since(startTime)/time.Millisecond), "milliseconds")
+				return nil
 			}
 			log.Error("Unable to start psiphon", err, "reconnecting...")
-			time.Sleep(2 * time.Second)
+			time.Sleep(1 * time.Second)
 		}
-
-		log.Println("Psiphon started successfully on port", tunnel.SOCKSProxyPort, "handshake operation took", int64(time.Since(startTime)/time.Millisecond), "milliseconds")
-	}()
-
-	return ctx
+	}
 }
