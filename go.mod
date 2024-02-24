@@ -2,7 +2,7 @@ module github.com/bepass-org/wireguard-go
 
 go 1.20
 
-replace github.com/Psiphon-Labs/psiphon-tunnel-core => github.com/uoosef/psiphon-tunnel-core v0.0.0-20240126135009-9fbc37b0b068
+replace github.com/Psiphon-Labs/psiphon-tunnel-core => github.com/bepass-org/psiphon-tunnel-core v0.0.0-20240223214330-9783d71283bc
 
 require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
@@ -10,7 +10,7 @@ require (
 	github.com/bepass-org/ipscanner v0.0.0-20240205155121-8927b7437d16
 	github.com/bepass-org/proxy v0.0.0-20240201095508-c86216dd0aea
 	github.com/go-ini/ini v1.67.0
-	github.com/refraction-networking/conjure v0.7.10-0.20231110193225-e4749a9dedc9
+	github.com/refraction-networking/conjure v0.7.11-0.20240130155008-c8df96195ab2
 	github.com/refraction-networking/utls v1.3.3
 	golang.org/x/crypto v0.18.0
 	golang.org/x/net v0.20.0
@@ -64,7 +64,7 @@ require (
 	github.com/quic-go/qtls-go1-20 v0.4.1 // indirect
 	github.com/quic-go/quic-go v0.40.1 // indirect
 	github.com/refraction-networking/ed25519 v0.1.2 // indirect
-	github.com/refraction-networking/gotapdance v1.7.7 // indirect
+	github.com/refraction-networking/gotapdance v1.7.10 // indirect
 	github.com/refraction-networking/obfs4 v0.1.2 // indirect
 	github.com/sergeyfrolov/bsbuffer v0.0.0-20180903213811-94e85abb8507 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
