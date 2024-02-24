@@ -10,6 +10,7 @@ require (
 	github.com/bepass-org/ipscanner v0.0.0-20240205155121-8927b7437d16
 	github.com/bepass-org/proxy v0.0.0-20240201095508-c86216dd0aea
 	github.com/go-ini/ini v1.67.0
+	github.com/peterbourgon/ff/v4 v4.0.0-alpha.4
 	github.com/refraction-networking/conjure v0.7.11-0.20240130155008-c8df96195ab2
 	github.com/refraction-networking/utls v1.3.3
 	golang.org/x/crypto v0.18.0

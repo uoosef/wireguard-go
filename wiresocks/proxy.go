@@ -2,14 +2,15 @@ package wiresocks
 
 import (
 	"context"
-	"fmt"
+	"io"
+	"log"
+	"net/netip"
+	"time"
+
 	"github.com/bepass-org/proxy/pkg/mixed"
 	"github.com/bepass-org/proxy/pkg/statute"
 	"github.com/bepass-org/wireguard-go/device"
 	"github.com/bepass-org/wireguard-go/tun/netstack"
-	"io"
-	"log"
-	"time"
 )
 
 // VirtualTun stores a reference to netstack network and DNS configuration
@@ -37,9 +38,9 @@ func (l DefaultLogger) Error(v ...interface{}) {
 }
 
 // StartProxy spawns a socks5 server.
-func (vt *VirtualTun) StartProxy(bindAddress string) {
+func (vt *VirtualTun) StartProxy(bindAddress netip.AddrPort) {
 	proxy := mixed.NewProxy(
-		mixed.WithBindAddress(bindAddress),
+		mixed.WithBindAddress(bindAddress.String()),
 		mixed.WithLogger(vt.Logger),
 		mixed.WithContext(vt.Ctx),
 		mixed.WithUserHandler(func(request *statute.ProxyRequest) error {
@@ -64,7 +65,7 @@ func (vt *VirtualTun) StartProxy(bindAddress string) {
 
 func (vt *VirtualTun) generalHandler(req *statute.ProxyRequest) error {
 	if vt.Verbose {
-		log.Println(fmt.Sprintf("handling %s request to %s", req.Network, req.Destination))
+		log.Printf("handling %s request to %s", req.Network, req.Destination)
 	}
 	conn, err := vt.Tnet.Dial(req.Network, req.Destination)
 	if err != nil {

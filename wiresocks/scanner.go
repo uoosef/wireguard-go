@@ -4,12 +4,13 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
-	"github.com/bepass-org/ipscanner"
-	"github.com/go-ini/ini"
 	"log"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/bepass-org/ipscanner"
+	"github.com/go-ini/ini"
 )
 
 func canConnectIPv6(remoteAddr string) bool {
@@ -25,7 +26,7 @@ func canConnectIPv6(remoteAddr string) bool {
 	return true
 }
 
-func RunScan(ctx *context.Context, rtt int) (result []string, err error) {
+func RunScan(ctx *context.Context, rtt time.Duration) (result []string, err error) {
 	cfg, err := ini.Load("./primary/wgcf-profile.ini")
 	if err != nil {
 		log.Printf("Failed to read file: %v", err)
@@ -45,7 +46,7 @@ func RunScan(ctx *context.Context, rtt int) (result []string, err error) {
 		ipscanner.WithWarpPeerPublicKey(publicKey),
 		ipscanner.WithUseIPv6(canConnectIPv6("[2001:4860:4860::8888]:80")),
 		ipscanner.WithUseIPv4(true),
-		ipscanner.WithMaxDesirableRTT(rtt),
+		ipscanner.WithMaxDesirableRTT(int(rtt.Milliseconds())),
 		ipscanner.WithCidrList([]string{
 			"162.159.192.0/24",
 			"162.159.193.0/24",

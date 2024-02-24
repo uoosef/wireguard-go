@@ -1,11 +1,16 @@
 package warp
 
 import (
-	"crypto/rand"
+	"errors"
 	"fmt"
-	tls "github.com/refraction-networking/utls"
 	"io"
+	"math/big"
+	"math/rand"
 	"net"
+	"net/netip"
+	"time"
+
+	tls "github.com/refraction-networking/utls"
 )
 
 var previousIP string
@@ -164,44 +169,50 @@ func (d *Dialer) makeTLSHelloPacketWithSNICurve(plainConn net.Conn, config *tls.
 	return utlsConn, nil
 }
 
-func RandomIPFromRange(cidr string) (net.IP, error) {
-
-GENERATE:
-
-	ip, ipnet, err := net.ParseCIDR(cidr)
-	if err != nil {
-		return nil, err
+// RandomIPFromPrefix returns a random IP from the provided CIDR prefix.
+// Supports IPv4 and IPv6. Does not support mapped inputs.
+func RandomIPFromPrefix(cidr netip.Prefix) (netip.Addr, error) {
+	startingAddress := cidr.Masked().Addr()
+	if startingAddress.Is4In6() {
+		return netip.Addr{}, errors.New("mapped v4 addresses not supported")
 	}
 
-	// The number of leading 1s in the mask
-	ones, _ := ipnet.Mask.Size()
-	quotient := ones / 8
-	remainder := ones % 8
-
-	// create random 4-byte byte slice
-	r := make([]byte, 4)
-	_, err = rand.Read(r)
-	if err != nil {
-		return nil, err
+	prefixLen := cidr.Bits()
+	if prefixLen == -1 {
+		return netip.Addr{}, fmt.Errorf("invalid cidr: %s", cidr)
 	}
 
-	for i := 0; i <= quotient; i++ {
-		if i == quotient {
-			shifted := byte(r[i]) >> remainder
-			r[i] = ^ipnet.IP[i] & shifted
-		} else {
-			r[i] = ipnet.IP[i]
-		}
-	}
-	ip = net.IPv4(r[0], r[1], r[2], r[3])
+	// Initialise rand number generator
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	if ip.Equal(ipnet.IP) || r[3] == 255 || ip.String() == previousIP {
-		// we got unlucky. The host portion of our ipv4 address was
-		// either all 0s (the network address) or all 1s (the broadcast address)
-		goto GENERATE
+	// Find the bit length of the Host portion of the provided CIDR
+	// prefix
+	hostLen := big.NewInt(int64(startingAddress.BitLen() - prefixLen))
+
+	// Find the max value for our random number
+	max := new(big.Int).Exp(big.NewInt(2), hostLen, nil)
+
+	// Generate the random number
+	randInt := new(big.Int).Rand(rng, max)
+
+	// Get the first address in the CIDR prefix in 16-bytes form
+	startingAddress16 := startingAddress.As16()
+
+	// Convert the first address into a decimal number
+	startingAddressInt := new(big.Int).SetBytes(startingAddress16[:])
+
+	// Add the random number to the decimal form of the starting address
+	// to get a random address in the desired range
+	randomAddressInt := new(big.Int).Add(startingAddressInt, randInt)
+
+	// Convert the random address from decimal form back into netip.Addr
+	randomAddress, ok := netip.AddrFromSlice(randomAddressInt.FillBytes(make([]byte, 16)))
+	if !ok {
+		return netip.Addr{}, fmt.Errorf("failed to generate random IP from CIDR: %s", cidr)
 	}
-	previousIP = ip.String()
-	return ip, nil
+
+	// Unmap any mapped v4 addresses before return
+	return randomAddress.Unmap(), nil
 }
 
 // TLSDial dials a TLS connection.
@@ -210,7 +221,7 @@ func (d *Dialer) TLSDial(plainDialer *net.Dialer, network, addr string) (net.Con
 	if err != nil {
 		return nil, err
 	}
-	ip, err := RandomIPFromRange("141.101.113.0/24")
+	ip, err := RandomIPFromPrefix(netip.MustParsePrefix("141.101.113.0/24"))
 	if err != nil {
 		return nil, err
 	}
