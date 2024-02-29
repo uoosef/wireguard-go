@@ -65,7 +65,7 @@ func RunWarp(ctx context.Context, opts WarpOptions) error {
 
 	if opts.Scan != nil {
 		var err error
-		endpoints, err = wiresocks.RunScan(&ctx, opts.Scan.MaxRTT)
+		endpoints, err = wiresocks.RunScan(ctx, opts.Scan.MaxRTT)
 		if err != nil {
 			return err
 		}

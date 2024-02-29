@@ -4,21 +4,22 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
-	"log"
 	"net"
+	"net/netip"
 	"strings"
 	"time"
 
 	"github.com/bepass-org/ipscanner"
+	"github.com/bepass-org/wireguard-go/warp"
 	"github.com/go-ini/ini"
 )
 
-func canConnectIPv6(remoteAddr string) bool {
+func canConnectIPv6(remoteAddr netip.AddrPort) bool {
 	dialer := net.Dialer{
 		Timeout: 5 * time.Second,
 	}
 
-	conn, err := dialer.Dial("tcp6", remoteAddr)
+	conn, err := dialer.Dial("tcp6", remoteAddr.String())
 	if err != nil {
 		return false
 	}
@@ -26,11 +27,10 @@ func canConnectIPv6(remoteAddr string) bool {
 	return true
 }
 
-func RunScan(ctx *context.Context, rtt time.Duration) (result []string, err error) {
+func RunScan(ctx context.Context, rtt time.Duration) (result []string, err error) {
 	cfg, err := ini.Load("./primary/wgcf-profile.ini")
 	if err != nil {
-		log.Printf("Failed to read file: %v", err)
-		return nil, fmt.Errorf("failed to read file: %v", err)
+		return nil, fmt.Errorf("failed to read file: %w", err)
 	}
 
 	// Reading the private key from the 'Interface' section
@@ -39,33 +39,31 @@ func RunScan(ctx *context.Context, rtt time.Duration) (result []string, err erro
 	// Reading the public key from the 'Peer' section
 	publicKey := cfg.Section("Peer").Key("PublicKey").String()
 
+	// TODO: ipscanner doesn't support netip.Prefix yet
+	prefixes := warp.WarpPrefixes()
+	stringedPrefixes := make([]string, len(prefixes))
+	for i, p := range prefixes {
+		stringedPrefixes[i] = p.String()
+	}
+
 	// new scanner
 	scanner := ipscanner.NewScanner(
 		ipscanner.WithWarpPing(),
 		ipscanner.WithWarpPrivateKey(privateKey),
 		ipscanner.WithWarpPeerPublicKey(publicKey),
-		ipscanner.WithUseIPv6(canConnectIPv6("[2001:4860:4860::8888]:80")),
+		ipscanner.WithUseIPv6(canConnectIPv6(netip.MustParseAddrPort("[2001:4860:4860::8888]:80"))),
 		ipscanner.WithUseIPv4(true),
 		ipscanner.WithMaxDesirableRTT(int(rtt.Milliseconds())),
-		ipscanner.WithCidrList([]string{
-			"162.159.192.0/24",
-			"162.159.193.0/24",
-			"162.159.195.0/24",
-			"188.114.96.0/24",
-			"188.114.97.0/24",
-			"188.114.98.0/24",
-			"188.114.99.0/24",
-			"2606:4700:d0::/48",
-			"2606:4700:d1::/48",
-		}),
+		ipscanner.WithCidrList(stringedPrefixes),
 	)
+
 	scanner.Run()
 	timeoutTimer := time.NewTimer(2 * time.Minute)
 	defer timeoutTimer.Stop()
 
 	for {
 		select {
-		case <-(*ctx).Done():
+		case <-ctx.Done():
 			// Context is done - canceled externally
 			scanner.Stop()
 			return nil, fmt.Errorf("user canceled the operation")

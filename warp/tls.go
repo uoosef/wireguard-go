@@ -13,8 +13,6 @@ import (
 	tls "github.com/refraction-networking/utls"
 )
 
-var previousIP string
-
 // Dialer is a struct that holds various options for custom dialing.
 type Dialer struct {
 }

@@ -6,6 +6,20 @@ import (
 	"time"
 )
 
+func WarpPrefixes() []netip.Prefix {
+	return []netip.Prefix{
+		netip.MustParsePrefix("162.159.192.0/24"),
+		netip.MustParsePrefix("162.159.193.0/24"),
+		netip.MustParsePrefix("162.159.195.0/24"),
+		netip.MustParsePrefix("188.114.96.0/24"),
+		netip.MustParsePrefix("188.114.97.0/24"),
+		netip.MustParsePrefix("188.114.98.0/24"),
+		netip.MustParsePrefix("188.114.99.0/24"),
+		netip.MustParsePrefix("2606:4700:d0::/48"),
+		netip.MustParsePrefix("2606:4700:d1::/48"),
+	}
+}
+
 func RandomWarpEndpoint() (netip.AddrPort, error) {
 	ports := []int{500, 854, 859, 864, 878, 880, 890, 891, 894, 903, 908, 928, 934, 939, 942,
 		943, 945, 946, 955, 968, 987, 988, 1002, 1010, 1014, 1018, 1070, 1074, 1180, 1387, 1701,
@@ -18,14 +32,7 @@ func RandomWarpEndpoint() (netip.AddrPort, error) {
 	// Pick a random port number
 	randomPort := uint16(ports[rng.Intn(len(ports))])
 
-	cidrs := []netip.Prefix{
-		netip.MustParsePrefix("162.159.195.0/24"),
-		netip.MustParsePrefix("188.114.96.0/24"),
-		netip.MustParsePrefix("162.159.192.0/24"),
-		netip.MustParsePrefix("188.114.97.0/24"),
-		netip.MustParsePrefix("188.114.99.0/24"),
-		netip.MustParsePrefix("188.114.98.0/24"),
-	}
+	cidrs := WarpPrefixes()
 
 	randomIP, err := RandomIPFromPrefix(cidrs[rng.Intn(len(cidrs))])
 	if err != nil {

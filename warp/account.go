@@ -220,7 +220,6 @@ func loadIdentity(identityPath string) (accountData *AccountData, err error) {
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
-		return
 	}(file)
 
 	accountData = &AccountData{}
@@ -563,7 +562,7 @@ func LoadOrCreateIdentity(license string) error {
 
 	if confData.WarpPlusEnabled && !deviceStatus {
 		fmt.Println("Enabling device...")
-		deviceStatus, err = setDeviceActive(accountData, true)
+		deviceStatus, _ = setDeviceActive(accountData, true)
 	}
 
 	if !confData.WarpEnabled {
