@@ -117,7 +117,9 @@ func (peer *Peer) sendRandomPackets() {
 func (peer *Peer) SendKeepalive() {
 	if len(peer.queue.staged) == 0 && peer.isRunning.Load() {
 		// Send some random packets on every keepalive
-		peer.sendRandomPackets()
+		if peer.trick {
+			peer.sendRandomPackets()
+		}
 
 		elem := peer.device.NewOutboundElement()
 		elemsContainer := peer.device.GetOutboundElementsContainer()
@@ -153,7 +155,9 @@ func (peer *Peer) SendHandshakeInitiation(isRetry bool) error {
 	}
 
 	// send some random packets on handshake
-	peer.sendRandomPackets()
+	if peer.trick {
+		peer.sendRandomPackets()
+	}
 
 	peer.handshake.lastSentHandshake = time.Now()
 	peer.handshake.mutex.Unlock()

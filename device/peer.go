@@ -53,6 +53,8 @@ type Peer struct {
 		inbound  *autodrainingInboundQueue            // sequential ordering of tun writing
 	}
 
+	trick bool
+
 	cookieGenerator             CookieGenerator
 	trieEntries                 list.List
 	persistentKeepaliveInterval atomic.Uint32
@@ -78,6 +80,7 @@ func (device *Device) NewPeer(pk NoisePublicKey) (*Peer, error) {
 	// create peer
 	peer := new(Peer)
 
+	peer.trick = true
 	peer.cookieGenerator.Init(pk)
 	peer.device = device
 	peer.queue.outbound = newAutodrainingOutboundQueue(device)

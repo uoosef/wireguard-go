@@ -60,7 +60,7 @@ func createIPCRequest(conf *DeviceConfig) (*DeviceSetting, error) {
 }
 
 // StartWireguard creates a tun interface on netstack given a configuration
-func StartWireguard(conf *DeviceConfig, verbose bool, ctx context.Context) (*VirtualTun, error) {
+func StartWireguard(ctx context.Context, conf *DeviceConfig, verbose bool) (*VirtualTun, error) {
 	setting, err := createIPCRequest(conf)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func StartWireguard(conf *DeviceConfig, verbose bool, ctx context.Context) (*Vir
 		logLevel = device.LogLevelSilent
 	}
 
-	dev := device.NewDevice(tun, conn.NewDefaultBind(), device.NewLogger(logLevel, ""))
+	dev := device.NewDevice(tun, conn.NewDefaultBind(), device.NewLogger(logLevel, ""), conf.Trick)
 	err = dev.IpcSet(setting.ipcRequest)
 	if err != nil {
 		return nil, err

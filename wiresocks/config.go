@@ -27,6 +27,7 @@ type DeviceConfig struct {
 	DNS        []netip.Addr
 	MTU        int
 	ListenPort *int
+	Trick      bool
 }
 
 type Configuration struct {
