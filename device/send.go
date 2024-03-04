@@ -105,9 +105,12 @@ func (peer *Peer) sendRandomPackets() {
 			return
 		}
 
-		if i < numPackets-1 {
+		if i < numPackets-1 && peer.isRunning.Load() && !peer.device.isClosed() {
+			select {
+			case <-peer.stopCh:
 			// Wait for a random duration between 20 and 250 milliseconds
-			time.Sleep(time.Duration(randomInt(20, 250)) * time.Millisecond)
+			case <-time.After(time.Duration(randomInt(20, 250)) * time.Millisecond):
+			}
 		}
 	}
 }
