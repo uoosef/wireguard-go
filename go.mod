@@ -1,12 +1,12 @@
 module github.com/bepass-org/wireguard-go
 
-go 1.20
+go 1.21.1
 
-replace github.com/Psiphon-Labs/psiphon-tunnel-core => github.com/bepass-org/psiphon-tunnel-core v0.0.0-20240223214330-9783d71283bc
+replace github.com/Psiphon-Labs/psiphon-tunnel-core => github.com/bepass-org/psiphon-tunnel-core v0.0.0-20240311155012-9c2e10df08e5
 
 require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
-	github.com/Psiphon-Labs/psiphon-tunnel-core v0.0.0-00010101000000-000000000000
+	github.com/Psiphon-Labs/psiphon-tunnel-core v2.0.28+incompatible
 	github.com/bepass-org/proxy v0.0.0-20240201095508-c86216dd0aea
 	github.com/davecgh/go-spew v1.1.1
 	github.com/flynn/noise v1.1.0
@@ -16,9 +16,9 @@ require (
 	github.com/quic-go/quic-go v0.40.1
 	github.com/refraction-networking/conjure v0.7.11-0.20240130155008-c8df96195ab2
 	github.com/refraction-networking/utls v1.3.3
-	golang.org/x/crypto v0.18.0
-	golang.org/x/net v0.20.0
-	golang.org/x/sys v0.16.0
+	golang.org/x/crypto v0.19.0
+	golang.org/x/net v0.21.0
+	golang.org/x/sys v0.17.0
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2
 	gvisor.dev/gvisor v0.0.0-20230927004350-cbd86285d259
 )
@@ -29,10 +29,8 @@ require (
 	github.com/AndreasBriese/bbloom v0.0.0-20170702084017-28f7e881ca57 // indirect
 	github.com/Psiphon-Labs/bolt v0.0.0-20200624191537-23cedaef7ad7 // indirect
 	github.com/Psiphon-Labs/goptlib v0.0.0-20200406165125-c0e32a7a3464 // indirect
-	github.com/Psiphon-Labs/qtls-go1-19 v0.0.0-20230608213623-d58aa73e519a // indirect
-	github.com/Psiphon-Labs/qtls-go1-20 v0.0.0-20230608214729-dd57d6787acf // indirect
-	github.com/Psiphon-Labs/quic-go v0.0.0-20230626192210-73f29effc9da // indirect
-	github.com/Psiphon-Labs/tls-tris v0.0.0-20230824155421-58bf6d336a9a // indirect
+	github.com/Psiphon-Labs/psiphon-tls v0.0.0-20240305020009-09f917290799 // indirect
+	github.com/Psiphon-Labs/quic-go v0.0.0-20240305203241-7c4a760d03cc // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/armon/go-proxyproto v0.0.0-20180202201750-5b7edb60ff5f // indirect
 	github.com/bifurcation/mint v0.0.0-20180306135233-198357931e61 // indirect
