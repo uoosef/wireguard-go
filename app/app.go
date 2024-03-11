@@ -131,7 +131,7 @@ func runWarpWithPsiphon(ctx context.Context, bind netip.AddrPort, endpoints []st
 	err = psiphon.RunPsiphon(warpBindAddress.String(), bind.String(), country, ctx)
 	if err != nil {
 		log.Printf("unable to run psiphon %v", err)
-		return fmt.Errorf("unable to run psiphon %v", err)
+		return fmt.Errorf("unable to run psiphon %w", err)
 	}
 
 	log.Printf("Serving on %s", bind)
@@ -200,7 +200,7 @@ func createPrimaryAndSecondaryIdentities(license string) error {
 		err := warp.LoadOrCreateIdentity(license)
 		if err != nil {
 			log.Printf("error: %v", err)
-			return fmt.Errorf("error: %v", err)
+			return err
 		}
 	}
 	// make secondary
@@ -209,7 +209,7 @@ func createPrimaryAndSecondaryIdentities(license string) error {
 		err := warp.LoadOrCreateIdentity(license)
 		if err != nil {
 			log.Printf("error: %v", err)
-			return fmt.Errorf("error: %v", err)
+			return err
 		}
 	}
 	return nil

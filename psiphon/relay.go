@@ -46,18 +46,18 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 func sendUdpPacket(remoteHost, remotePort, packetHex string) (string, error) {
 	packet, err := hex.DecodeString(packetHex)
 	if err != nil {
-		return "", fmt.Errorf("invalid hex string: %v", err)
+		return "", fmt.Errorf("invalid hex string: %w", err)
 	}
 
 	remoteAddr := net.JoinHostPort(remoteHost, remotePort)
 	conn, err := net.Dial("udp", remoteAddr)
 	if err != nil {
-		return "", fmt.Errorf("dial error: %v", err)
+		return "", fmt.Errorf("dial error: %w", err)
 	}
 	defer conn.Close()
 
 	if _, err = conn.Write(packet); err != nil {
-		return "", fmt.Errorf("write error: %v", err)
+		return "", fmt.Errorf("write error: %w", err)
 	}
 
 	conn.SetReadDeadline(time.Now().Add(5 * time.Second))
@@ -65,7 +65,7 @@ func sendUdpPacket(remoteHost, remotePort, packetHex string) (string, error) {
 	buffer := make([]byte, 1024)
 	n, err := conn.Read(buffer)
 	if err != nil {
-		return "", fmt.Errorf("read error: %v", err)
+		return "", fmt.Errorf("read error: %w", err)
 	}
 
 	return hex.EncodeToString(buffer[:n]), nil

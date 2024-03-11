@@ -24,7 +24,7 @@ type Key [KeyLen]byte
 func GenerateKey() (Key, error) {
 	b := make([]byte, KeyLen)
 	if _, err := rand.Read(b); err != nil {
-		return Key{}, fmt.Errorf("wgtypes: failed to read random bytes: %v", err)
+		return Key{}, fmt.Errorf("wgtypes: failed to read random bytes: %w", err)
 	}
 
 	return NewKey(b)

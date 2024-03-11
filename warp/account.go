@@ -578,7 +578,7 @@ func LoadOrCreateIdentity(license string) error {
 	fmt.Println("Creating WireGuard configuration...")
 	err = createConf(accountData, confData)
 	if err != nil {
-		return fmt.Errorf("unable to enable write config file, Error: %v", err.Error())
+		return fmt.Errorf("unable to enable write config file: %w", err)
 	}
 
 	fmt.Println("All done! Find your files here:")

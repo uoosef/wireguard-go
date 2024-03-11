@@ -216,13 +216,13 @@ func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKe
 		randomPacket := make([]byte, packetSize)
 		_, err := rand.Read(randomPacket)
 		if err != nil {
-			return fmt.Errorf("error generating random packet: %v", err)
+			return fmt.Errorf("error generating random packet: %w", err)
 		}
 
 		// Send the random packet
 		_, err = conn.Write(randomPacket)
 		if err != nil {
-			return fmt.Errorf("error sending random packet: %v", err)
+			return fmt.Errorf("error sending random packet: %w", err)
 		}
 
 		// Wait for a random duration between 200 and 500 milliseconds
