@@ -104,8 +104,8 @@ func StartTunnel(
 	embeddedServerEntryList string,
 	params Parameters,
 	paramsDelta ParametersDelta,
-	noticeReceiver func(NoticeEvent)) (retTunnel *Tunnel, retErr error) {
-
+	noticeReceiver func(NoticeEvent),
+) (retTunnel *Tunnel, retErr error) {
 	config, err := psiphon.LoadConfig(configJSON)
 	if err != nil {
 		return nil, errors.New("failed to load config file")

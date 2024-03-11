@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-
 	"net/netip"
 
 	"github.com/MakeNowJust/heredoc/v2"

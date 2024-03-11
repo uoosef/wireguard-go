@@ -7,10 +7,13 @@ replace github.com/Psiphon-Labs/psiphon-tunnel-core => github.com/bepass-org/psi
 require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Psiphon-Labs/psiphon-tunnel-core v0.0.0-00010101000000-000000000000
-	github.com/bepass-org/ipscanner v0.0.0-20240205155121-8927b7437d16
 	github.com/bepass-org/proxy v0.0.0-20240201095508-c86216dd0aea
+	github.com/davecgh/go-spew v1.1.1
+	github.com/flynn/noise v1.1.0
 	github.com/go-ini/ini v1.67.0
+	github.com/hashicorp/golang-lru v1.0.2
 	github.com/peterbourgon/ff/v4 v4.0.0-alpha.4
+	github.com/quic-go/quic-go v0.40.1
 	github.com/refraction-networking/conjure v0.7.11-0.20240130155008-c8df96195ab2
 	github.com/refraction-networking/utls v1.3.3
 	golang.org/x/crypto v0.18.0
@@ -35,18 +38,15 @@ require (
 	github.com/bifurcation/mint v0.0.0-20180306135233-198357931e61 // indirect
 	github.com/cheekybits/genny v0.0.0-20170328200008-9127e812e1e9 // indirect
 	github.com/cognusion/go-cache-lru v0.0.0-20170419142635-f73e2280ecea // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dchest/siphash v1.2.3 // indirect
 	github.com/dgraph-io/badger v1.5.4-0.20180815194500-3a87f6d9c273 // indirect
 	github.com/dgryski/go-farm v0.0.0-20180109070241-2de33835d102 // indirect
-	github.com/flynn/noise v1.1.0 // indirect
 	github.com/gaukas/godicttls v0.0.4 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/btree v1.0.1 // indirect
 	github.com/google/pprof v0.0.0-20211214055906-6f57359322fd // indirect
 	github.com/grafov/m3u8 v0.0.0-20171211212457-6ab8f28ed427 // indirect
-	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/juju/ratelimit v1.0.2 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/libp2p/go-reuseport v0.4.0 // indirect
@@ -63,7 +63,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/qtls-go1-20 v0.4.1 // indirect
-	github.com/quic-go/quic-go v0.40.1 // indirect
 	github.com/refraction-networking/ed25519 v0.1.2 // indirect
 	github.com/refraction-networking/gotapdance v1.7.10 // indirect
 	github.com/refraction-networking/obfs4 v0.1.2 // indirect

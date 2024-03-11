@@ -4,11 +4,10 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"net/netip"
 	"strings"
 
 	"github.com/go-ini/ini"
-
-	"net/netip"
 )
 
 type PeerConfig struct {

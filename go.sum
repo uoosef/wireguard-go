@@ -24,8 +24,6 @@ github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/armon/go-proxyproto v0.0.0-20180202201750-5b7edb60ff5f h1:SaJ6yqg936TshyeFZqQE+N+9hYkIeL9AMr7S4voCl10=
 github.com/armon/go-proxyproto v0.0.0-20180202201750-5b7edb60ff5f/go.mod h1:QmP9hvJ91BbJmGVGSbutW19IC0Q9phDCLGaomwTJbgU=
-github.com/bepass-org/ipscanner v0.0.0-20240205155121-8927b7437d16 h1:Fa/PA9jH+S3yzGZhPHhJl+DvmReOq3BIB+5OzhJSLTQ=
-github.com/bepass-org/ipscanner v0.0.0-20240205155121-8927b7437d16/go.mod h1:ZDON74kRVPv/FSJPzoqYAyffLdZf+pjZqYGXrebHrxI=
 github.com/bepass-org/proxy v0.0.0-20240201095508-c86216dd0aea h1:6GKkjxDUxqq7uwA8U15N4PFURhdNN0OrxFuXc58MGUU=
 github.com/bepass-org/proxy v0.0.0-20240201095508-c86216dd0aea/go.mod h1:RlF0oO3D6Ju6VYjtL1I6lVLdc3l8jA4ggleJc8S+P0Y=
 github.com/bepass-org/psiphon-tunnel-core v0.0.0-20240223214330-9783d71283bc h1:KIQYHx0JeiV8U/e0aR8ss3MZP2jmVr3/xIisjmDQrXY=

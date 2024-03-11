@@ -43,7 +43,7 @@ func RunWarp(ctx context.Context, opts WarpOptions) error {
 		return errors.New("must provide country for psiphon")
 	}
 
-	//create necessary file structures
+	// create necessary file structures
 	if err := makeDirs(); err != nil {
 		return err
 	}
@@ -55,19 +55,22 @@ func RunWarp(ctx context.Context, opts WarpOptions) error {
 	}
 	log.Println("Changed working directory to 'stuff'")
 
-	//create identities
+	// create identities
 	if err := createPrimaryAndSecondaryIdentities(opts.License); err != nil {
 		return err
 	}
 
-	//Decide Working Scenario
+	// Decide Working Scenario
 	endpoints := []string{opts.Endpoint, opts.Endpoint}
 
 	if opts.Scan != nil {
-		var err error
-		endpoints, err = wiresocks.RunScan(ctx, opts.Scan.MaxRTT)
+		res, err := wiresocks.RunScan(ctx, opts.Scan.MaxRTT)
 		if err != nil {
 			return err
+		}
+		endpoints = make([]string, len(res))
+		for i := 0; i < len(res); i++ {
+			endpoints[i] = res[i].String()
 		}
 	}
 
@@ -219,7 +222,7 @@ func makeDirs() error {
 
 	// Check if 'stuff' directory exists, if not create it
 	if _, err := os.Stat(stuffDir); os.IsNotExist(err) {
-		if err := os.Mkdir(stuffDir, 0755); err != nil {
+		if err := os.Mkdir(stuffDir, 0o755); err != nil {
 			return fmt.Errorf("error creating 'stuff' directory: %w", err)
 		}
 	}
@@ -227,7 +230,7 @@ func makeDirs() error {
 	// Create 'primary' and 'secondary' directories if they don't exist
 	for _, dir := range []string{primaryDir, secondaryDir} {
 		if _, err := os.Stat(filepath.Join(stuffDir, dir)); os.IsNotExist(err) {
-			if err := os.Mkdir(filepath.Join(stuffDir, dir), 0755); err != nil {
+			if err := os.Mkdir(filepath.Join(stuffDir, dir), 0o755); err != nil {
 				return fmt.Errorf("error creating '%s' directory: %w", dir, err)
 			}
 		}

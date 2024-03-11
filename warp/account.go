@@ -30,8 +30,10 @@ var (
 	dc           = 0
 )
 
-var defaultHeaders = makeDefaultHeaders()
-var client = makeClient()
+var (
+	defaultHeaders = makeDefaultHeaders()
+	client         = makeClient()
+)
 
 type AccountData struct {
 	AccountID   string `json:"account_id"`
@@ -281,7 +283,6 @@ func enableWarp(accountData *AccountData) error {
 }
 
 func getServerConf(accountData *AccountData) (*ConfigurationData, error) {
-
 	req, err := http.NewRequest("GET", getConfigURL(accountData.AccountID), nil)
 	if err != nil {
 		return nil, err
@@ -347,7 +348,6 @@ func getServerConf(accountData *AccountData) (*ConfigurationData, error) {
 }
 
 func updateLicenseKey(accountData *AccountData, confData *ConfigurationData) (bool, error) {
-
 	if confData.AccountType == "free" && accountData.LicenseKey != "" {
 
 		data := map[string]interface{}{
@@ -400,7 +400,6 @@ func updateLicenseKey(accountData *AccountData, confData *ConfigurationData) (bo
 }
 
 func getDeviceActive(accountData *AccountData) (bool, error) {
-
 	req, err := http.NewRequest("GET", getDevicesURL(accountData.AccountID), nil)
 	if err != nil {
 		return false, err
@@ -440,7 +439,6 @@ func getDeviceActive(accountData *AccountData) (bool, error) {
 }
 
 func setDeviceActive(accountData *AccountData, status bool) (bool, error) {
-
 	data := map[string]interface{}{
 		"active": status,
 	}
@@ -487,7 +485,6 @@ func setDeviceActive(accountData *AccountData, status bool) (bool, error) {
 }
 
 func getWireguardConfig(privateKey, address1, address2, publicKey, endpoint string) string {
-
 	var buffer bytes.Buffer
 
 	buffer.WriteString("[Interface]\n")
@@ -507,11 +504,10 @@ func getWireguardConfig(privateKey, address1, address2, publicKey, endpoint stri
 }
 
 func createConf(accountData *AccountData, confData *ConfigurationData) error {
-
 	config := getWireguardConfig(accountData.PrivateKey, confData.LocalAddressIPv4,
 		confData.LocalAddressIPv6, confData.EndpointPublicKey, confData.EndpointAddressHost)
 
-	return os.WriteFile(profileFile, []byte(config), 0600)
+	return os.WriteFile(profileFile, []byte(config), 0o600)
 }
 
 func LoadOrCreateIdentity(license string) error {
@@ -597,6 +593,7 @@ func fileExist(f string) bool {
 	}
 	return true
 }
+
 func removeFile(f string) {
 	if fileExist(f) {
 		e := os.Remove(f)
@@ -635,7 +632,6 @@ func CheckProfileExists(license string) bool {
 }
 
 func RemoveDevice(account AccountData) error {
-
 	headers := map[string]string{
 		"Content-Type":      "application/json",
 		"User-Agent":        "okhttp/3.12.1",
