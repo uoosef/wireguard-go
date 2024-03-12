@@ -1,6 +1,7 @@
 package ping
 
 import (
+	"errors"
 	"fmt"
 	"net/netip"
 
@@ -12,56 +13,52 @@ type Ping struct {
 }
 
 // DoPing performs a ping on the given IP address.
-func (p *Ping) DoPing(ip netip.Addr) (int, error) {
-	var sum, ops, hp, tp int
-	var err error
+func (p *Ping) DoPing(ip netip.Addr) (statute.IPInfo, error) {
 	if p.Options.SelectedOps&statute.HTTPPing > 0 {
-		hp, err = p.httpPing(ip)
+		res, err := p.httpPing(ip)
 		if err != nil {
-			return 0, err
+			return statute.IPInfo{}, err
 		}
-		ops++
-		sum += hp
+
+		return res, nil
 	}
 	if p.Options.SelectedOps&statute.TLSPing > 0 {
-		tp, err = p.tlsPing(ip)
+		res, err := p.tlsPing(ip)
 		if err != nil {
-			return 0, err
+			return statute.IPInfo{}, err
 		}
-		ops++
-		sum += tp
+
+		return res, nil
 	}
 	if p.Options.SelectedOps&statute.TCPPing > 0 {
-		tp, err = p.tcpPing(ip)
+		res, err := p.tcpPing(ip)
 		if err != nil {
-			return 0, err
+			return statute.IPInfo{}, err
 		}
-		ops++
-		sum += tp
+
+		return res, nil
 	}
 	if p.Options.SelectedOps&statute.QUICPing > 0 {
-		tp, err = p.quicPing(ip)
+		res, err := p.quicPing(ip)
 		if err != nil {
-			return 0, err
+			return statute.IPInfo{}, err
 		}
-		ops++
-		sum += tp
+
+		return res, nil
 	}
 	if p.Options.SelectedOps&statute.WARPPing > 0 {
-		tp, err = p.warpPing(ip)
+		res, err := p.warpPing(ip)
 		if err != nil {
-			return 0, err
+			return statute.IPInfo{}, err
 		}
-		ops++
-		sum += tp
+
+		return res, nil
 	}
-	if ops == 0 {
-		return 99, nil
-	}
-	return sum / ops, nil
+
+	return statute.IPInfo{}, errors.New("no ping operation selected")
 }
 
-func (p *Ping) httpPing(ip netip.Addr) (int, error) {
+func (p *Ping) httpPing(ip netip.Addr) (statute.IPInfo, error) {
 	return p.calc(
 		NewHttpPing(
 			ip,
@@ -77,38 +74,33 @@ func (p *Ping) httpPing(ip netip.Addr) (int, error) {
 	)
 }
 
-func (p *Ping) warpPing(ip netip.Addr) (int, error) {
-	return p.calc(
-		NewWarpPing(
-			ip,
-			p.Options,
-		),
-	)
+func (p *Ping) warpPing(ip netip.Addr) (statute.IPInfo, error) {
+	return p.calc(NewWarpPing(ip, p.Options))
 }
 
-func (p *Ping) tlsPing(ip netip.Addr) (int, error) {
+func (p *Ping) tlsPing(ip netip.Addr) (statute.IPInfo, error) {
 	return p.calc(
 		NewTlsPing(ip, p.Options.Hostname, p.Options.Port, p.Options),
 	)
 }
 
-func (p *Ping) tcpPing(ip netip.Addr) (int, error) {
+func (p *Ping) tcpPing(ip netip.Addr) (statute.IPInfo, error) {
 	return p.calc(
 		NewTcpPing(ip, p.Options.Hostname, p.Options.Port, p.Options),
 	)
 }
 
-func (p *Ping) quicPing(ip netip.Addr) (int, error) {
+func (p *Ping) quicPing(ip netip.Addr) (statute.IPInfo, error) {
 	return p.calc(
 		NewQuicPing(ip, p.Options.Hostname, p.Options.Port, p.Options),
 	)
 }
 
-func (p *Ping) calc(tp statute.IPing) (int, error) {
+func (p *Ping) calc(tp statute.IPing) (statute.IPInfo, error) {
 	pr := tp.Ping()
 	err := pr.Error()
 	if err != nil {
-		return 0, err
+		return statute.IPInfo{}, err
 	}
 	return pr.Result(), nil
 }

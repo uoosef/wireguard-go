@@ -68,11 +68,15 @@ func RunWarp(ctx context.Context, opts WarpOptions) error {
 		if err != nil {
 			return err
 		}
+
+		log.Printf("scan results: %+v", res)
+
 		endpoints = make([]string, len(res))
 		for i := 0; i < len(res); i++ {
-			endpoints[i] = res[i].String()
+			endpoints[i] = res[i].AddrPort.String()
 		}
 	}
+	log.Printf("using warp endpoints: %+v", endpoints)
 
 	var warpErr error
 	switch {

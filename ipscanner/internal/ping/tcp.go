@@ -2,23 +2,22 @@ package ping
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"net"
 	"net/netip"
-	"strconv"
 	"time"
 
 	"github.com/bepass-org/wireguard-go/ipscanner/internal/statute"
 )
 
 type TcpPingResult struct {
-	Time int
-	Err  error
-	IP   netip.Addr
+	AddrPort netip.AddrPort
+	RTT      time.Duration
+	Err      error
 }
 
-func (tp *TcpPingResult) Result() int {
-	return tp.Time
+func (tp *TcpPingResult) Result() statute.IPInfo {
+	return statute.IPInfo{AddrPort: tp.AddrPort, RTT: tp.RTT, CreatedAt: time.Now()}
 }
 
 func (tp *TcpPingResult) Error() error {
@@ -29,13 +28,13 @@ func (tp *TcpPingResult) String() string {
 	if tp.Err != nil {
 		return fmt.Sprintf("%s", tp.Err)
 	} else {
-		return fmt.Sprintf("%s: time=%d ms", tp.IP.String(), tp.Time)
+		return fmt.Sprintf("%s: time=%d ms", tp.AddrPort, tp.RTT)
 	}
 }
 
 type TcpPing struct {
 	host string
-	Port uint16
+	port uint16
 	ip   netip.Addr
 
 	opts statute.ScannerOptions
@@ -55,25 +54,26 @@ func (tp *TcpPing) Ping() statute.IPingResult {
 }
 
 func (tp *TcpPing) PingContext(ctx context.Context) statute.IPingResult {
-	ip := statute.CloneIP(tp.ip)
-	if !ip.IsValid() {
-		return &TcpPingResult{0, fmt.Errorf("no IP specified"), netip.Addr{}}
+	if !tp.ip.IsValid() {
+		return &TcpPingResult{AddrPort: netip.AddrPort{}, RTT: 0, Err: errors.New("no IP specified")}
 	}
+
+	addr := netip.AddrPortFrom(tp.ip, tp.port)
 	t0 := time.Now()
-	conn, err := tp.opts.RawDialerFunc(ctx, "tcp", net.JoinHostPort(ip.String(), strconv.FormatUint(uint64(tp.Port), 10)))
+	conn, err := tp.opts.RawDialerFunc(ctx, "tcp", addr.String())
 	if err != nil {
-		return &TcpPingResult{0, err, netip.Addr{}}
+		return &TcpPingResult{AddrPort: addr, RTT: 0, Err: err}
 	}
 	defer conn.Close()
-	return &TcpPingResult{int(time.Since(t0).Milliseconds()), nil, ip}
+
+	return &TcpPingResult{AddrPort: addr, RTT: time.Since(t0), Err: nil}
 }
 
 func NewTcpPing(ip netip.Addr, host string, port uint16, opts *statute.ScannerOptions) *TcpPing {
 	return &TcpPing{
 		host: host,
-		Port: port,
+		port: port,
 		ip:   ip,
-
 		opts: *opts,
 	}
 }

@@ -25,7 +25,7 @@ func canConnectIPv6(remoteAddr netip.AddrPort) bool {
 	return true
 }
 
-func RunScan(ctx context.Context, rtt time.Duration) (result []netip.AddrPort, err error) {
+func RunScan(ctx context.Context, rtt time.Duration) (result []ipscanner.IPInfo, err error) {
 	cfg, err := ini.Load("./primary/wgcf-profile.ini")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file: %w", err)
@@ -44,34 +44,34 @@ func RunScan(ctx context.Context, rtt time.Duration) (result []netip.AddrPort, e
 		ipscanner.WithWarpPeerPublicKey(publicKey),
 		ipscanner.WithUseIPv6(canConnectIPv6(netip.MustParseAddrPort("[2001:4860:4860::8888]:80"))),
 		ipscanner.WithUseIPv4(true),
-		ipscanner.WithMaxDesirableRTT(int(rtt.Milliseconds())),
+		ipscanner.WithMaxDesirableRTT(rtt),
 		ipscanner.WithCidrList(warp.WarpPrefixes()),
 	)
 
-	scanner.Run()
-	timeoutTimer := time.NewTimer(2 * time.Minute)
-	defer timeoutTimer.Stop()
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	defer cancel()
+
+	scanner.Run(ctx)
+
+	t := time.NewTicker(1 * time.Second)
+	defer t.Stop()
 
 	for {
+		ipList := scanner.GetAvailableIPs()
+		if len(ipList) > 1 {
+			for i := 0; i < 2; i++ {
+				result = append(result, ipList[i])
+			}
+			return result, nil
+		}
+
 		select {
 		case <-ctx.Done():
 			// Context is done - canceled externally
-			scanner.Stop()
 			return nil, fmt.Errorf("user canceled the operation")
-		case <-timeoutTimer.C:
-			// Handle the internal timeout
-			scanner.Stop()
-			return nil, fmt.Errorf("scanner maximum time exceeded")
-		default:
-			ipList := scanner.GetAvailableIPs()
-			if len(ipList) > 1 {
-				scanner.Stop()
-				for i := 0; i < 2; i++ {
-					result = append(result, netip.AddrPortFrom(ipList[i], warp.RandomWarpPort()))
-				}
-				return result, nil
-			}
-			time.Sleep(1 * time.Second) // Prevent the loop from spinning too fast
+		case <-t.C:
+			// Prevent the loop from spinning too fast
+			continue
 		}
 	}
 }

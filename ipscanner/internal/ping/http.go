@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/netip"
 	"net/url"
@@ -14,16 +13,16 @@ import (
 )
 
 type HttpPingResult struct {
-	Time   int
-	Proto  string
-	Status int
-	Length int
-	Err    error
-	IP     netip.Addr
+	AddrPort netip.AddrPort
+	Proto    string
+	Status   int
+	Length   int
+	RTT      time.Duration
+	Err      error
 }
 
-func (h *HttpPingResult) Result() int {
-	return h.Time
+func (h *HttpPingResult) Result() statute.IPInfo {
+	return statute.IPInfo{AddrPort: h.AddrPort, RTT: h.RTT, CreatedAt: time.Now()}
 }
 
 func (h *HttpPingResult) Error() error {
@@ -33,9 +32,9 @@ func (h *HttpPingResult) Error() error {
 func (h *HttpPingResult) String() string {
 	if h.Err != nil {
 		return fmt.Sprintf("%s", h.Err)
-	} else {
-		return fmt.Sprintf("%s: protocol=%s, status=%d, length=%d, time=%d ms", h.IP.String(), h.Proto, h.Status, h.Length, h.Time)
 	}
+
+	return fmt.Sprintf("%s: protocol=%s, status=%d, length=%d, time=%d ms", h.AddrPort, h.Proto, h.Status, h.Length, h.RTT)
 }
 
 type HttpPing struct {
@@ -56,16 +55,10 @@ func (h *HttpPing) PingContext(ctx context.Context) statute.IPingResult {
 		return h.errorResult(err)
 	}
 	orighost := u.Host
-	port := u.Port()
-	ip := statute.CloneIP(h.IP)
-	if !ip.IsValid() {
+
+	if !h.IP.IsValid() {
 		return h.errorResult(fmt.Errorf("no IP specified"))
 	}
-	ipstr := ip.String()
-	if statute.IsIPv6(ip) {
-		ipstr = fmt.Sprintf("[%s]", ipstr)
-	}
-	targetAddr := net.JoinHostPort(ipstr, port)
 
 	req, err := http.NewRequestWithContext(ctx, h.Method, h.URL, nil)
 	if err != nil {
@@ -81,22 +74,35 @@ func (h *HttpPing) PingContext(ctx context.Context) statute.IPingResult {
 	}
 	req.Host = orighost
 
-	client := h.opts.HttpClientFunc(h.opts.RawDialerFunc, h.opts.TLSDialerFunc, h.opts.QuicDialerFunc, targetAddr)
+	addr := netip.AddrPortFrom(h.IP, h.opts.Port)
+	client := h.opts.HttpClientFunc(h.opts.RawDialerFunc, h.opts.TLSDialerFunc, h.opts.QuicDialerFunc, addr.String())
 
 	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}
+
 	t0 := time.Now()
 	resp, err := client.Do(req)
 	if err != nil {
 		return h.errorResult(err)
 	}
+
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return h.errorResult(err)
 	}
-	return &HttpPingResult{int(time.Since(t0).Milliseconds()), resp.Proto, resp.StatusCode, len(body), nil, ip}
+
+	res := HttpPingResult{
+		AddrPort: addr,
+		Proto:    resp.Proto,
+		Status:   resp.StatusCode,
+		Length:   len(body),
+		RTT:      time.Since(t0),
+		Err:      nil,
+	}
+
+	return &res
 }
 
 func (h *HttpPing) errorResult(err error) *HttpPingResult {

@@ -168,30 +168,6 @@ func DefaultQuicDialerFunc(ctx context.Context, addr string, _ *tls.Config, _ *q
 	return quic.DialAddrEarly(ctx, addr, defaultTLSConfig(addr), quicConfig)
 }
 
-// default logger
-
-type Logger interface {
-	Debug(s string, v ...interface{})
-	Error(s string, v ...interface{})
-}
-
-type DefaultLogger struct{}
-
-func (l DefaultLogger) Debug(s string, v ...interface{}) {
-	fmt.Printf(fmt.Sprintf("%s\r\n", s), v...)
-}
-
-func (l DefaultLogger) Error(s string, v ...interface{}) {
-	fmt.Printf(fmt.Sprintf("%s\r\n", s), v...)
-}
-
-func DefaultIPQueueChangeCallback(ips []IPInfo) {
-	fmt.Printf("queue change: %d\r\n", len(ips))
-	for _, ip := range ips {
-		fmt.Printf("IP:%s\tRTT:%d\tTS:%s\r\n", ip.IP.String(), ip.RTT, ip.CreatedAt.String())
-	}
-}
-
 func DefaultCFRanges() []netip.Prefix {
 	return []netip.Prefix{
 		netip.MustParsePrefix("103.21.244.0/22"),

@@ -15,20 +15,19 @@ import (
 
 	"github.com/bepass-org/wireguard-go/ipscanner/internal/statute"
 	"github.com/bepass-org/wireguard-go/warp"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/flynn/noise"
 	"golang.org/x/crypto/blake2s"
 	"golang.org/x/crypto/curve25519"
 )
 
 type WarpPingResult struct {
-	Time int
-	Err  error
-	IP   netip.Addr
+	AddrPort netip.AddrPort
+	RTT      time.Duration
+	Err      error
 }
 
-func (h *WarpPingResult) Result() int {
-	return h.Time
+func (h *WarpPingResult) Result() statute.IPInfo {
+	return statute.IPInfo{AddrPort: h.AddrPort, RTT: h.RTT, CreatedAt: time.Now()}
 }
 
 func (h *WarpPingResult) Error() error {
@@ -39,7 +38,7 @@ func (h *WarpPingResult) String() string {
 	if h.Err != nil {
 		return fmt.Sprintf("%s", h.Err)
 	} else {
-		return fmt.Sprintf("%s: protocol=%s, time=%d ms", h.IP.String(), "warp", h.Time)
+		return fmt.Sprintf("%s: protocol=%s, time=%d ms", h.AddrPort, "warp", h.RTT)
 	}
 }
 
@@ -57,10 +56,9 @@ func (h *WarpPing) Ping() statute.IPingResult {
 }
 
 func (h *WarpPing) PingContext(_ context.Context) statute.IPingResult {
-	t0 := time.Now()
-
-	err := initiateHandshake(
-		netip.AddrPortFrom(h.IP, warp.RandomWarpPort()),
+	addr := netip.AddrPortFrom(h.IP, warp.RandomWarpPort())
+	rtt, err := initiateHandshake(
+		addr,
 		h.PrivateKey,
 		h.PeerPublicKey,
 		h.PresharedKey,
@@ -68,7 +66,8 @@ func (h *WarpPing) PingContext(_ context.Context) statute.IPingResult {
 	if err != nil {
 		return h.errorResult(err)
 	}
-	return &WarpPingResult{int(time.Since(t0).Milliseconds()), nil, h.IP}
+
+	return &WarpPingResult{AddrPort: addr, RTT: rtt, Err: nil}
 }
 
 func (h *WarpPing) errorResult(err error) *WarpPingResult {
@@ -126,20 +125,20 @@ func randomInt(min, max int) int {
 	return int(nBig.Int64()) + min
 }
 
-func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKeyBase64, presharedKeyBase64 string) error {
+func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKeyBase64, presharedKeyBase64 string) (time.Duration, error) {
 	staticKeyPair, err := staticKeypair(privateKeyBase64)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	peerPublicKey, err := base64.StdEncoding.DecodeString(peerPublicKeyBase64)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	presharedKey, err := base64.StdEncoding.DecodeString(presharedKeyBase64)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if presharedKeyBase64 == "" {
@@ -148,7 +147,7 @@ func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKe
 
 	ephemeral, err := ephemeralKeypair()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	cs := noise.NewCipherSuite(noise.DH25519, noise.CipherChaChaPoly, noise.HashBLAKE2s)
@@ -165,7 +164,7 @@ func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKe
 		Random:                rand.Reader,
 	})
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// Prepare handshake initiation packet
@@ -179,7 +178,7 @@ func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKe
 	tai64nTimestampBuf = binary.BigEndian.AppendUint32(tai64nTimestampBuf, uint32(now.Nanosecond()))
 	msg, _, _, err := hs.WriteMessage(nil, tai64nTimestampBuf)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	initiationPacket := new(bytes.Buffer)
@@ -190,11 +189,11 @@ func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKe
 	macKey := blake2s.Sum256(append([]byte("mac1----"), peerPublicKey...))
 	hasher, err := blake2s.New128(macKey[:]) // using macKey as the key
 	if err != nil {
-		return err
+		return 0, err
 	}
 	_, err = hasher.Write(initiationPacket.Bytes())
 	if err != nil {
-		return err
+		return 0, err
 	}
 	initiationPacketMAC := hasher.Sum(nil)
 
@@ -204,7 +203,7 @@ func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKe
 
 	conn, err := net.Dial("udp", serverAddr.String())
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer conn.Close()
 
@@ -216,36 +215,40 @@ func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKe
 		randomPacket := make([]byte, packetSize)
 		_, err := rand.Read(randomPacket)
 		if err != nil {
-			return fmt.Errorf("error generating random packet: %w", err)
+			return 0, fmt.Errorf("error generating random packet: %w", err)
 		}
 
 		// Send the random packet
 		_, err = conn.Write(randomPacket)
 		if err != nil {
-			return fmt.Errorf("error sending random packet: %w", err)
+			return 0, fmt.Errorf("error sending random packet: %w", err)
 		}
 
 		// Wait for a random duration between 200 and 500 milliseconds
 		time.Sleep(time.Duration(randomInt(200, 500)) * time.Millisecond)
 	}
 
-	// spew.Dump(initiationPacket)
 	_, err = initiationPacket.WriteTo(conn)
 	if err != nil {
-		return err
+		return 0, err
 	}
+	t0 := time.Now()
 
 	response := make([]byte, 92)
 	conn.SetReadDeadline(time.Now().Add(5 * time.Second))
 	i, err := conn.Read(response)
-	fmt.Println("server response, len+packet: ", i, response[12:60])
 	if err != nil {
-		return err
+		return 0, err
+	}
+	rtt := time.Since(t0)
+
+	if i < 60 {
+		return 0, fmt.Errorf("invalid handshake response length %d bytes", i)
 	}
 
 	// Check the response type
 	if response[0] != 2 { // 2 is the message type for response
-		return errors.New("invalid response type")
+		return 0, errors.New("invalid response type")
 	}
 
 	// Extract sender and receiver index from the response
@@ -254,23 +257,20 @@ func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKe
 	// our index(we set it to 28)
 	ourIndex := binary.LittleEndian.Uint32(response[8:12])
 	if ourIndex != 28 { // Check if the response corresponds to our sender index
-		return errors.New("invalid sender index in response")
+		return 0, errors.New("invalid sender index in response")
 	}
 
 	payload, _, _, err := hs.ReadMessage(nil, response[12:60])
-	spew.Dump(payload)
 	if err != nil {
-		spew.Dump(err)
-		return err
+		return 0, err
 	}
 
 	// Check if the payload is empty (as expected in WireGuard handshake)
 	if len(payload) != 0 {
-		return errors.New("unexpected payload in response")
+		return 0, errors.New("unexpected payload in response")
 	}
 
-	fmt.Println("Handshake completed successfully")
-	return nil
+	return rtt, nil
 }
 
 func NewWarpPing(ip netip.Addr, opts *statute.ScannerOptions) *WarpPing {

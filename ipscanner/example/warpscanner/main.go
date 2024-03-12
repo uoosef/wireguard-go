@@ -1,13 +1,18 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log/slog"
 	"net"
 	"net/netip"
+	"os"
 	"time"
 
 	"github.com/bepass-org/wireguard-go/ipscanner"
+	"github.com/bepass-org/wireguard-go/ipscanner/internal/statute"
 	"github.com/bepass-org/wireguard-go/warp"
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
 )
 
 var (
@@ -30,34 +35,59 @@ func canConnectIPv6(remoteAddr netip.AddrPort) bool {
 	return true
 }
 
-func RunScan(privKey, pubKey string) (result []netip.AddrPort) {
+func RunScan(privKey, pubKey string) (result []statute.IPInfo) {
 	// new scanner
 	scanner := ipscanner.NewScanner(
+		ipscanner.WithLogger(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))),
 		ipscanner.WithWarpPing(),
 		ipscanner.WithWarpPrivateKey(privKey),
 		ipscanner.WithWarpPeerPublicKey(pubKey),
 		ipscanner.WithUseIPv6(canConnectIPv6(googlev6DNSAddr80)),
 		ipscanner.WithUseIPv4(true),
-		ipscanner.WithMaxDesirableRTT(500),
+		ipscanner.WithMaxDesirableRTT(500*time.Millisecond),
 		ipscanner.WithCidrList(warp.WarpPrefixes()),
 	)
-	scanner.Run()
-	var ipList []netip.Addr
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	scanner.Run(ctx)
+
+	t := time.NewTicker(1 * time.Second)
+	defer t.Stop()
+
 	for {
-		ipList = scanner.GetAvailableIPs()
-		if len(ipList) > 2 {
-			scanner.Stop()
-			break
+		ipList := scanner.GetAvailableIPs()
+		if len(ipList) > 1 {
+			for i := 0; i < 2; i++ {
+				result = append(result, ipList[i])
+			}
+			return
 		}
-		time.Sleep(1 * time.Second)
+
+		select {
+		case <-ctx.Done():
+			// Context is done
+			return
+		case <-t.C:
+			// Prevent the loop from spinning too fast
+			continue
+		}
 	}
-	for i := 0; i < 2; i++ {
-		result = append(result, netip.AddrPortFrom(ipList[i], warp.RandomWarpPort()))
-	}
-	return
 }
 
 func main() {
-	fmt.Println(RunScan(privKey, pubKey))
-	time.Sleep(10 * time.Second)
+	result := RunScan(privKey, pubKey)
+
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+	tbl := table.New("Address", "RTT (ping)", "Time")
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+	for _, info := range result {
+		tbl.AddRow(info.AddrPort, info.RTT, info.CreatedAt)
+	}
+
+	tbl.Print()
 }

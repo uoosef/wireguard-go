@@ -8,7 +8,7 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Psiphon-Labs/psiphon-tunnel-core v2.0.28+incompatible
 	github.com/bepass-org/proxy v0.0.0-20240201095508-c86216dd0aea
-	github.com/davecgh/go-spew v1.1.1
+	github.com/fatih/color v1.16.0
 	github.com/flynn/noise v1.1.0
 	github.com/go-ini/ini v1.67.0
 	github.com/hashicorp/golang-lru v1.0.2
@@ -16,6 +16,7 @@ require (
 	github.com/quic-go/quic-go v0.40.1
 	github.com/refraction-networking/conjure v0.7.11-0.20240130155008-c8df96195ab2
 	github.com/refraction-networking/utls v1.3.3
+	github.com/rodaine/table v1.1.1
 	golang.org/x/crypto v0.19.0
 	golang.org/x/net v0.21.0
 	golang.org/x/sys v0.17.0
@@ -48,6 +49,8 @@ require (
 	github.com/juju/ratelimit v1.0.2 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/libp2p/go-reuseport v0.4.0 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/miekg/dns v1.1.44-0.20210804161652-ab67aa642300 // indirect
 	github.com/mroth/weightedrand v1.0.0 // indirect
 	github.com/onsi/ginkgo/v2 v2.9.5 // indirect

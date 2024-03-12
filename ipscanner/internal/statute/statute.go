@@ -3,6 +3,7 @@ package statute
 import (
 	"context"
 	"crypto/tls"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/netip"
@@ -28,8 +29,8 @@ var (
 )
 
 type IPInfo struct {
-	IP        netip.Addr
-	RTT       int
+	AddrPort  netip.AddrPort
+	RTT       time.Duration
 	CreatedAt time.Time
 }
 
@@ -38,7 +39,7 @@ type ScannerOptions struct {
 	UseIPv6               bool
 	CidrList              []netip.Prefix // CIDR ranges to scan
 	SelectedOps           int
-	Logger                Logger
+	Logger                *slog.Logger
 	InsecureSkipVerify    bool
 	RawDialerFunc         TDialerFunc
 	TLSDialerFunc         TDialerFunc
@@ -57,7 +58,7 @@ type ScannerOptions struct {
 	Port                  uint16
 	IPQueueSize           int
 	IPQueueTTL            time.Duration
-	MaxDesirableRTT       int
+	MaxDesirableRTT       time.Duration
 	IPQueueChangeCallback TIPQueueChangeCallback
 	ConnectionTimeout     time.Duration
 	HandshakeTimeout      time.Duration

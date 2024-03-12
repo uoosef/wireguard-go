@@ -4,11 +4,10 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"net/netip"
 )
 
 type IPingResult interface {
-	Result() int
+	Result() IPInfo
 	Error() error
 	fmt.Stringer
 }
@@ -33,16 +32,4 @@ func TlsVersionToString(ver uint16) string {
 	default:
 		return "unknown"
 	}
-}
-
-func IsIPv4(ip netip.Addr) bool {
-	return ip.Is4()
-}
-
-func IsIPv6(ip netip.Addr) bool {
-	return ip.Is6()
-}
-
-func CloneIP(ip netip.Addr) netip.Addr {
-	return ip
 }

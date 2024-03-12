@@ -1,7 +1,9 @@
 package ipscanner
 
 import (
+	"context"
 	"crypto/tls"
+	"log/slog"
 	"net/netip"
 	"time"
 
@@ -11,44 +13,42 @@ import (
 
 type IPScanner struct {
 	options statute.ScannerOptions
-	logger  statute.Logger
+	log     *slog.Logger
 	engine  *engine.Engine
-	// onChange func([]netip.Addr)
 }
 
 func NewScanner(options ...Option) *IPScanner {
 	p := &IPScanner{
 		options: statute.ScannerOptions{
-			UseIPv4:               true,
-			UseIPv6:               true,
-			CidrList:              statute.DefaultCFRanges(),
-			SelectedOps:           0,
-			Logger:                statute.DefaultLogger{},
-			InsecureSkipVerify:    true,
-			RawDialerFunc:         statute.DefaultDialerFunc,
-			TLSDialerFunc:         statute.DefaultTLSDialerFunc,
-			QuicDialerFunc:        statute.DefaultQuicDialerFunc,
-			HttpClientFunc:        statute.DefaultHTTPClientFunc,
-			UseHTTP3:              false,
-			UseHTTP2:              false,
-			DisableCompression:    false,
-			HTTPPath:              "/",
-			Referrer:              "",
-			UserAgent:             "Chrome/80.0.3987.149",
-			Hostname:              "www.cloudflare.com",
-			WarpPresharedKey:      "",
-			WarpPeerPublicKey:     "",
-			WarpPrivateKey:        "",
-			Port:                  443,
-			IPQueueSize:           8,
-			MaxDesirableRTT:       400,
-			IPQueueTTL:            30 * time.Second,
-			IPQueueChangeCallback: statute.DefaultIPQueueChangeCallback,
-			ConnectionTimeout:     1 * time.Second,
-			HandshakeTimeout:      1 * time.Second,
-			TlsVersion:            tls.VersionTLS13,
+			UseIPv4:            true,
+			UseIPv6:            true,
+			CidrList:           statute.DefaultCFRanges(),
+			SelectedOps:        0,
+			Logger:             slog.Default(),
+			InsecureSkipVerify: true,
+			RawDialerFunc:      statute.DefaultDialerFunc,
+			TLSDialerFunc:      statute.DefaultTLSDialerFunc,
+			QuicDialerFunc:     statute.DefaultQuicDialerFunc,
+			HttpClientFunc:     statute.DefaultHTTPClientFunc,
+			UseHTTP3:           false,
+			UseHTTP2:           false,
+			DisableCompression: false,
+			HTTPPath:           "/",
+			Referrer:           "",
+			UserAgent:          "Chrome/80.0.3987.149",
+			Hostname:           "www.cloudflare.com",
+			WarpPresharedKey:   "",
+			WarpPeerPublicKey:  "",
+			WarpPrivateKey:     "",
+			Port:               443,
+			IPQueueSize:        8,
+			MaxDesirableRTT:    400 * time.Millisecond,
+			IPQueueTTL:         30 * time.Second,
+			ConnectionTimeout:  1 * time.Second,
+			HandshakeTimeout:   1 * time.Second,
+			TlsVersion:         tls.VersionTLS13,
 		},
-		logger: statute.DefaultLogger{},
+		log: slog.Default(),
 	}
 
 	for _, option := range options {
@@ -132,8 +132,9 @@ func WithUserAgent(userAgent string) Option {
 	}
 }
 
-func WithLogger(logger statute.Logger) Option {
+func WithLogger(logger *slog.Logger) Option {
 	return func(i *IPScanner) {
+		i.log = logger
 		i.options.Logger = logger
 	}
 }
@@ -198,7 +199,7 @@ func WithIPQueueSize(size int) Option {
 	}
 }
 
-func WithMaxDesirableRTT(threshold int) Option {
+func WithMaxDesirableRTT(threshold time.Duration) Option {
 	return func(i *IPScanner) {
 		i.options.MaxDesirableRTT = threshold
 	}
@@ -207,12 +208,6 @@ func WithMaxDesirableRTT(threshold int) Option {
 func WithIPQueueTTL(ttl time.Duration) Option {
 	return func(i *IPScanner) {
 		i.options.IPQueueTTL = ttl
-	}
-}
-
-func WithIPQueueChangeCallback(callback statute.TIPQueueChangeCallback) Option {
-	return func(i *IPScanner) {
-		i.options.IPQueueChangeCallback = callback
 	}
 }
 
@@ -252,28 +247,20 @@ func WithWarpPreSharedKey(presharedKey string) Option {
 	}
 }
 
-func (i *IPScanner) SetIPQueueChangeCallback(callback statute.TIPQueueChangeCallback) {
-	i.options.IPQueueChangeCallback = callback
-}
-
 // run engine and in case of new event call onChange callback also if it gets canceled with context
 // cancel all operations
 
-func (i *IPScanner) Run() {
+func (i *IPScanner) Run(ctx context.Context) {
 	statute.FinalOptions = &i.options
 	if !i.options.UseIPv4 && !i.options.UseIPv6 {
-		i.logger.Error("Fatal: both IPv4 and IPv6 are disabled, nothing to do")
+		i.log.Error("Fatal: both IPv4 and IPv6 are disabled, nothing to do")
 		return
 	}
 	i.engine = engine.NewScannerEngine(&i.options)
-	go i.engine.Run()
+	go i.engine.Run(ctx)
 }
 
-func (i *IPScanner) Stop() {
-	i.engine.Cancel()
-}
-
-func (i *IPScanner) GetAvailableIPs() []netip.Addr {
+func (i *IPScanner) GetAvailableIPs() []statute.IPInfo {
 	if i.engine != nil {
 		return i.engine.GetAvailableIPs(false)
 	}

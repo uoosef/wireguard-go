@@ -3,7 +3,6 @@ package ping
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/netip"
 	"time"
 
@@ -14,15 +13,15 @@ import (
 )
 
 type QuicPingResult struct {
-	Time        int
-	Err         error
-	IP          netip.Addr
-	QUICVersion uint32
+	AddrPort    netip.AddrPort
+	QUICVersion quic.VersionNumber
 	TLSVersion  uint16
+	RTT         time.Duration
+	Err         error
 }
 
-func (h *QuicPingResult) Result() int {
-	return h.Time
+func (h *QuicPingResult) Result() statute.IPInfo {
+	return statute.IPInfo{AddrPort: h.AddrPort, RTT: h.RTT, CreatedAt: time.Now()}
 }
 
 func (h *QuicPingResult) Error() error {
@@ -32,9 +31,9 @@ func (h *QuicPingResult) Error() error {
 func (h *QuicPingResult) String() string {
 	if h.Err != nil {
 		return fmt.Sprintf("%s", h.Err)
-	} else {
-		return fmt.Sprintf("%s: quic=%s, tls=%s, time=%d ms", h.IP.String(), quic.VersionNumber(h.QUICVersion).String(), statute.TlsVersionToString(h.TLSVersion), h.Time)
 	}
+
+	return fmt.Sprintf("%s: quic=%s, tls=%s, time=%d ms", h.AddrPort, quic.VersionNumber(h.QUICVersion), statute.TlsVersionToString(h.TLSVersion), h.RTT)
 }
 
 type QuicPing struct {
@@ -50,20 +49,28 @@ func (h *QuicPing) Ping() statute.IPingResult {
 }
 
 func (h *QuicPing) PingContext(ctx context.Context) statute.IPingResult {
-	ip := statute.CloneIP(h.IP)
-	if !ip.IsValid() {
+	if !h.IP.IsValid() {
 		return h.errorResult(fmt.Errorf("no IP specified"))
 	}
-	addr := net.JoinHostPort(ip.String(), fmt.Sprint(h.Port))
+
+	addr := netip.AddrPortFrom(h.IP, h.Port)
 
 	t0 := time.Now()
-	conn, err := h.opts.QuicDialerFunc(ctx, addr, nil, nil)
+	conn, err := h.opts.QuicDialerFunc(ctx, addr.String(), nil, nil)
 	if err != nil {
 		return h.errorResult(err)
 	}
 
+	res := QuicPingResult{
+		AddrPort:    addr,
+		RTT:         time.Since(t0),
+		QUICVersion: conn.ConnectionState().Version,
+		TLSVersion:  conn.ConnectionState().TLS.Version,
+		Err:         nil,
+	}
+
 	defer conn.CloseWithError(quic.ApplicationErrorCode(uint64(http3.ErrCodeNoError)), "")
-	return &QuicPingResult{int(time.Since(t0).Milliseconds()), nil, ip, uint32(conn.ConnectionState().Version), conn.ConnectionState().TLS.Version}
+	return &res
 }
 
 func NewQuicPing(ip netip.Addr, host string, port uint16, opts *statute.ScannerOptions) *QuicPing {
@@ -71,7 +78,6 @@ func NewQuicPing(ip netip.Addr, host string, port uint16, opts *statute.ScannerO
 		IP:   ip,
 		Host: host,
 		Port: port,
-
 		opts: *opts,
 	}
 }
