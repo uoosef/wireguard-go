@@ -154,12 +154,12 @@ func (d *Dialer) makeTLSHelloPacketWithSNICurve(plainConn net.Conn, config *tls.
 	}
 	err := utlsConn.ApplyPreset(&spec)
 	if err != nil {
-		return nil, fmt.Errorf("uTlsConn.Handshake() error: %+v", err)
+		return nil, fmt.Errorf("uTlsConn.Handshake() error: %w", err)
 	}
 
 	err = utlsConn.Handshake()
 	if err != nil {
-		return nil, fmt.Errorf("uTlsConn.Handshake() error: %+v", err)
+		return nil, fmt.Errorf("uTlsConn.Handshake() error: %w", err)
 	}
 
 	return utlsConn, nil

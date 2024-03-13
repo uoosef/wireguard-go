@@ -2,6 +2,7 @@ package wiresocks
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/netip"
@@ -68,7 +69,7 @@ func RunScan(ctx context.Context, rtt time.Duration) (result []ipscanner.IPInfo,
 		select {
 		case <-ctx.Done():
 			// Context is done - canceled externally
-			return nil, fmt.Errorf("user canceled the operation")
+			return nil, errors.New("user canceled the operation")
 		case <-t.C:
 			// Prevent the loop from spinning too fast
 			continue

@@ -2,6 +2,7 @@ package iterator
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -229,7 +230,7 @@ func (g *IpGenerator) NextBatch() ([]netip.Addr, error) {
 			}
 			return g.NextBatch()
 		} else {
-			return nil, fmt.Errorf("no more IP addresses")
+			return nil, errors.New("no more IP addresses")
 		}
 	}
 	return results, nil

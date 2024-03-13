@@ -369,11 +369,11 @@ func RunPsiphon(wgBind, localSocksPort, country string, ctx context.Context) err
 		select {
 		case <-ctx.Done():
 			internalCtx.Done()
-			return fmt.Errorf("psiphon handshake operation canceled by user")
+			return errors.New("psiphon handshake operation canceled by user")
 		case <-timeoutTimer.C:
 			// Handle the internal timeout
 			internalCtx.Done()
-			return fmt.Errorf("psiphon handshake maximum time exceeded")
+			return errors.New("psiphon handshake maximum time exceeded")
 		default:
 			tunnel, err = StartTunnel(internalCtx, []byte(configJSON), "", p, nil, nil)
 			if err == nil {

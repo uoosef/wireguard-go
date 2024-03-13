@@ -2,6 +2,7 @@ package ping
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/netip"
 	"time"
@@ -46,7 +47,7 @@ func (t *TlsPing) Ping() statute.IPingResult {
 
 func (t *TlsPing) PingContext(ctx context.Context) statute.IPingResult {
 	if !t.IP.IsValid() {
-		return t.errorResult(fmt.Errorf("no IP specified"))
+		return t.errorResult(errors.New("no IP specified"))
 	}
 	addr := netip.AddrPortFrom(t.IP, t.Port)
 	t0 := time.Now()

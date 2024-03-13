@@ -2,6 +2,7 @@ package ping
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -57,7 +58,7 @@ func (h *HttpPing) PingContext(ctx context.Context) statute.IPingResult {
 	orighost := u.Host
 
 	if !h.IP.IsValid() {
-		return h.errorResult(fmt.Errorf("no IP specified"))
+		return h.errorResult(errors.New("no IP specified"))
 	}
 
 	req, err := http.NewRequestWithContext(ctx, h.Method, h.URL, nil)

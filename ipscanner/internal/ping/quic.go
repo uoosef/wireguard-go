@@ -2,6 +2,7 @@ package ping
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/netip"
 	"time"
@@ -50,7 +51,7 @@ func (h *QuicPing) Ping() statute.IPingResult {
 
 func (h *QuicPing) PingContext(ctx context.Context) statute.IPingResult {
 	if !h.IP.IsValid() {
-		return h.errorResult(fmt.Errorf("no IP specified"))
+		return h.errorResult(errors.New("no IP specified"))
 	}
 
 	addr := netip.AddrPortFrom(h.IP, h.Port)

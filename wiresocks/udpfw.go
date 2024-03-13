@@ -3,6 +3,7 @@ package wiresocks
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -152,7 +153,7 @@ func socks5Handshake(conn net.Conn) error {
 	}
 
 	if resp[0] != 0x05 || resp[1] != 0x00 {
-		return fmt.Errorf("invalid SOCKS5 authentication response")
+		return errors.New("invalid SOCKS5 authentication response")
 	}
 	return nil
 }
@@ -219,7 +220,7 @@ func requestUDPAssociate(conn net.Conn) (*net.UDPAddr, error) {
 	}
 
 	if resp[1] != 0x00 {
-		return nil, fmt.Errorf("UDP ASSOCIATE request failed")
+		return nil, errors.New("UDP ASSOCIATE request failed")
 	}
 
 	// Parse the proxy UDP address

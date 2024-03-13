@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"net/netip"
 	"strings"
 
@@ -41,7 +42,7 @@ var (
 func parseString(section *ini.Section, keyName string) (string, error) {
 	key := section.Key(strings.ToLower(keyName))
 	if key == nil {
-		return "", errors.New(keyName + " should not be empty")
+		return "", fmt.Errorf("%s should not be empty", keyName)
 	}
 	return key.String(), nil
 }
@@ -62,10 +63,10 @@ func parseBase64KeyToHex(section *ini.Section, keyName string) (string, error) {
 func encodeBase64ToHex(key string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(key)
 	if err != nil {
-		return "", errors.New("invalid base64 string: " + key)
+		return "", fmt.Errorf("invalid base64 string: %s", key)
 	}
 	if len(decoded) != 32 {
-		return "", errors.New("key should be 32 bytes: " + key)
+		return "", fmt.Errorf("key should be 32 bytes: %s", key)
 	}
 	return hex.EncodeToString(decoded), nil
 }
