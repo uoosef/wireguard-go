@@ -20,7 +20,7 @@ require (
 	github.com/rodaine/table v1.1.1
 	golang.org/x/crypto v0.19.0
 	golang.org/x/net v0.21.0
-	golang.org/x/sys v0.17.0
+	golang.org/x/sys v0.18.0
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2
 	gvisor.dev/gvisor v0.0.0-20240313225113-67a078058255
 )
