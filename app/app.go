@@ -118,7 +118,7 @@ func runWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoint 
 	}
 
 	tnet.StartProxy(bind)
-	l.Info("Serving proxy", "address", bind)
+	l.Info("serving proxy", "address", bind)
 
 	return nil
 }
@@ -155,7 +155,7 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, bind netip.AddrPort
 		return fmt.Errorf("unable to run psiphon %w", err)
 	}
 
-	l.Info("Serving proxy", "address", bind)
+	l.Info("serving proxy", "address", bind)
 
 	return nil
 }
@@ -210,7 +210,7 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, end
 
 	tnet.StartProxy(bind)
 
-	l.Info("Serving proxy", "address", bind)
+	l.Info("serving proxy", "address", bind)
 	return nil
 }
 

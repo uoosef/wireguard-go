@@ -7,8 +7,8 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/bepass-org/proxy/pkg/mixed"
-	"github.com/bepass-org/proxy/pkg/statute"
+	"github.com/bepass-org/warp-plus/proxy/pkg/mixed"
+	"github.com/bepass-org/warp-plus/proxy/pkg/statute"
 	"github.com/bepass-org/warp-plus/wireguard/device"
 	"github.com/bepass-org/warp-plus/wireguard/tun/netstack"
 )
@@ -26,8 +26,7 @@ type VirtualTun struct {
 func (vt *VirtualTun) StartProxy(bindAddress netip.AddrPort) {
 	proxy := mixed.NewProxy(
 		mixed.WithBindAddress(bindAddress.String()),
-		// TODO
-		// mixed.WithLogger(vt.Logger),
+		mixed.WithLogger(vt.Logger),
 		mixed.WithContext(vt.Ctx),
 		mixed.WithUserHandler(func(request *statute.ProxyRequest) error {
 			return vt.generalHandler(request)
@@ -50,7 +49,7 @@ func (vt *VirtualTun) StartProxy(bindAddress netip.AddrPort) {
 }
 
 func (vt *VirtualTun) generalHandler(req *statute.ProxyRequest) error {
-	vt.Logger.Debug("handling request", "protocol", req.Network, "destination", req.Destination)
+	vt.Logger.Info("handling connection", "protocol", req.Network, "destination", req.Destination)
 	conn, err := vt.Tnet.Dial(req.Network, req.Destination)
 	if err != nil {
 		return err

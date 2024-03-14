@@ -6,7 +6,6 @@ replace github.com/Psiphon-Labs/psiphon-tunnel-core => github.com/bepass-org/psi
 
 require (
 	github.com/Psiphon-Labs/psiphon-tunnel-core v2.0.28+incompatible
-	github.com/bepass-org/proxy v0.0.0-20240201095508-c86216dd0aea
 	github.com/fatih/color v1.16.0
 	github.com/flynn/noise v1.1.0
 	github.com/frankban/quicktest v1.14.6
