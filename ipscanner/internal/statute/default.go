@@ -3,7 +3,6 @@ package statute
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"net"
 	"net/http"
 	"net/netip"
@@ -72,7 +71,6 @@ func DefaultHTTPClientFunc(rawDialer TDialerFunc, tlsDialer TDialerFunc, quicDia
 }
 
 func DefaultDialerFunc(ctx context.Context, network, addr string) (net.Conn, error) {
-	fmt.Println(addr)
 	d := &net.Dialer{
 		Timeout: FinalOptions.ConnectionTimeout, // Connection timeout
 		// Add other custom settings as needed

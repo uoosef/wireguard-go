@@ -6,7 +6,9 @@
 package device
 
 import (
+	"fmt"
 	"log"
+	"log/slog"
 	"os"
 )
 
@@ -45,4 +47,15 @@ func NewLogger(level int, prepend string) *Logger {
 		logger.Errorf = logf("ERROR")
 	}
 	return logger
+}
+
+func NewSLogger(l *slog.Logger) *Logger {
+	return &Logger{
+		Verbosef: func(format string, v ...any) {
+			l.Debug(fmt.Sprintf(format, v...))
+		},
+		Errorf: func(format string, v ...any) {
+			l.Error(fmt.Sprintf(format, v...))
+		},
+	}
 }

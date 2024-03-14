@@ -7,11 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 )
 
@@ -120,7 +119,6 @@ func genKeyPair() (string, string, error) {
 	// Generate private key
 	priv, err := GeneratePrivateKey()
 	if err != nil {
-		fmt.Println("Error generating private key:", err)
 		return "", "", err
 	}
 	privateKey := priv.String()
@@ -163,14 +161,12 @@ func doRegister() (*AccountData, error) {
 	// Create HTTP client and execute request
 	response, err := client.Do(req)
 	if err != nil {
-		fmt.Println("sending request to remote server", err)
 		return nil, err
 	}
 
 	// convert response to byte array
 	responseData, err := io.ReadAll(response.Body)
 	if err != nil {
-		fmt.Println("reading response body", err)
 		return nil, err
 	}
 
@@ -178,7 +174,6 @@ func doRegister() (*AccountData, error) {
 
 	err = json.Unmarshal(responseData, &rspData)
 	if err != nil {
-		fmt.Println("Error:", err)
 		return nil, err
 	}
 
@@ -195,7 +190,6 @@ func doRegister() (*AccountData, error) {
 func saveIdentity(accountData *AccountData, identityPath string) error {
 	file, err := os.Create(identityPath)
 	if err != nil {
-		fmt.Println("Error:", err)
 		return err
 	}
 
@@ -203,7 +197,6 @@ func saveIdentity(accountData *AccountData, identityPath string) error {
 	encoder.SetIndent("", "    ")
 	err = encoder.Encode(accountData)
 	if err != nil {
-		fmt.Println("Error:", err)
 		return err
 	}
 
@@ -213,22 +206,14 @@ func saveIdentity(accountData *AccountData, identityPath string) error {
 func loadIdentity(identityPath string) (accountData *AccountData, err error) {
 	file, err := os.Open(identityPath)
 	if err != nil {
-		fmt.Println("Error:", err)
 		return nil, err
 	}
-
-	defer func(file *os.File) {
-		err = file.Close()
-		if err != nil {
-			fmt.Println("Error:", err)
-		}
-	}(file)
+	defer file.Close()
 
 	accountData = &AccountData{}
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&accountData)
 	if err != nil {
-		fmt.Println("Error:", err)
 		return nil, err
 	}
 
@@ -510,11 +495,11 @@ func createConf(accountData *AccountData, confData *ConfigurationData) error {
 	return os.WriteFile(profileFile, []byte(config), 0o600)
 }
 
-func LoadOrCreateIdentity(license string) error {
+func LoadOrCreateIdentity(l *slog.Logger, license string) error {
 	var accountData *AccountData
 
 	if _, err := os.Stat(identityFile); os.IsNotExist(err) {
-		fmt.Println("Creating new identity...")
+		l.Info("creating new identity")
 		accountData, err = doRegister()
 		if err != nil {
 			return err
@@ -522,21 +507,21 @@ func LoadOrCreateIdentity(license string) error {
 		accountData.LicenseKey = license
 		saveIdentity(accountData, identityFile)
 	} else {
-		fmt.Println("Loading existing identity...")
+		l.Info("loading existing identity")
 		accountData, err = loadIdentity(identityFile)
 		if err != nil {
 			return err
 		}
 	}
 
-	fmt.Println("Getting configuration...")
+	l.Info("getting server configuration")
 	confData, err := getServerConf(accountData)
 	if err != nil {
 		return err
 	}
 
 	// updating license key
-	fmt.Println("Updating account license key...")
+	l.Info("updating account license key")
 	result, err := updateLicenseKey(accountData, confData)
 	if err != nil {
 		return err
@@ -553,16 +538,16 @@ func LoadOrCreateIdentity(license string) error {
 		return err
 	}
 	if !deviceStatus {
-		fmt.Println("This device is not registered to the account!")
+		l.Warn("device is not registered to the account")
 	}
 
 	if confData.WarpPlusEnabled && !deviceStatus {
-		fmt.Println("Enabling device...")
+		l.Info("enabling device")
 		deviceStatus, _ = setDeviceActive(accountData, true)
 	}
 
 	if !confData.WarpEnabled {
-		fmt.Println("Enabling Warp...")
+		l.Info("enabling Warp")
 		err := enableWarp(accountData)
 		if err != nil {
 			return err
@@ -570,20 +555,19 @@ func LoadOrCreateIdentity(license string) error {
 		confData.WarpEnabled = true
 	}
 
-	fmt.Printf("Warp+ enabled: %t\n", confData.WarpPlusEnabled)
-	fmt.Printf("Device activated: %t\n", deviceStatus)
-	fmt.Printf("Account type: %s\n", confData.AccountType)
-	fmt.Printf("Warp+ enabled: %t\n", confData.WarpPlusEnabled)
-
-	fmt.Println("Creating WireGuard configuration...")
+	l.Info(
+		"Creating WireGuard configuration",
+		"device-active", deviceStatus,
+		"account-type", confData.AccountType,
+		"warp", confData.WarpEnabled,
+		"warp+", confData.WarpPlusEnabled,
+	)
 	err = createConf(accountData, confData)
 	if err != nil {
 		return fmt.Errorf("unable to enable write config file: %w", err)
 	}
 
-	fmt.Println("All done! Find your files here:")
-	fmt.Println(filepath.Abs(identityFile))
-	fmt.Println(filepath.Abs(profileFile))
+	l.Info("successfully generated wireguard configuration")
 	return nil
 }
 
@@ -596,10 +580,7 @@ func fileExist(f string) bool {
 
 func removeFile(f string) {
 	if fileExist(f) {
-		e := os.Remove(f)
-		if e != nil {
-			log.Fatal(e)
-		}
+		_ = os.Remove(f)
 	}
 }
 
@@ -631,7 +612,7 @@ func CheckProfileExists(license string) bool {
 	return isOk
 }
 
-func RemoveDevice(account AccountData) error {
+func RemoveDevice(l *slog.Logger, account AccountData) error {
 	headers := map[string]string{
 		"Content-Type":      "application/json",
 		"User-Agent":        "okhttp/3.12.1",
@@ -652,7 +633,7 @@ func RemoveDevice(account AccountData) error {
 	// Create HTTP client and execute request
 	response, err := client.Do(req)
 	if err != nil {
-		fmt.Println("sending request to remote server", err)
+		l.Info("sending request to remote server", err)
 		return err
 	}
 

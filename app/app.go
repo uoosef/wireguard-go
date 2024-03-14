@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net"
 	"net/netip"
 	"os"
@@ -20,7 +20,6 @@ const singleMTU = 1400
 const doubleMTU = 1320
 
 type WarpOptions struct {
-	LogLevel string
 	Bind     netip.AddrPort
 	Endpoint string
 	License  string
@@ -37,7 +36,7 @@ type ScanOptions struct {
 	MaxRTT time.Duration
 }
 
-func RunWarp(ctx context.Context, opts WarpOptions) error {
+func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 	if opts.Psiphon != nil && opts.Gool {
 		return errors.New("can't use psiphon and gool at the same time")
 	}
@@ -50,16 +49,16 @@ func RunWarp(ctx context.Context, opts WarpOptions) error {
 	if err := makeDirs(); err != nil {
 		return err
 	}
-	log.Println("'primary' and 'secondary' directories are ready")
+	l.Debug("'primary' and 'secondary' directories are ready")
 
 	// Change the current working directory to 'stuff'
 	if err := os.Chdir("stuff"); err != nil {
 		return fmt.Errorf("error changing to 'stuff' directory: %w", err)
 	}
-	log.Println("Changed working directory to 'stuff'")
+	l.Debug("Changed working directory to 'stuff'")
 
 	// create identities
-	if err := createPrimaryAndSecondaryIdentities(opts.License); err != nil {
+	if err := createPrimaryAndSecondaryIdentities(l.With("subsystem", "warp/account"), opts.License); err != nil {
 		return err
 	}
 
@@ -72,90 +71,110 @@ func RunWarp(ctx context.Context, opts WarpOptions) error {
 			return err
 		}
 
-		log.Printf("scan results: %+v", res)
+		l.Info("scan results", "endpoints", res)
 
 		endpoints = make([]string, len(res))
 		for i := 0; i < len(res); i++ {
 			endpoints[i] = res[i].AddrPort.String()
 		}
 	}
-	log.Printf("using warp endpoints: %+v", endpoints)
+	l.Info("using warp endpoints", "endpoints", endpoints)
 
 	var warpErr error
 	switch {
 	case opts.Psiphon != nil:
+		l.Info("running in Psiphon (cfon) mode")
 		// run primary warp on a random tcp port and run psiphon on bind address
-		warpErr = runWarpWithPsiphon(ctx, opts.Bind, endpoints, opts.Psiphon.Country, opts.LogLevel == "debug")
+		warpErr = runWarpWithPsiphon(ctx, l, opts.Bind, endpoints[0], opts.Psiphon.Country)
 	case opts.Gool:
+		l.Info("running in warp-in-warp (gool) mode")
 		// run warp in warp
-		warpErr = runWarpInWarp(ctx, opts.Bind, endpoints, opts.LogLevel == "debug")
+		warpErr = runWarpInWarp(ctx, l, opts.Bind, endpoints)
 	default:
+		l.Info("running in normal warp mode")
 		// just run primary warp on bindAddress
-		_, warpErr = runWarp(ctx, opts.Bind, endpoints, "./primary/wgcf-profile.ini", opts.LogLevel == "debug", true, true, singleMTU)
+		warpErr = runWarp(ctx, l, opts.Bind, endpoints[0])
 	}
 
 	return warpErr
 }
 
-func runWarp(ctx context.Context, bind netip.AddrPort, endpoints []string, confPath string, verbose, startProxy bool, trick bool, mtu int) (*wiresocks.VirtualTun, error) {
-	conf, err := wiresocks.ParseConfig(confPath, endpoints[0])
+func runWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoint string) error {
+	conf, err := wiresocks.ParseConfig("./primary/wgcf-profile.ini", endpoint)
 	if err != nil {
-		log.Println(err)
-		return nil, err
+		return err
 	}
-	conf.Interface.MTU = mtu
+	conf.Interface.MTU = singleMTU
 
 	for i, peer := range conf.Peers {
-		peer.KeepAlive = 10
-		if trick {
-			peer.Trick = true
-			peer.KeepAlive = 3
-		}
-
+		peer.Trick = true
+		peer.KeepAlive = 3
 		conf.Peers[i] = peer
 	}
 
-	tnet, err := wiresocks.StartWireguard(ctx, conf, verbose)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
-	if startProxy {
-		tnet.StartProxy(bind)
-	}
-
-	return tnet, nil
-}
-
-func runWarpWithPsiphon(ctx context.Context, bind netip.AddrPort, endpoints []string, country string, verbose bool) error {
-	// make a random bind address for warp
-	warpBindAddress, err := findFreePort("tcp")
-	if err != nil {
-		log.Println("There are no free tcp ports on Device!")
-		return err
-	}
-
-	_, err = runWarp(ctx, warpBindAddress, endpoints, "./primary/wgcf-profile.ini", verbose, true, true, singleMTU)
+	tnet, err := wiresocks.StartWireguard(ctx, l, conf)
 	if err != nil {
 		return err
 	}
 
-	// run psiphon
-	err = psiphon.RunPsiphon(warpBindAddress.String(), bind.String(), country, ctx)
-	if err != nil {
-		log.Printf("unable to run psiphon %v", err)
-		return fmt.Errorf("unable to run psiphon %w", err)
-	}
-
-	log.Printf("Serving on %s", bind)
+	tnet.StartProxy(bind)
+	l.Info("Serving proxy", "address", bind)
 
 	return nil
 }
 
-func runWarpInWarp(ctx context.Context, bind netip.AddrPort, endpoints []string, verbose bool) error {
+func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoint string, country string) error {
+	// make a random bind address for warp
+	warpBindAddress, err := findFreePort("tcp")
+	if err != nil {
+		return err
+	}
+
+	conf, err := wiresocks.ParseConfig("./primary/wgcf-profile.ini", endpoint)
+	if err != nil {
+		return err
+	}
+	conf.Interface.MTU = singleMTU
+
+	for i, peer := range conf.Peers {
+		peer.Trick = true
+		peer.KeepAlive = 3
+		conf.Peers[i] = peer
+	}
+
+	tnet, err := wiresocks.StartWireguard(ctx, l, conf)
+	if err != nil {
+		return err
+	}
+
+	tnet.StartProxy(warpBindAddress)
+
+	// run psiphon
+	err = psiphon.RunPsiphon(ctx, l.With("subsystem", "psiphon"), warpBindAddress.String(), bind.String(), country)
+	if err != nil {
+		return fmt.Errorf("unable to run psiphon %w", err)
+	}
+
+	l.Info("Serving proxy", "address", bind)
+
+	return nil
+}
+
+func runWarpInWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoints []string) error {
 	// Run outer warp
-	vTUN, err := runWarp(ctx, netip.AddrPort{}, endpoints, "./secondary/wgcf-profile.ini", verbose, false, true, singleMTU)
+	conf, err := wiresocks.ParseConfig("./primary/wgcf-profile.ini", endpoints[0])
+	if err != nil {
+		return err
+	}
+	conf.Interface.MTU = singleMTU
+
+	for i, peer := range conf.Peers {
+		peer.Trick = true
+		peer.KeepAlive = 3
+		conf.Peers[i] = peer
+	}
+
+	tnet, err := wiresocks.StartWireguard(ctx, l.With("gool", "outer"), conf)
 	if err != nil {
 		return err
 	}
@@ -163,21 +182,35 @@ func runWarpInWarp(ctx context.Context, bind netip.AddrPort, endpoints []string,
 	// Run virtual endpoint
 	virtualEndpointBindAddress, err := findFreePort("udp")
 	if err != nil {
-		log.Println("There are no free udp ports on Device!")
 		return err
 	}
-	addr := endpoints[1]
-	err = wiresocks.NewVtunUDPForwarder(virtualEndpointBindAddress.String(), addr, vTUN, singleMTU, ctx)
+
+	// Create a UDP port forward between localhost and the remote endpoint
+	err = wiresocks.NewVtunUDPForwarder(ctx, virtualEndpointBindAddress.String(), endpoints[1], tnet, singleMTU)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
 	// Run inner warp
-	_, err = runWarp(ctx, bind, []string{virtualEndpointBindAddress.String()}, "./primary/wgcf-profile.ini", verbose, true, false, doubleMTU)
+	conf, err = wiresocks.ParseConfig("./secondary/wgcf-profile.ini", virtualEndpointBindAddress.String())
 	if err != nil {
 		return err
 	}
+	conf.Interface.MTU = doubleMTU
+
+	for i, peer := range conf.Peers {
+		peer.KeepAlive = 10
+		conf.Peers[i] = peer
+	}
+
+	tnet, err = wiresocks.StartWireguard(ctx, l.With("gool", "inner"), conf)
+	if err != nil {
+		return err
+	}
+
+	tnet.StartProxy(bind)
+
+	l.Info("Serving proxy", "address", bind)
 	return nil
 }
 
@@ -207,22 +240,20 @@ func findFreePort(network string) (netip.AddrPort, error) {
 	return netip.MustParseAddrPort(listener.Addr().String()), nil
 }
 
-func createPrimaryAndSecondaryIdentities(license string) error {
+func createPrimaryAndSecondaryIdentities(l *slog.Logger, license string) error {
 	// make primary identity
 	warp.UpdatePath("./primary")
 	if !warp.CheckProfileExists(license) {
-		err := warp.LoadOrCreateIdentity(license)
+		err := warp.LoadOrCreateIdentity(l, license)
 		if err != nil {
-			log.Printf("error: %v", err)
 			return err
 		}
 	}
 	// make secondary
 	warp.UpdatePath("./secondary")
 	if !warp.CheckProfileExists(license) {
-		err := warp.LoadOrCreateIdentity(license)
+		err := warp.LoadOrCreateIdentity(l, license)
 		if err != nil {
-			log.Printf("error: %v", err)
 			return err
 		}
 	}

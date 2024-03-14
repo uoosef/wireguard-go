@@ -3,8 +3,6 @@ package iterator
 import (
 	"crypto/rand"
 	"errors"
-	"fmt"
-	"log"
 	"math/big"
 	"net"
 	"net/netip"
@@ -262,17 +260,18 @@ func NewIterator(opts *statute.ScannerOptions) *IpGenerator {
 
 		ipRange, err := newIPRange(cidr)
 		if err != nil {
-			fmt.Printf("Error parsing CIDR %s: %v\n", cidr, err)
+			// TODO
 			continue
 		}
 		ranges = append(ranges, ipRange)
 	}
 	if len(ranges) == 0 {
-		log.Fatal("No valid CIDR ranges found")
+		// TODO
+		return nil
 	}
 	err := shuffleSubnetsIpRange(ranges)
 	if err != nil {
-		fmt.Println(err)
+		// TODO
 		return nil
 	}
 	return &IpGenerator{

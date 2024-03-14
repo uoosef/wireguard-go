@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net"
 	"path/filepath"
 	"strings"
@@ -316,7 +316,7 @@ func (tunnel *Tunnel) Stop() {
 	psiphon.CloseDataStore()
 }
 
-func RunPsiphon(wgBind, localSocksPort, country string, ctx context.Context) error {
+func RunPsiphon(ctx context.Context, l *slog.Logger, wgBind, localSocksPort, country string) error {
 	// Embedded configuration
 	host, port, err := net.SplitHostPort(localSocksPort)
 	if err != nil {
@@ -355,33 +355,28 @@ func RunPsiphon(wgBind, localSocksPort, country string, ctx context.Context) err
 		EmitDiagnosticNoticesToFiles:  false,
 	}
 
-	log.Println("Handshaking, Please Wait...")
+	l.Info("Handshaking, Please Wait...")
 
-	var tunnel *Tunnel
-	startTime := time.Now()
-
-	internalCtx := context.Background()
-
-	timeoutTimer := time.NewTimer(2 * time.Minute)
-	defer timeoutTimer.Stop()
+	ctx, _ = context.WithTimeout(ctx, 2*time.Minute)
+	t0 := time.Now()
+	t := time.NewTicker(1 * time.Second)
+	defer t.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
-			internalCtx.Done()
-			return errors.New("psiphon handshake operation canceled by user")
-		case <-timeoutTimer.C:
-			// Handle the internal timeout
-			internalCtx.Done()
-			return errors.New("psiphon handshake maximum time exceeded")
-		default:
-			tunnel, err = StartTunnel(internalCtx, []byte(configJSON), "", p, nil, nil)
-			if err == nil {
-				log.Println("Psiphon started successfully on port", tunnel.SOCKSProxyPort, "handshake operation took", int64(time.Since(startTime)/time.Millisecond), "milliseconds")
-				return nil
+			if errors.Is(ctx.Err(), context.Canceled) {
+				return errors.New("psiphon handshake operation canceled")
 			}
-			log.Println("Unable to start psiphon", err, "reconnecting...")
-			time.Sleep(1 * time.Second)
+			return errors.New("psiphon handshake maximum time exceeded")
+		case <-t.C:
+			tunnel, err := StartTunnel(ctx, []byte(configJSON), "", p, nil, nil)
+			if err != nil {
+				l.Info("Unable to start psiphon", err, "reconnecting...")
+				continue
+			}
+			l.Info(fmt.Sprintf("Psiphon started successfully on port %d, handshake operation took %s", tunnel.SOCKSProxyPort, time.Since(t0)))
+			return nil
 		}
 	}
 }

@@ -190,7 +190,6 @@ func (d *Dialer) TLSDial(plainDialer *net.Dialer, network, addr string) (net.Con
 	utlsConn, handshakeErr := d.makeTLSHelloPacketWithSNICurve(plainConn, &config, sni)
 	if handshakeErr != nil {
 		_ = plainConn.Close()
-		fmt.Println(handshakeErr)
 		return nil, handshakeErr
 	}
 	return utlsConn, nil

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/netip"
 	"os"
 	"os/signal"
@@ -76,13 +76,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	l := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+
+	if *verbose {
+		l = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	}
+
 	if *psiphon && *gool {
-		log.Fatal(errors.New("can't use cfon and gool at the same time"))
+		fatal(l, errors.New("can't use cfon and gool at the same time"))
 	}
 
 	bindAddrPort, err := netip.ParseAddrPort(*bind)
 	if err != nil {
-		log.Fatal(fmt.Errorf("invalid bind address: %w", err))
+		fatal(l, fmt.Errorf("invalid bind address: %w", err))
 	}
 
 	opts := app.WarpOptions{
@@ -92,18 +98,13 @@ func main() {
 		Gool:     *gool,
 	}
 
-	if *verbose {
-		opts.LogLevel = "debug"
-		log.Printf("setting log level to: %s", opts.LogLevel)
-	}
-
 	if *psiphon {
-		log.Printf("psiphon mode enabled, using country %s", *country)
+		l.Info("psiphon mode enabled", "country", *country)
 		opts.Psiphon = &app.PsiphonOptions{Country: *country}
 	}
 
 	if *scan {
-		log.Printf("scanner mode enabled, using %s max RTT", rtt)
+		l.Info("scanner mode enabled", "max-rtt", rtt)
 		opts.Scan = &app.ScanOptions{MaxRTT: *rtt}
 	}
 
@@ -111,17 +112,22 @@ func main() {
 	if opts.Endpoint == "" {
 		addrPort, err := warp.RandomWarpEndpoint()
 		if err != nil {
-			log.Fatal(err)
+			fatal(l, err)
 		}
 		opts.Endpoint = addrPort.String()
 	}
 
 	ctx, _ := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	go func() {
-		if err := app.RunWarp(ctx, opts); err != nil {
-			log.Fatal(err)
+		if err := app.RunWarp(ctx, l, opts); err != nil {
+			fatal(l, err)
 		}
 	}()
 
 	<-ctx.Done()
+}
+
+func fatal(l *slog.Logger, err error) {
+	l.Error(err.Error())
+	os.Exit(1)
 }

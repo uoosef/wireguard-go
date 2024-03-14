@@ -3,7 +3,7 @@ package wiresocks
 import (
 	"context"
 	"io"
-	"log"
+	"log/slog"
 	"net/netip"
 	"time"
 
@@ -17,31 +17,17 @@ import (
 type VirtualTun struct {
 	Tnet      *netstack.Net
 	SystemDNS bool
-	Verbose   bool
-	Logger    DefaultLogger
+	Logger    *slog.Logger
 	Dev       *device.Device
 	Ctx       context.Context
-}
-
-type DefaultLogger struct {
-	verbose bool
-}
-
-func (l DefaultLogger) Debug(v ...interface{}) {
-	if l.verbose {
-		log.Println(v...)
-	}
-}
-
-func (l DefaultLogger) Error(v ...interface{}) {
-	log.Println(v...)
 }
 
 // StartProxy spawns a socks5 server.
 func (vt *VirtualTun) StartProxy(bindAddress netip.AddrPort) {
 	proxy := mixed.NewProxy(
 		mixed.WithBindAddress(bindAddress.String()),
-		mixed.WithLogger(vt.Logger),
+		// TODO
+		// mixed.WithLogger(vt.Logger),
 		mixed.WithContext(vt.Ctx),
 		mixed.WithUserHandler(func(request *statute.ProxyRequest) error {
 			return vt.generalHandler(request)
@@ -64,9 +50,7 @@ func (vt *VirtualTun) StartProxy(bindAddress netip.AddrPort) {
 }
 
 func (vt *VirtualTun) generalHandler(req *statute.ProxyRequest) error {
-	if vt.Verbose {
-		log.Printf("handling %s request to %s", req.Network, req.Destination)
-	}
+	vt.Logger.Debug("handling request", "protocol", req.Network, "destination", req.Destination)
 	conn, err := vt.Tnet.Dial(req.Network, req.Destination)
 	if err != nil {
 		return err
@@ -89,8 +73,9 @@ func (vt *VirtualTun) generalHandler(req *statute.ProxyRequest) error {
 	// Wait for one of the copy operations to finish
 	err = <-done
 	if err != nil {
-		log.Println(err)
+		vt.Logger.Warn(err.Error())
 	}
+
 	// Close connections and wait for the other copy operation to finish
 	conn.Close()
 	req.Conn.Close()
@@ -101,9 +86,8 @@ func (vt *VirtualTun) generalHandler(req *statute.ProxyRequest) error {
 
 func (vt *VirtualTun) Stop() {
 	if vt.Dev != nil {
-		err := vt.Dev.Down()
-		if err != nil {
-			log.Println(err)
+		if err := vt.Dev.Down(); err != nil {
+			vt.Logger.Warn(err.Error())
 		}
 	}
 }

@@ -4,23 +4,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"net/netip"
+	"log/slog"
 
 	"github.com/bepass-org/warp-plus/wireguard/conn"
 	"github.com/bepass-org/warp-plus/wireguard/device"
 	"github.com/bepass-org/warp-plus/wireguard/tun/netstack"
 )
 
-// DeviceSetting contains the parameters for setting up a tun interface
-type DeviceSetting struct {
-	ipcRequest string
-	dns        []netip.Addr
-	deviceAddr []netip.Addr
-	mtu        int
-}
-
-// serialize the config into an IPC request and DeviceSetting
-func createIPCRequest(conf *Configuration) (*DeviceSetting, error) {
+// StartWireguard creates a tun interface on netstack given a configuration
+func StartWireguard(ctx context.Context, l *slog.Logger, conf *Configuration) (*VirtualTun, error) {
 	var request bytes.Buffer
 
 	request.WriteString(fmt.Sprintf("private_key=%s\n", conf.Interface.PrivateKey))
@@ -37,29 +29,13 @@ func createIPCRequest(conf *Configuration) (*DeviceSetting, error) {
 		}
 	}
 
-	setting := &DeviceSetting{ipcRequest: request.String(), dns: conf.Interface.DNS, deviceAddr: conf.Interface.Addresses, mtu: conf.Interface.MTU}
-	return setting, nil
-}
-
-// StartWireguard creates a tun interface on netstack given a configuration
-func StartWireguard(ctx context.Context, conf *Configuration, verbose bool) (*VirtualTun, error) {
-	setting, err := createIPCRequest(conf)
+	tun, tnet, err := netstack.CreateNetTUN(conf.Interface.Addresses, conf.Interface.DNS, conf.Interface.MTU)
 	if err != nil {
 		return nil, err
 	}
 
-	tun, tnet, err := netstack.CreateNetTUN(setting.deviceAddr, setting.dns, setting.mtu)
-	if err != nil {
-		return nil, err
-	}
-
-	logLevel := device.LogLevelVerbose
-	if !verbose {
-		logLevel = device.LogLevelSilent
-	}
-
-	dev := device.NewDevice(tun, conn.NewDefaultBind(), device.NewLogger(logLevel, ""))
-	err = dev.IpcSet(setting.ipcRequest)
+	dev := device.NewDevice(tun, conn.NewDefaultBind(), device.NewSLogger(l.With("subsystem", "wireguard-go")))
+	err = dev.IpcSet(request.String())
 	if err != nil {
 		return nil, err
 	}
@@ -71,12 +47,9 @@ func StartWireguard(ctx context.Context, conf *Configuration, verbose bool) (*Vi
 
 	return &VirtualTun{
 		Tnet:      tnet,
-		SystemDNS: len(setting.dns) == 0,
-		Verbose:   verbose,
-		Logger: DefaultLogger{
-			verbose: verbose,
-		},
-		Dev: dev,
-		Ctx: ctx,
+		SystemDNS: len(conf.Interface.DNS) == 0,
+		Logger:    l.With("subsystem", "vtun"),
+		Dev:       dev,
+		Ctx:       ctx,
 	}, nil
 }
