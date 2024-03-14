@@ -15,7 +15,6 @@ require (
 	github.com/hashicorp/golang-lru v1.0.2
 	github.com/peterbourgon/ff/v4 v4.0.0-alpha.4
 	github.com/quic-go/quic-go v0.40.1
-	github.com/refraction-networking/conjure v0.7.11-0.20240130155008-c8df96195ab2
 	github.com/refraction-networking/utls v1.3.3
 	github.com/rodaine/table v1.1.1
 	golang.org/x/crypto v0.21.0
@@ -67,6 +66,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/qtls-go1-20 v0.4.1 // indirect
+	github.com/refraction-networking/conjure v0.7.11-0.20240130155008-c8df96195ab2 // indirect
 	github.com/refraction-networking/ed25519 v0.1.2 // indirect
 	github.com/refraction-networking/gotapdance v1.7.10 // indirect
 	github.com/refraction-networking/obfs4 v0.1.2 // indirect

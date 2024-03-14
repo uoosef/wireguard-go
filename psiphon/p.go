@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"path/filepath"
 	"strings"
@@ -12,7 +13,6 @@ import (
 	"time"
 
 	"github.com/Psiphon-Labs/psiphon-tunnel-core/psiphon"
-	"github.com/refraction-networking/conjure/pkg/station/log"
 )
 
 // Parameters provide an easier way to modify the tunnel config at runtime.
@@ -380,7 +380,7 @@ func RunPsiphon(wgBind, localSocksPort, country string, ctx context.Context) err
 				log.Println("Psiphon started successfully on port", tunnel.SOCKSProxyPort, "handshake operation took", int64(time.Since(startTime)/time.Millisecond), "milliseconds")
 				return nil
 			}
-			log.Error("Unable to start psiphon", err, "reconnecting...")
+			log.Println("Unable to start psiphon", err, "reconnecting...")
 			time.Sleep(1 * time.Second)
 		}
 	}
