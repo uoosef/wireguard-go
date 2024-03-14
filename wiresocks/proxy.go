@@ -9,8 +9,8 @@ import (
 
 	"github.com/bepass-org/proxy/pkg/mixed"
 	"github.com/bepass-org/proxy/pkg/statute"
-	"github.com/bepass-org/wireguard-go/wireguard/device"
-	"github.com/bepass-org/wireguard-go/wireguard/tun/netstack"
+	"github.com/bepass-org/warp-plus/wireguard/device"
+	"github.com/bepass-org/warp-plus/wireguard/tun/netstack"
 )
 
 // VirtualTun stores a reference to netstack network and DNS configuration

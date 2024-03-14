@@ -1,6 +1,6 @@
-# Warp-Plus-Go
+# Warp-Plus
 
-Warp-Plus-Go is an open-source implementation of Cloudflare's Warp, enhanced with Psiphon integration for circumventing censorship. This project aims to provide a robust and cross-platform VPN solution that can use psiphon on top of warp and warp-in-warp for changing the user virtual nat location.
+Warp-Plus is an open-source implementation of Cloudflare's Warp, enhanced with Psiphon integration for circumventing censorship. This project aims to provide a robust and cross-platform VPN solution that can use psiphon on top of warp and warp-in-warp for changing the user virtual nat location.
 
 ## Features
 
@@ -15,15 +15,15 @@ Warp-Plus-Go is an open-source implementation of Cloudflare's Warp, enhanced wit
 
 ### Prerequisites
 
-- You can download prebuilt binaries or compile it with Go (You MUST use go 1.20)
+- You can download prebuilt binaries or compile it with Go (You MUST use go 1.21)
 - Basic understanding of VPN and proxy configurations
 
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/bepass-org/wireguard-go.git
-   cd warp-plus-go
+   git clone https://github.com/bepass-org/warp-plus.git
+   cd warp-plus
    ```
 
 2. Build the project:
@@ -36,7 +36,7 @@ Warp-Plus-Go is an open-source implementation of Cloudflare's Warp, enhanced wit
 Run the application with the following command:
 
 ```bash
-./warp-plus-go [-v] [-b addr:port] [-c config-file-path] [-e warp-ip] [-k license-key] [-country country-code] [-cfon] [-gool]
+./warp-plus [-v] [-b addr:port] [-c config-file-path] [-e warp-ip] [-k license-key] [-country country-code] [-cfon] [-gool]
 ```
 
 - `-v`: Enable verbose logging.
@@ -82,7 +82,7 @@ Run the application with the following command:
 - Ukraine (UA)
 - United States (US)
 
-### Termux
+### Termux (BROKEN)
 
 ```
 bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/wireguard-go/master/termux.sh)
@@ -99,34 +99,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/wireguard-go/mas
 - برای اسکن ای پی سالم وارپ از دستور `warp -scan` استفاده کنید. 
 - برای ترکیب (chain) دو کانفیگ برای تغییر لوکیشن از دستور `warp -gool` استفاده کنید. 
 
-## Contributing
-
-Contributions to Warp-Plus-Go are welcome. Please read our [contributing guidelines](CONTRIBUTING.md) for more information.
-
 ## Acknowledgements
 
 - Cloudflare Warp
 - Psiphon
 - All contributors and supporters of this project
-
-## License
-
-    Copyright (C) 2017-2023 WireGuard LLC. All Rights Reserved.
-    
-    Permission is hereby granted, free of charge, to any person obtaining a copy of
-    this software and associated documentation files (the "Software"), to deal in
-    the Software without restriction, including without limitation the rights to
-    use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-    of the Software, and to permit persons to whom the Software is furnished to do
-    so, subject to the following conditions:
-    
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-    
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.

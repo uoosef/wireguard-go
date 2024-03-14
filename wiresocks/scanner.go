@@ -8,8 +8,8 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/bepass-org/wireguard-go/ipscanner"
-	"github.com/bepass-org/wireguard-go/warp"
+	"github.com/bepass-org/warp-plus/ipscanner"
+	"github.com/bepass-org/warp-plus/warp"
 	"github.com/go-ini/ini"
 )
 

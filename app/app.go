@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/bepass-org/wireguard-go/psiphon"
-	"github.com/bepass-org/wireguard-go/warp"
-	"github.com/bepass-org/wireguard-go/wiresocks"
+	"github.com/bepass-org/warp-plus/psiphon"
+	"github.com/bepass-org/warp-plus/warp"
+	"github.com/bepass-org/warp-plus/wiresocks"
 )
 
 const singleMTU = 1400

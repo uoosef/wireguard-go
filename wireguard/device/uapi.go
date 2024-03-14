@@ -18,7 +18,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bepass-org/wireguard-go/wireguard/ipc"
+	"github.com/bepass-org/warp-plus/wireguard/ipc"
 )
 
 type IPCError struct {

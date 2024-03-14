@@ -9,8 +9,8 @@ import (
 	"net"
 	"net/netip"
 
-	"github.com/bepass-org/wireguard-go/ipscanner/internal/cache"
-	"github.com/bepass-org/wireguard-go/ipscanner/internal/statute"
+	"github.com/bepass-org/warp-plus/ipscanner/internal/cache"
+	"github.com/bepass-org/warp-plus/ipscanner/internal/statute"
 )
 
 // LCG represents a linear congruential generator with full period.

@@ -6,7 +6,7 @@ import (
 	"net"
 	"net/netip"
 
-	"github.com/bepass-org/wireguard-go/iputils"
+	"github.com/bepass-org/warp-plus/iputils"
 
 	tls "github.com/refraction-networking/utls"
 )

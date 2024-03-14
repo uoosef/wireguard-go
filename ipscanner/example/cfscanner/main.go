@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/bepass-org/wireguard-go/ipscanner"
+	"github.com/bepass-org/warp-plus/ipscanner"
 )
 
 func main() {

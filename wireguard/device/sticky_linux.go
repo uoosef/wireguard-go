@@ -20,8 +20,8 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"github.com/bepass-org/wireguard-go/wireguard/conn"
-	"github.com/bepass-org/wireguard-go/wireguard/rwcancel"
+	"github.com/bepass-org/warp-plus/wireguard/conn"
+	"github.com/bepass-org/warp-plus/wireguard/rwcancel"
 )
 
 func (device *Device) startRouteListener(bind conn.Bind) (*rwcancel.RWCancel, error) {

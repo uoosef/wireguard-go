@@ -1,4 +1,4 @@
-module github.com/bepass-org/wireguard-go
+module github.com/bepass-org/warp-plus
 
 go 1.21.1
 

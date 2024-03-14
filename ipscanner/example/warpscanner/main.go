@@ -8,9 +8,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/bepass-org/wireguard-go/ipscanner"
-	"github.com/bepass-org/wireguard-go/ipscanner/internal/statute"
-	"github.com/bepass-org/wireguard-go/warp"
+	"github.com/bepass-org/warp-plus/ipscanner"
+	"github.com/bepass-org/warp-plus/ipscanner/internal/statute"
+	"github.com/bepass-org/warp-plus/warp"
 	"github.com/fatih/color"
 	"github.com/rodaine/table"
 )

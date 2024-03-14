@@ -7,7 +7,7 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/bepass-org/wireguard-go/ipscanner/internal/statute"
+	"github.com/bepass-org/warp-plus/ipscanner/internal/statute"
 )
 
 type TlsPingResult struct {
