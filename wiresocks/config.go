@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
-	"strings"
 
 	"github.com/go-ini/ini"
 )
@@ -14,50 +13,22 @@ import (
 type PeerConfig struct {
 	PublicKey    string
 	PreSharedKey string
-	Endpoint     *string
+	Endpoint     string
 	KeepAlive    int
 	AllowedIPs   []netip.Prefix
+	Trick        bool
 }
 
-// DeviceConfig contains the information to initiate a wireguard connection
-type DeviceConfig struct {
-	SecretKey  string
-	Endpoint   []netip.Addr
-	Peers      []PeerConfig
+type InterfaceConfig struct {
+	PrivateKey string
+	Addresses  []netip.Addr
 	DNS        []netip.Addr
 	MTU        int
-	ListenPort *int
-	Trick      bool
 }
 
 type Configuration struct {
-	Device *DeviceConfig
-}
-
-var (
-	dnsAddresses = []string{"8.8.8.8", "8.8.4.4"}
-	dc           = 0
-)
-
-func parseString(section *ini.Section, keyName string) (string, error) {
-	key := section.Key(strings.ToLower(keyName))
-	if key == nil {
-		return "", fmt.Errorf("%s should not be empty", keyName)
-	}
-	return key.String(), nil
-}
-
-func parseBase64KeyToHex(section *ini.Section, keyName string) (string, error) {
-	key, err := parseString(section, keyName)
-	if err != nil {
-		return "", err
-	}
-	result, err := encodeBase64ToHex(key)
-	if err != nil {
-		return result, err
-	}
-
-	return result, nil
+	Interface *InterfaceConfig
+	Peers     []PeerConfig
 }
 
 func encodeBase64ToHex(key string) (string, error) {
@@ -71,140 +42,94 @@ func encodeBase64ToHex(key string) (string, error) {
 	return hex.EncodeToString(decoded), nil
 }
 
-func parseNetIP(section *ini.Section, keyName string) ([]netip.Addr, error) {
-	key := section.Key(keyName)
+// ParseInterface parses the [Interface] section
+func ParseInterface(cfg *ini.File) (InterfaceConfig, error) {
+	device := InterfaceConfig{}
+	interfaces, err := cfg.SectionsByName("Interface")
+	if len(interfaces) != 1 || err != nil {
+		return InterfaceConfig{}, errors.New("only one [Interface] is expected")
+	}
+	iface := interfaces[0]
+
+	key := iface.Key("Address")
 	if key == nil {
-		return []netip.Addr{}, nil
+		return InterfaceConfig{}, nil
 	}
 
-	var ips []netip.Addr
+	var addresses []netip.Addr
 	for _, str := range key.StringsWithShadows(",") {
-		str = strings.TrimSpace(str)
-		if str == "1.1.1.1" {
-			str = dnsAddresses[dc%len(dnsAddresses)]
-			dc++
+		prefix, err := netip.ParsePrefix(str)
+		if err != nil {
+			return InterfaceConfig{}, err
 		}
+
+		addresses = append(addresses, prefix.Addr())
+	}
+	device.Addresses = addresses
+
+	key = iface.Key("PrivateKey")
+	if key == nil {
+		return InterfaceConfig{}, errors.New("PrivateKey should not be empty")
+	}
+
+	privateKeyHex, err := encodeBase64ToHex(key.String())
+	if err != nil {
+		return InterfaceConfig{}, err
+	}
+	device.PrivateKey = privateKeyHex
+
+	key = iface.Key("DNS")
+	if key == nil {
+		return InterfaceConfig{}, nil
+	}
+
+	addresses = []netip.Addr{}
+	for _, str := range key.StringsWithShadows(",") {
 		ip, err := netip.ParseAddr(str)
 		if err != nil {
-			return nil, err
+			return InterfaceConfig{}, err
 		}
-		ips = append(ips, ip)
+		addresses = append(addresses, ip)
 	}
-	return ips, nil
-}
+	device.DNS = addresses
 
-func parseCIDRNetIP(section *ini.Section, keyName string) ([]netip.Addr, error) {
-	key := section.Key(keyName)
-	if key == nil {
-		return []netip.Addr{}, nil
-	}
-
-	var ips []netip.Addr
-	for _, str := range key.StringsWithShadows(",") {
-		prefix, err := netip.ParsePrefix(str)
-		if err != nil {
-			return nil, err
-		}
-
-		addr := prefix.Addr()
-		ips = append(ips, addr)
-	}
-	return ips, nil
-}
-
-func parseAllowedIPs(section *ini.Section) ([]netip.Prefix, error) {
-	key := section.Key("AllowedIPs")
-	if key == nil {
-		return []netip.Prefix{}, nil
-	}
-
-	var ips []netip.Prefix
-	for _, str := range key.StringsWithShadows(",") {
-		prefix, err := netip.ParsePrefix(str)
-		if err != nil {
-			return nil, err
-		}
-
-		ips = append(ips, prefix)
-	}
-	return ips, nil
-}
-
-// ParseInterface parses the [Interface] section and extract the information into `device`
-func ParseInterface(cfg *ini.File, device *DeviceConfig) error {
-	sections, err := cfg.SectionsByName("Interface")
-	if len(sections) != 1 || err != nil {
-		return errors.New("one and only one [Interface] is expected")
-	}
-	section := sections[0]
-
-	address, err := parseCIDRNetIP(section, "Address")
-	if err != nil {
-		return err
-	}
-
-	device.Endpoint = address
-
-	privKey, err := parseBase64KeyToHex(section, "PrivateKey")
-	if err != nil {
-		return err
-	}
-	device.SecretKey = privKey
-
-	dns, err := parseNetIP(section, "DNS")
-	if err != nil {
-		return err
-	}
-	device.DNS = dns
-
-	if sectionKey, err := section.GetKey("MTU"); err == nil {
+	if sectionKey, err := iface.GetKey("MTU"); err == nil {
 		value, err := sectionKey.Int()
 		if err != nil {
-			return err
+			return InterfaceConfig{}, err
 		}
 		device.MTU = value
-	} else {
-		if dc == 0 {
-			device.MTU = 1420
-		} else {
-			device.MTU = 1300
-		}
 	}
 
-	if sectionKey, err := section.GetKey("ListenPort"); err == nil {
-		value, err := sectionKey.Int()
-		if err != nil {
-			return err
-		}
-		device.ListenPort = &value
-	}
-
-	return nil
+	return device, nil
 }
 
 // ParsePeers parses the [Peer] section and extract the information into `peers`
-func ParsePeers(cfg *ini.File, peers *[]PeerConfig, endpoint string) error {
+func ParsePeers(cfg *ini.File) ([]PeerConfig, error) {
 	sections, err := cfg.SectionsByName("Peer")
 	if len(sections) < 1 || err != nil {
-		return errors.New("at least one [Peer] is expected")
+		return nil, errors.New("at least one [Peer] is expected")
 	}
 
-	for _, section := range sections {
+	peers := make([]PeerConfig, len(sections))
+	for i, section := range sections {
 		peer := PeerConfig{
 			PreSharedKey: "0000000000000000000000000000000000000000000000000000000000000000",
 			KeepAlive:    0,
 		}
 
-		decoded, err := parseBase64KeyToHex(section, "PublicKey")
-		if err != nil {
-			return err
+		if sectionKey, err := section.GetKey("PublicKey"); err == nil {
+			value, err := encodeBase64ToHex(sectionKey.String())
+			if err != nil {
+				return nil, err
+			}
+			peer.PublicKey = value
 		}
-		peer.PublicKey = decoded
 
 		if sectionKey, err := section.GetKey("PreSharedKey"); err == nil {
 			value, err := encodeBase64ToHex(sectionKey.String())
 			if err != nil {
-				return err
+				return nil, err
 			}
 			peer.PreSharedKey = value
 		}
@@ -212,21 +137,31 @@ func ParsePeers(cfg *ini.File, peers *[]PeerConfig, endpoint string) error {
 		if sectionKey, err := section.GetKey("PersistentKeepalive"); err == nil {
 			value, err := sectionKey.Int()
 			if err != nil {
-				return err
+				return nil, err
 			}
 			peer.KeepAlive = value
 		}
 
-		peer.AllowedIPs, err = parseAllowedIPs(section)
-		if err != nil {
-			return err
+		if sectionKey, err := section.GetKey("AllowedIPs"); err == nil {
+			var ips []netip.Prefix
+			for _, str := range sectionKey.StringsWithShadows(",") {
+				prefix, err := netip.ParsePrefix(str)
+				if err != nil {
+					return nil, err
+				}
+				ips = append(ips, prefix)
+			}
+			peer.AllowedIPs = ips
 		}
 
-		peer.Endpoint = &endpoint
+		if sectionKey, err := section.GetKey("Endpoint"); err == nil {
+			peer.Endpoint = sectionKey.String()
+		}
 
-		*peers = append(*peers, peer)
+		peers[i] = peer
 	}
-	return nil
+
+	return peers, nil
 }
 
 // ParseConfig takes the path of a configuration file and parses it into Configuration
@@ -242,31 +177,19 @@ func ParseConfig(path string, endpoint string) (*Configuration, error) {
 		return nil, err
 	}
 
-	device := &DeviceConfig{
-		MTU: 1420,
-	}
-
-	root := cfg.Section("")
-	wgConf, err := root.GetKey("WGConfig")
-	wgCfg := cfg
-	if err == nil {
-		wgCfg, err = ini.LoadSources(iniOpt, wgConf.String())
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	err = ParseInterface(wgCfg, device)
+	iface, err := ParseInterface(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	err = ParsePeers(wgCfg, &device.Peers, endpoint)
+	peers, err := ParsePeers(cfg)
 	if err != nil {
 		return nil, err
 	}
+	for i, peer := range peers {
+		peer.Endpoint = endpoint
+		peers[i] = peer
+	}
 
-	return &Configuration{
-		Device: device,
-	}, nil
+	return &Configuration{Interface: &iface, Peers: peers}, nil
 }

@@ -5,12 +5,13 @@ go 1.21.1
 replace github.com/Psiphon-Labs/psiphon-tunnel-core => github.com/bepass-org/psiphon-tunnel-core v0.0.0-20240311155012-9c2e10df08e5
 
 require (
-	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Psiphon-Labs/psiphon-tunnel-core v2.0.28+incompatible
 	github.com/bepass-org/proxy v0.0.0-20240201095508-c86216dd0aea
 	github.com/fatih/color v1.16.0
 	github.com/flynn/noise v1.1.0
+	github.com/frankban/quicktest v1.14.6
 	github.com/go-ini/ini v1.67.0
+	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/golang-lru v1.0.2
 	github.com/peterbourgon/ff/v4 v4.0.0-alpha.4
 	github.com/quic-go/quic-go v0.40.1
@@ -48,6 +49,8 @@ require (
 	github.com/grafov/m3u8 v0.0.0-20171211212457-6ab8f28ed427 // indirect
 	github.com/juju/ratelimit v1.0.2 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/libp2p/go-reuseport v0.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -67,6 +70,7 @@ require (
 	github.com/refraction-networking/ed25519 v0.1.2 // indirect
 	github.com/refraction-networking/gotapdance v1.7.10 // indirect
 	github.com/refraction-networking/obfs4 v0.1.2 // indirect
+	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/sergeyfrolov/bsbuffer v0.0.0-20180903213811-94e85abb8507 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 // indirect

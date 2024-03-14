@@ -86,8 +86,6 @@ type Device struct {
 		mtu    atomic.Int32
 	}
 
-	trick bool
-
 	ipcMutex sync.RWMutex
 	closed   chan struct{}
 	log      *Logger
@@ -283,9 +281,8 @@ func (device *Device) SetPrivateKey(sk NoisePrivateKey) error {
 	return nil
 }
 
-func NewDevice(tunDevice tun.Device, bind conn.Bind, logger *Logger, trick bool) *Device {
+func NewDevice(tunDevice tun.Device, bind conn.Bind, logger *Logger) *Device {
 	device := new(Device)
-	device.trick = trick
 	device.state.state.Store(uint32(deviceStateDown))
 	device.closed = make(chan struct{})
 	device.log = logger

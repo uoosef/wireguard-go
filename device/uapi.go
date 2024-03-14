@@ -119,6 +119,7 @@ func (device *Device) IpcGetOperation(w io.Writer) error {
 			sendf("tx_bytes=%d", peer.txBytes.Load())
 			sendf("rx_bytes=%d", peer.rxBytes.Load())
 			sendf("persistent_keepalive_interval=%d", peer.persistentKeepaliveInterval.Load())
+			sendf("trick=%t", peer.trick)
 
 			device.allowedips.EntriesForPeer(peer, func(prefix netip.Prefix) bool {
 				sendf("allowed_ip=%s", prefix.String())
@@ -385,6 +386,14 @@ func (device *Device) handlePeerLine(peer *ipcSetPeer, key, value string) error 
 		if value != "1" {
 			return ipcErrorf(ipc.IpcErrorInvalid, "invalid protocol version: %v", value)
 		}
+
+	case "trick":
+		device.log.Verbosef("%v - UAPI: Setting trick: %s", peer.Peer, value)
+		parsedBool, err := strconv.ParseBool(value)
+		if err != nil {
+			return ipcErrorf(ipc.IpcErrorInvalid, "invalid trick value: %v", value)
+		}
+		peer.trick = parsedBool
 
 	default:
 		return ipcErrorf(ipc.IpcErrorInvalid, "invalid UAPI peer key: %v", key)

@@ -16,6 +16,9 @@ import (
 	"github.com/bepass-org/wireguard-go/wiresocks"
 )
 
+const singleMTU = 1400
+const doubleMTU = 1320
+
 type WarpOptions struct {
 	LogLevel string
 	Bind     netip.AddrPort
@@ -88,34 +91,41 @@ func RunWarp(ctx context.Context, opts WarpOptions) error {
 		warpErr = runWarpInWarp(ctx, opts.Bind, endpoints, opts.LogLevel == "debug")
 	default:
 		// just run primary warp on bindAddress
-		_, _, warpErr = runWarp(ctx, opts.Bind, endpoints, "./primary/wgcf-profile.ini", opts.LogLevel == "debug", true, true)
+		_, warpErr = runWarp(ctx, opts.Bind, endpoints, "./primary/wgcf-profile.ini", opts.LogLevel == "debug", true, true, singleMTU)
 	}
 
 	return warpErr
 }
 
-func runWarp(ctx context.Context, bind netip.AddrPort, endpoints []string, confPath string, verbose, startProxy bool, trick bool) (*wiresocks.VirtualTun, int, error) {
+func runWarp(ctx context.Context, bind netip.AddrPort, endpoints []string, confPath string, verbose, startProxy bool, trick bool, mtu int) (*wiresocks.VirtualTun, error) {
 	conf, err := wiresocks.ParseConfig(confPath, endpoints[0])
 	if err != nil {
 		log.Println(err)
-		return nil, 0, err
+		return nil, err
+	}
+	conf.Interface.MTU = mtu
+
+	for i, peer := range conf.Peers {
+		peer.KeepAlive = 10
+		if trick {
+			peer.Trick = true
+			peer.KeepAlive = 3
+		}
+
+		conf.Peers[i] = peer
 	}
 
-	if trick {
-		conf.Device.Trick = trick
-	}
-
-	tnet, err := wiresocks.StartWireguard(ctx, conf.Device, verbose)
+	tnet, err := wiresocks.StartWireguard(ctx, conf, verbose)
 	if err != nil {
 		log.Println(err)
-		return nil, 0, err
+		return nil, err
 	}
 
 	if startProxy {
 		tnet.StartProxy(bind)
 	}
 
-	return tnet, conf.Device.MTU, nil
+	return tnet, nil
 }
 
 func runWarpWithPsiphon(ctx context.Context, bind netip.AddrPort, endpoints []string, country string, verbose bool) error {
@@ -126,7 +136,7 @@ func runWarpWithPsiphon(ctx context.Context, bind netip.AddrPort, endpoints []st
 		return err
 	}
 
-	_, _, err = runWarp(ctx, warpBindAddress, endpoints, "./primary/wgcf-profile.ini", verbose, true, true)
+	_, err = runWarp(ctx, warpBindAddress, endpoints, "./primary/wgcf-profile.ini", verbose, true, true, singleMTU)
 	if err != nil {
 		return err
 	}
@@ -144,27 +154,27 @@ func runWarpWithPsiphon(ctx context.Context, bind netip.AddrPort, endpoints []st
 }
 
 func runWarpInWarp(ctx context.Context, bind netip.AddrPort, endpoints []string, verbose bool) error {
-	// run secondary warp
-	vTUN, mtu, err := runWarp(ctx, netip.AddrPort{}, endpoints, "./secondary/wgcf-profile.ini", verbose, false, true)
+	// Run outer warp
+	vTUN, err := runWarp(ctx, netip.AddrPort{}, endpoints, "./secondary/wgcf-profile.ini", verbose, false, true, singleMTU)
 	if err != nil {
 		return err
 	}
 
-	// run virtual endpoint
+	// Run virtual endpoint
 	virtualEndpointBindAddress, err := findFreePort("udp")
 	if err != nil {
 		log.Println("There are no free udp ports on Device!")
 		return err
 	}
 	addr := endpoints[1]
-	err = wiresocks.NewVtunUDPForwarder(virtualEndpointBindAddress.String(), addr, vTUN, mtu+100, ctx)
+	err = wiresocks.NewVtunUDPForwarder(virtualEndpointBindAddress.String(), addr, vTUN, singleMTU, ctx)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	// run primary warp
-	_, _, err = runWarp(ctx, bind, []string{virtualEndpointBindAddress.String()}, "./primary/wgcf-profile.ini", verbose, true, false)
+	// Run inner warp
+	_, err = runWarp(ctx, bind, []string{virtualEndpointBindAddress.String()}, "./primary/wgcf-profile.ini", verbose, true, false, doubleMTU)
 	if err != nil {
 		return err
 	}

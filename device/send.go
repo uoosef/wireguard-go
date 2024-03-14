@@ -121,6 +121,7 @@ func (peer *Peer) SendKeepalive() {
 	if len(peer.queue.staged) == 0 && peer.isRunning.Load() {
 		// Send some random packets on every keepalive
 		if peer.trick {
+			peer.device.log.Verbosef("%v - Running tricks! (keepalive)", peer)
 			peer.sendRandomPackets()
 		}
 
@@ -159,6 +160,7 @@ func (peer *Peer) SendHandshakeInitiation(isRetry bool) error {
 
 	// send some random packets on handshake
 	if peer.trick {
+		peer.device.log.Verbosef("%v - Running tricks! (handshake)", peer)
 		peer.sendRandomPackets()
 	}
 
