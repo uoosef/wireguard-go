@@ -52,7 +52,7 @@ var psiphonCountries = []string{
 }
 
 func main() {
-	fs := ff.NewFlagSet("warp")
+	fs := ff.NewFlagSet("warp-plus")
 	var (
 		verbose  = fs.Bool('v', "verbose", "enable verbose logging")
 		bind     = fs.String('b', "bind", "127.0.0.1:8086", "socks bind address")

@@ -7,9 +7,7 @@ Warp-Plus is an open-source implementation of Cloudflare's Warp, enhanced with P
 - **Warp Integration**: Leverages Cloudflare's Warp to provide a fast and secure VPN service.
 - **Psiphon Chaining**: Integrates with Psiphon for censorship circumvention, allowing seamless access to the internet in restrictive environments.
 - **Warp in Warp Chaining**: Chaning two instances of warp together to bypass location restrictions.
-- **Cross-Platform Support**: Designed to work on multiple platforms, offering the same level of functionality and user experience.
 - **SOCKS5 Proxy Support**: Includes a SOCKS5 proxy for secure and private browsing.
-- **Verbose Logging**: Optional verbose logging for troubleshooting and performance monitoring.
 
 ## Getting Started
 
@@ -33,21 +31,21 @@ Warp-Plus is an open-source implementation of Cloudflare's Warp, enhanced with P
 
 ### Usage
 
-Run the application with the following command:
-
-```bash
-./warp-plus [-v] [-b addr:port] [-c config-file-path] [-e warp-ip] [-k license-key] [-country country-code] [-cfon] [-gool]
 ```
+NAME
+  warp-plus
 
-- `-v`: Enable verbose logging.
-- `-b`: Set the SOCKS bind address (default: `127.0.0.1:8086`).
-- `-c`: Path to the Warp configuration file.
-- `-e`: Specify the Warp endpoint IP.
-- `-k`: Your Warp license key.
-- `-gool`: enable warp in warp.
-- `-country`: ISO 3166-1 alpha-2 country code for Psiphon.
-- `-cfon`: Enable Psiphon over Warp.
-- `-rtt`: scanner rtt threshold, default is `1000`
+FLAGS
+  -v, --verbose           enable verbose logging
+  -b, --bind STRING       socks bind address (default: 127.0.0.1:8086)
+  -e, --endpoint STRING   warp endpoint
+  -k, --key STRING        warp key
+      --country STRING    psiphon country code (valid values: [AT BE BG BR CA CH CZ DE DK EE ES FI FR GB HU IE IN IT JP LV NL NO PL RO RS SE SG SK UA US]) (default: AT)
+      --cfon              enable psiphon mode (must provide country as well)
+      --gool              enable gool mode (warp in warp)
+      --scan              enable warp scanning (experimental)
+      --rtt DURATION      scanner rtt limit (default: 1s)
+```
 
 ### Country Codes for Psiphon
 

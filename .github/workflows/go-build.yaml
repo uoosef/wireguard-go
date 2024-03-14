@@ -63,16 +63,10 @@ jobs:
           go-version: '1.21'
           check-latest: true
 
-      - name: Build warp
+      - name: Build warp-plus
         run: |
           mkdir -p build_assets
-          go build -v -o build_assets/warp -trimpath -ldflags "-s -w -buildid=" ./main.go
-
-      - name: Rename Windows warp
-        if: matrix.goos == 'windows'
-        run: |
-          cd ./build_assets || exit 1
-          mv warp warp.exe
+          go build -v -o build_assets/ -trimpath -ldflags "-s -w -buildid=" .
 
       - name: Copy README.md & LICENSE
         run: |
@@ -84,9 +78,9 @@ jobs:
         run: |
           pushd ./build_assets || exit 1
           touch -mt $(date +%Y01010000) *
-          zip -9vr ../warp-${{ env.ASSET_NAME }}.zip .
+          zip -9vr ../warp-plus-${{ env.ASSET_NAME }}.zip .
           popd || exit 1
-          FILE=./warp-${{ env.ASSET_NAME }}.zip
+          FILE=./warp-plus-${{ env.ASSET_NAME }}.zip
           DGST=$FILE.dgst
           for METHOD in {"md5","sha256","sha512"}
           do
@@ -95,20 +89,20 @@ jobs:
 
       - name: Change the name
         run: |
-          mv ./build_assets ./warp-${{ env.ASSET_NAME }}
+          mv ./build_assets ./warp-plus-${{ env.ASSET_NAME }}
 
       - name: Upload files to Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: warp-${{ env.ASSET_NAME }}
+          name: warp-plus-${{ env.ASSET_NAME }}
           path: |
-            ./warp-${{ env.ASSET_NAME }}/*
+            ./warp-plus-${{ env.ASSET_NAME }}/*
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         if: github.event_name == 'release'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./warp-${{ env.ASSET_NAME }}.zip*
+          file: ./warp-plus-${{ env.ASSET_NAME }}.zip*
           tag: ${{ github.ref }}
           file_glob: true
