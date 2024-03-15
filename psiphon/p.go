@@ -357,15 +357,16 @@ func RunPsiphon(ctx context.Context, l *slog.Logger, wgBind, localSocksPort, cou
 
 	l.Info("Handshaking, Please Wait...")
 
-	ctx, _ = context.WithTimeout(ctx, 2*time.Minute)
+	childCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	defer cancel()
 	t0 := time.Now()
 	t := time.NewTicker(1 * time.Second)
 	defer t.Stop()
 
 	for {
 		select {
-		case <-ctx.Done():
-			if errors.Is(ctx.Err(), context.Canceled) {
+		case <-childCtx.Done():
+			if errors.Is(childCtx.Err(), context.Canceled) {
 				return errors.New("psiphon handshake operation canceled")
 			}
 			return errors.New("psiphon handshake maximum time exceeded")
