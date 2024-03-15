@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"net"
 	"net/netip"
 	"os"
 	"path/filepath"
@@ -124,12 +123,6 @@ func runWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoint 
 }
 
 func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoint string, country string) error {
-	// make a random bind address for warp
-	warpBindAddress, err := findFreePort("tcp")
-	if err != nil {
-		return err
-	}
-
 	conf, err := wiresocks.ParseConfig("./primary/wgcf-profile.ini", endpoint)
 	if err != nil {
 		return err
@@ -147,10 +140,13 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, bind netip.AddrPort
 		return err
 	}
 
-	tnet.StartProxy(warpBindAddress)
+	warpBind, err := tnet.StartProxy(netip.MustParseAddrPort("127.0.0.1:0"))
+	if err != nil {
+		return err
+	}
 
 	// run psiphon
-	err = psiphon.RunPsiphon(ctx, l.With("subsystem", "psiphon"), warpBindAddress.String(), bind.String(), country)
+	err = psiphon.RunPsiphon(ctx, l.With("subsystem", "psiphon"), warpBind.String(), bind.String(), country)
 	if err != nil {
 		return fmt.Errorf("unable to run psiphon %w", err)
 	}
@@ -179,20 +175,14 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, end
 		return err
 	}
 
-	// Run virtual endpoint
-	virtualEndpointBindAddress, err := findFreePort("udp")
-	if err != nil {
-		return err
-	}
-
 	// Create a UDP port forward between localhost and the remote endpoint
-	err = wiresocks.NewVtunUDPForwarder(ctx, virtualEndpointBindAddress.String(), endpoints[1], tnet, singleMTU)
+	addr, err := wiresocks.NewVtunUDPForwarder(ctx, netip.MustParseAddrPort("127.0.0.1:0"), endpoints[1], tnet, singleMTU)
 	if err != nil {
 		return err
 	}
 
 	// Run inner warp
-	conf, err = wiresocks.ParseConfig("./secondary/wgcf-profile.ini", virtualEndpointBindAddress.String())
+	conf, err = wiresocks.ParseConfig("./secondary/wgcf-profile.ini", addr.String())
 	if err != nil {
 		return err
 	}
@@ -208,36 +198,13 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, end
 		return err
 	}
 
-	tnet.StartProxy(bind)
+	_, err = tnet.StartProxy(bind)
+	if err != nil {
+		return err
+	}
 
 	l.Info("serving proxy", "address", bind)
 	return nil
-}
-
-func findFreePort(network string) (netip.AddrPort, error) {
-	if network == "udp" {
-		addr, err := net.ResolveUDPAddr("udp", "127.0.0.1:0")
-		if err != nil {
-			return netip.AddrPort{}, err
-		}
-
-		conn, err := net.ListenUDP("udp", addr)
-		if err != nil {
-			return netip.AddrPort{}, err
-		}
-		defer conn.Close()
-
-		return netip.MustParseAddrPort(conn.LocalAddr().String()), nil
-	}
-	// Listen on TCP port 0, which tells the OS to pick a free port.
-	listener, err := net.Listen(network, "127.0.0.1:0")
-	if err != nil {
-		return netip.AddrPort{}, err // Return error if unable to listen on a port
-	}
-	defer listener.Close() // Ensure the listener is closed when the function returns
-
-	// Get the port from the listener's address
-	return netip.MustParseAddrPort(listener.Addr().String()), nil
 }
 
 func createPrimaryAndSecondaryIdentities(l *slog.Logger, license string) error {

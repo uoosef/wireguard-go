@@ -3,28 +3,24 @@ package wiresocks
 import (
 	"context"
 	"net"
+	"net/netip"
 	"sync"
 )
 
-func NewVtunUDPForwarder(ctx context.Context, localBind, dest string, vtun *VirtualTun, mtu int) error {
-	localAddr, err := net.ResolveUDPAddr("udp", localBind)
-	if err != nil {
-		return err
-	}
-
+func NewVtunUDPForwarder(ctx context.Context, localBind netip.AddrPort, dest string, vtun *VirtualTun, mtu int) (netip.AddrPort, error) {
 	destAddr, err := net.ResolveUDPAddr("udp", dest)
 	if err != nil {
-		return err
+		return netip.AddrPort{}, err
 	}
 
-	listener, err := net.ListenUDP("udp", localAddr)
+	listener, err := net.ListenUDP("udp", net.UDPAddrFromAddrPort(localBind))
 	if err != nil {
-		return err
+		return netip.AddrPort{}, err
 	}
 
 	rconn, err := vtun.Tnet.DialUDP(nil, destAddr)
 	if err != nil {
-		return err
+		return netip.AddrPort{}, err
 	}
 
 	var clientAddr *net.UDPAddr
@@ -73,5 +69,6 @@ func NewVtunUDPForwarder(ctx context.Context, localBind, dest string, vtun *Virt
 		_ = listener.Close()
 		_ = rconn.Close()
 	}()
-	return nil
+
+	return listener.LocalAddr().(*net.UDPAddr).AddrPort(), nil
 }

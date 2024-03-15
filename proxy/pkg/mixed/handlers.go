@@ -3,6 +3,7 @@ package mixed
 import (
 	"context"
 	"log/slog"
+	"net"
 
 	"github.com/bepass-org/warp-plus/proxy/pkg/statute"
 )
@@ -13,6 +14,15 @@ func WithBindAddress(binAddress string) Option {
 		p.socks5Proxy.Bind = binAddress
 		p.socks4Proxy.Bind = binAddress
 		p.httpProxy.Bind = binAddress
+	}
+}
+
+func WithListener(ln net.Listener) Option {
+	return func(p *Proxy) {
+		p.listener = ln
+		p.socks5Proxy.Listener = ln
+		p.socks4Proxy.Listener = ln
+		p.httpProxy.Listener = ln
 	}
 }
 

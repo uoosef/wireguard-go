@@ -15,6 +15,9 @@ import (
 type Server struct {
 	// bind is the address to listen on
 	Bind string
+
+	Listener net.Listener
+
 	// ProxyDial specifies the optional proxyDial function for
 	// establishing the transport connection.
 	ProxyDial statute.ProxyDialFunc
@@ -47,14 +50,20 @@ type ServerOption func(*Server)
 
 func (s *Server) ListenAndServe() error {
 	// Create a new listener
-	ln, err := net.Listen("tcp", s.Bind)
-	if err != nil {
-		return err // Return error if binding was unsuccessful
+	if s.Listener == nil {
+		ln, err := net.Listen("tcp", s.Bind)
+		if err != nil {
+			return err // Return error if binding was unsuccessful
+		}
+		s.Listener = ln
 	}
+
+	s.Bind = s.Listener.Addr().(*net.TCPAddr).String()
+	s.Logger.Debug("started proxy", "address", s.Bind)
 
 	// ensure listener will be closed
 	defer func() {
-		_ = ln.Close()
+		_ = s.Listener.Close()
 	}()
 
 	// Create a cancelable context based on s.Context
@@ -67,7 +76,7 @@ func (s *Server) ListenAndServe() error {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			conn, err := ln.Accept()
+			conn, err := s.Listener.Accept()
 			if err != nil {
 				s.Logger.Error(err.Error())
 				continue

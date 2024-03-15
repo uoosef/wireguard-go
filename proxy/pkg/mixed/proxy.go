@@ -17,6 +17,9 @@ type userHandler func(request *statute.ProxyRequest) error
 type Proxy struct {
 	// bind is the address to listen on
 	bind string
+
+	listener net.Listener
+
 	// socks5Proxy is a socks5 server with tcp and udp support
 	socks5Proxy *socks5.Server
 	// socks4Proxy is a socks4 server with tcp support
@@ -78,15 +81,20 @@ func (c *SwitchConn) Read(p []byte) (n int, err error) {
 
 func (p *Proxy) ListenAndServe() error {
 	// Create a new listener
-	ln, err := net.Listen("tcp", p.bind)
-	if err != nil {
-		return err // Return error if binding was unsuccessful
+	if p.listener == nil {
+		ln, err := net.Listen("tcp", p.bind)
+		if err != nil {
+			return err // Return error if binding was unsuccessful
+		}
+		p.listener = ln
 	}
+
+	p.bind = p.listener.Addr().(*net.TCPAddr).String()
 	p.logger.Debug("started proxy", "address", p.bind)
 
 	// ensure listener will be closed
 	defer func() {
-		_ = ln.Close()
+		_ = p.listener.Close()
 	}()
 
 	// Create a cancelable context based on p.Context
@@ -99,7 +107,7 @@ func (p *Proxy) ListenAndServe() error {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			conn, err := ln.Accept()
+			conn, err := p.listener.Accept()
 			if err != nil {
 				p.logger.Error(err.Error())
 				continue
