@@ -8,7 +8,6 @@ import (
 	"net/netip"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/bepass-org/warp-plus/psiphon"
 	"github.com/bepass-org/warp-plus/warp"
@@ -24,15 +23,11 @@ type WarpOptions struct {
 	License  string
 	Psiphon  *PsiphonOptions
 	Gool     bool
-	Scan     *ScanOptions
+	Scan     *wiresocks.ScanOptions
 }
 
 type PsiphonOptions struct {
 	Country string
-}
-
-type ScanOptions struct {
-	MaxRTT time.Duration
 }
 
 func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
@@ -65,7 +60,7 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 	endpoints := []string{opts.Endpoint, opts.Endpoint}
 
 	if opts.Scan != nil {
-		res, err := wiresocks.RunScan(ctx, opts.Scan.MaxRTT)
+		res, err := wiresocks.RunScan(ctx, *opts.Scan)
 		if err != nil {
 			return err
 		}

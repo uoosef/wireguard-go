@@ -17,15 +17,29 @@ func WarpPrefixes() []netip.Prefix {
 		netip.MustParsePrefix("188.114.97.0/24"),
 		netip.MustParsePrefix("188.114.98.0/24"),
 		netip.MustParsePrefix("188.114.99.0/24"),
-		netip.MustParsePrefix("2606:4700:d0::/48"),
-		netip.MustParsePrefix("2606:4700:d1::/48"),
+		netip.MustParsePrefix("2606:4700:d0::/64"),
+		netip.MustParsePrefix("2606:4700:d1::/64"),
 	}
 }
 
-func RandomWarpPrefix() netip.Prefix {
+func RandomWarpPrefix(v4, v6 bool) netip.Prefix {
+	if !v4 && !v6 {
+		panic("Must choose a IP version for RandomWarpPrefix")
+	}
+
 	cidrs := WarpPrefixes()
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return cidrs[rng.Intn(len(cidrs))]
+	for {
+		cidr := cidrs[rng.Intn(len(cidrs))]
+
+		if v4 && cidr.Addr().Is4() {
+			return cidr
+		}
+
+		if v6 && cidr.Addr().Is6() {
+			return cidr
+		}
+	}
 }
 
 func WarpPorts() []uint16 {
@@ -93,8 +107,8 @@ func RandomWarpPort() uint16 {
 	return ports[rng.Intn(len(ports))]
 }
 
-func RandomWarpEndpoint() (netip.AddrPort, error) {
-	randomIP, err := iputils.RandomIPFromPrefix(RandomWarpPrefix())
+func RandomWarpEndpoint(v4, v6 bool) (netip.AddrPort, error) {
+	randomIP, err := iputils.RandomIPFromPrefix(RandomWarpPrefix(v4, v6))
 	if err != nil {
 		return netip.AddrPort{}, err
 	}

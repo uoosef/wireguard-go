@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
-	"net/netip"
 	"time"
 
 	"github.com/bepass-org/warp-plus/ipscanner"
@@ -13,20 +11,13 @@ import (
 	"github.com/go-ini/ini"
 )
 
-func canConnectIPv6(remoteAddr netip.AddrPort) bool {
-	dialer := net.Dialer{
-		Timeout: 5 * time.Second,
-	}
-
-	conn, err := dialer.Dial("tcp6", remoteAddr.String())
-	if err != nil {
-		return false
-	}
-	defer conn.Close()
-	return true
+type ScanOptions struct {
+	V4     bool
+	V6     bool
+	MaxRTT time.Duration
 }
 
-func RunScan(ctx context.Context, rtt time.Duration) (result []ipscanner.IPInfo, err error) {
+func RunScan(ctx context.Context, opts ScanOptions) (result []ipscanner.IPInfo, err error) {
 	cfg, err := ini.Load("./primary/wgcf-profile.ini")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file: %w", err)
@@ -43,9 +34,9 @@ func RunScan(ctx context.Context, rtt time.Duration) (result []ipscanner.IPInfo,
 		ipscanner.WithWarpPing(),
 		ipscanner.WithWarpPrivateKey(privateKey),
 		ipscanner.WithWarpPeerPublicKey(publicKey),
-		ipscanner.WithUseIPv6(canConnectIPv6(netip.MustParseAddrPort("[2001:4860:4860::8888]:80"))),
-		ipscanner.WithUseIPv4(true),
-		ipscanner.WithMaxDesirableRTT(rtt),
+		ipscanner.WithUseIPv4(opts.V4),
+		ipscanner.WithUseIPv6(opts.V6),
+		ipscanner.WithMaxDesirableRTT(opts.MaxRTT),
 		ipscanner.WithCidrList(warp.WarpPrefixes()),
 	)
 

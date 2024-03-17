@@ -36,13 +36,15 @@ NAME
   warp-plus
 
 FLAGS
+  -4                      only use IPv4 for random warp endpoint
+  -6                      only use IPv6 for random warp endpoint
   -v, --verbose           enable verbose logging
   -b, --bind STRING       socks bind address (default: 127.0.0.1:8086)
   -e, --endpoint STRING   warp endpoint
   -k, --key STRING        warp key
-      --country STRING    psiphon country code (valid values: [AT BE BG BR CA CH CZ DE DK EE ES FI FR GB HU IE IN IT JP LV NL NO PL RO RS SE SG SK UA US]) (default: AT)
-      --cfon              enable psiphon mode (must provide country as well)
       --gool              enable gool mode (warp in warp)
+      --cfon              enable psiphon mode (must provide country as well)
+      --country STRING    psiphon country code (valid values: [AT BE BG BR CA CH CZ DE DK EE ES FI FR GB HU IE IN IT JP LV NL NO PL RO RS SE SG SK UA US]) (default: AT)
       --scan              enable warp scanning (experimental)
       --rtt DURATION      scanner rtt limit (default: 1s)
 ```

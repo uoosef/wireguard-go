@@ -11,8 +11,11 @@ import (
 	"syscall"
 	"time"
 
+	_ "net/http/pprof"
+
 	"github.com/bepass-org/warp-plus/app"
 	"github.com/bepass-org/warp-plus/warp"
+	"github.com/bepass-org/warp-plus/wiresocks"
 
 	"github.com/peterbourgon/ff/v4"
 	"github.com/peterbourgon/ff/v4/ffhelp"
@@ -54,13 +57,15 @@ var psiphonCountries = []string{
 func main() {
 	fs := ff.NewFlagSet("warp-plus")
 	var (
+		v4       = fs.BoolShort('4', "only use IPv4 for random warp endpoint")
+		v6       = fs.BoolShort('6', "only use IPv6 for random warp endpoint")
 		verbose  = fs.Bool('v', "verbose", "enable verbose logging")
 		bind     = fs.String('b', "bind", "127.0.0.1:8086", "socks bind address")
 		endpoint = fs.String('e', "endpoint", "", "warp endpoint")
 		key      = fs.String('k', "key", "", "warp key")
-		country  = fs.StringEnumLong("country", fmt.Sprintf("psiphon country code (valid values: %s)", psiphonCountries), psiphonCountries...)
-		psiphon  = fs.BoolLong("cfon", "enable psiphon mode (must provide country as well)")
 		gool     = fs.BoolLong("gool", "enable gool mode (warp in warp)")
+		psiphon  = fs.BoolLong("cfon", "enable psiphon mode (must provide country as well)")
+		country  = fs.StringEnumLong("country", fmt.Sprintf("psiphon country code (valid values: %s)", psiphonCountries), psiphonCountries...)
 		scan     = fs.BoolLong("scan", "enable warp scanning (experimental)")
 		rtt      = fs.DurationLong("rtt", 1000*time.Millisecond, "scanner rtt limit")
 	)
@@ -86,6 +91,14 @@ func main() {
 		fatal(l, errors.New("can't use cfon and gool at the same time"))
 	}
 
+	if *v4 && *v6 {
+		fatal(l, errors.New("can't force v4 and v6 at the same time"))
+	}
+
+	if !*v4 && !*v6 {
+		*v4, *v6 = true, true
+	}
+
 	bindAddrPort, err := netip.ParseAddrPort(*bind)
 	if err != nil {
 		fatal(l, fmt.Errorf("invalid bind address: %w", err))
@@ -105,12 +118,12 @@ func main() {
 
 	if *scan {
 		l.Info("scanner mode enabled", "max-rtt", rtt)
-		opts.Scan = &app.ScanOptions{MaxRTT: *rtt}
+		opts.Scan = &wiresocks.ScanOptions{V4: *v4, V6: *v6, MaxRTT: *rtt}
 	}
 
 	// If the endpoint is not set, choose a random warp endpoint
 	if opts.Endpoint == "" {
-		addrPort, err := warp.RandomWarpEndpoint()
+		addrPort, err := warp.RandomWarpEndpoint(*v4, *v6)
 		if err != nil {
 			fatal(l, err)
 		}
