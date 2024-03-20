@@ -47,7 +47,6 @@ func StartWireguard(ctx context.Context, l *slog.Logger, conf *Configuration) (*
 
 	return &VirtualTun{
 		Tnet:      tnet,
-		SystemDNS: len(conf.Interface.DNS) == 0,
 		Logger:    l.With("subsystem", "vtun"),
 		Dev:       dev,
 		Ctx:       ctx,

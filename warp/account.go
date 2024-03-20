@@ -25,8 +25,6 @@ const (
 var (
 	identityFile = "wgcf-identity.json"
 	profileFile  = "wgcf-profile.ini"
-	dnsAddresses = []string{"8.8.8.8", "8.8.4.4"}
-	dc           = 0
 )
 
 var (
@@ -474,10 +472,9 @@ func getWireguardConfig(privateKey, address1, address2, publicKey, endpoint stri
 
 	buffer.WriteString("[Interface]\n")
 	buffer.WriteString(fmt.Sprintf("PrivateKey = %s\n", privateKey))
-	buffer.WriteString(fmt.Sprintf("DNS = %s\n", dnsAddresses[dc%len(dnsAddresses)]))
-	dc++
-	buffer.WriteString(fmt.Sprintf("Address = %s\n", address1+"/24"))
-	buffer.WriteString(fmt.Sprintf("Address = %s\n", address2+"/128"))
+	buffer.WriteString("DNS = 1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001, 8.8.8.8, 8.8.4.4, 2001:4860:4860::8888, 2001:4860:4860::8844, 9.9.9.9, 149.112.112.112, 2620:fe::fe, 2620:fe::9\n")
+	buffer.WriteString(fmt.Sprintf("Address = %s/24\n", address1))
+	buffer.WriteString(fmt.Sprintf("Address = %s/128\n", address2))
 
 	buffer.WriteString("[Peer]\n")
 	buffer.WriteString(fmt.Sprintf("PublicKey = %s\n", publicKey))

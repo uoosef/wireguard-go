@@ -16,7 +16,6 @@ import (
 // VirtualTun stores a reference to netstack network and DNS configuration
 type VirtualTun struct {
 	Tnet      *netstack.Net
-	SystemDNS bool
 	Logger    *slog.Logger
 	Dev       *device.Device
 	Ctx       context.Context
