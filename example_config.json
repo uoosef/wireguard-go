@@ -1,0 +1,11 @@
+{
+  "verbose": false,
+  "bind": "127.0.0.1:8086",
+  "endpoint": "",
+  "key": "",
+  "gool": false,
+  "cfon": false,
+  "country": "DE",
+  "scan": true,
+  "rtt": "1000ms"
+}

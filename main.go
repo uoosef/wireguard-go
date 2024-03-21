@@ -19,6 +19,7 @@ import (
 
 	"github.com/peterbourgon/ff/v4"
 	"github.com/peterbourgon/ff/v4/ffhelp"
+	"github.com/peterbourgon/ff/v4/ffjson"
 )
 
 var psiphonCountries = []string{
@@ -66,12 +67,17 @@ func main() {
 		gool     = fs.BoolLong("gool", "enable gool mode (warp in warp)")
 		psiphon  = fs.BoolLong("cfon", "enable psiphon mode (must provide country as well)")
 		country  = fs.StringEnumLong("country", fmt.Sprintf("psiphon country code (valid values: %s)", psiphonCountries), psiphonCountries...)
-		scan     = fs.BoolLong("scan", "enable warp scanning (experimental)")
+		scan     = fs.BoolLong("scan", "enable warp scanning")
 		rtt      = fs.DurationLong("rtt", 1000*time.Millisecond, "scanner rtt limit")
+		_        = fs.String('c', "config", "", "path to config file")
 	)
 
-	// Config file and envvars can be added through ff later
-	err := ff.Parse(fs, os.Args[1:])
+	err := ff.Parse(
+		fs,
+		os.Args[1:],
+		ff.WithConfigFileFlag("config"),
+		ff.WithConfigFileParser(ffjson.Parse),
+	)
 	switch {
 	case errors.Is(err, ff.ErrHelp):
 		fmt.Fprintf(os.Stderr, "%s\n", ffhelp.Flags(fs))
