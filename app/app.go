@@ -60,7 +60,7 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 	endpoints := []string{opts.Endpoint, opts.Endpoint}
 
 	if opts.Scan != nil {
-		res, err := wiresocks.RunScan(ctx, *opts.Scan)
+		res, err := wiresocks.RunScan(ctx, l, *opts.Scan)
 		if err != nil {
 			return err
 		}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/bepass-org/warp-plus/ipscanner"
@@ -17,7 +18,7 @@ type ScanOptions struct {
 	MaxRTT time.Duration
 }
 
-func RunScan(ctx context.Context, opts ScanOptions) (result []ipscanner.IPInfo, err error) {
+func RunScan(ctx context.Context, l *slog.Logger, opts ScanOptions) (result []ipscanner.IPInfo, err error) {
 	cfg, err := ini.Load("./primary/wgcf-profile.ini")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file: %w", err)
@@ -31,6 +32,7 @@ func RunScan(ctx context.Context, opts ScanOptions) (result []ipscanner.IPInfo, 
 
 	// new scanner
 	scanner := ipscanner.NewScanner(
+		ipscanner.WithLogger(l.With(slog.String("subsystem", "scanner"))),
 		ipscanner.WithWarpPing(),
 		ipscanner.WithWarpPrivateKey(privateKey),
 		ipscanner.WithWarpPeerPublicKey(publicKey),

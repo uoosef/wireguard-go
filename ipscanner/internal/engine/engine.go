@@ -28,7 +28,7 @@ func NewScannerEngine(opts *statute.ScannerOptions) *Engine {
 		ipQueue:   queue,
 		ping:      p.DoPing,
 		generator: iterator.NewIterator(opts),
-		log:       opts.Logger.With(slog.String("subsystem", "engine")),
+		log:       opts.Logger.With(slog.String("subsystem", "scanner/engine")),
 	}
 }
 
