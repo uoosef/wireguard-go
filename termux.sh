@@ -266,7 +266,7 @@ menu() {
     echo -e "                              ${purple}  * ${rest}"
     echo -e "${cyan}4]${rest} ${green}Gool [${yellow}warp in warp${green}]${purple}          * ${rest}"
     echo -e "                              ${purple}  * ${rest}"
-    echo -e "${cyan}5]${rest} ${green}Pshiphon [${yellow}+ All Locations${green}]${purple}   * ${rest}"
+    echo -e "${cyan}5]${rest} ${green}Psiphon [${yellow}+ All Locations${green}]${purple}   * ${rest}"
     echo -e "                              ${purple}  * ${rest}"
     echo -e "${cyan}6]${rest} ${green}Warp to ${purple}Warp plus${green} [${yellow}Free GB${green}]${rest}${purple}  * ${rest}"
     echo -e "                              ${purple}  * ${rest}"
