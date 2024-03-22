@@ -96,8 +96,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/wireguard-go/mas
 - در روش warp به warp plus مقدار account id را وارد میکنید و با این کار هر 20 ثانیه 1 GB به اکانت شما اضافه میشود. 
 - برای تغییر  لوکیشن با استفاده از سایفون برای مثال به USA  از دستور  زیر استفاده کنید: 
 - `warp -cfon -country US`
-- برای اسکن ای پی سالم وارپ از دستور `warp -scan` استفاده کنید. 
-- برای ترکیب (chain) دو کانفیگ برای تغییر لوکیشن از دستور `warp -gool` استفاده کنید. 
+- برای اسکن ای پی سالم وارپ از دستور `warp --scan` استفاده کنید. 
+- برای ترکیب (chain) دو کانفیگ برای تغییر لوکیشن از دستور `warp --gool` استفاده کنید. 
 
 ## Contributing
 
