@@ -90,7 +90,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/wireguard-go/mas
 ![1](https://github.com/Ptechgithub/configs/blob/main/media/18.jpg?raw=true)
 
 - بعد از نصب برای اجرای مجدد فقط کافیه که `warp` یا `usef` یا `./warp` را وارد کنید . 
-- اگر با 1 نصب نشد و خطا گرفتید عدد 2 رو انتخاب کنید یعنی Arm.
+- اگر با 1 نصب نشد و خطا گرفتید ابتدا یک بار 3 را بزنید تا `Uninstall' شود سپس عدد 2 رو انتخاب کنید یعنی Arm.
 - برای نمایش راهنما ` warp -h` را وارد کنید. 
 - ای پی و پورت `127.0.0.1:8086`پروتکل socks
 - در روش warp به warp plus مقدار account id را وارد میکنید و با این کار هر 20 ثانیه 1 GB به اکانت شما اضافه میشود. 
