@@ -40,6 +40,7 @@ install() {
         return
     fi
 
+    echo -e "${purple}*********************************${rest}"
     echo -e "${green}Installing Warp...${rest}"
     pkg update -y && pkg upgrade -y
     pacman -Syu openssh = apt update; apt full-upgrade -y; apt install -y openssh
@@ -67,7 +68,8 @@ install_arm() {
         echo -e "${green}Warp is already installed.${rest}"
         return
     fi
-
+    
+    echo -e "${purple}*********************************${rest}"
     echo -e "${green}Installing Warp...${rest}"
     pkg update -y && pkg upgrade -y
     pacman -Syu openssh = apt update; apt full-upgrade -y; apt install -y openssh
