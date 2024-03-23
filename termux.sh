@@ -178,7 +178,7 @@ psiphon_location() {
 
     echo -en "${green}Enter the ${yellow}number${green} of the location [${yellow}default: 1${green}]: ${rest}"
     read -r choice
-    choice=${choice:-AT}
+    choice=${choice:-1}
     
     case "$choice" in
         1) location="AT" ;;
