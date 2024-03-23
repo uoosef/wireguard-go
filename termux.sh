@@ -217,6 +217,7 @@ psiphon_location() {
     # Now use the selected location variable $location in your script
     echo -e "${purple}*********************************${rest}"
     echo -e "${green}Selected location: $location${rest}"
+    echo -e "${purple}*********************************${rest}"
     warp --cfon --country $location
 }
 
