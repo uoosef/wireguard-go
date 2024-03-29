@@ -83,7 +83,7 @@ FLAGS
 - Ukraine (UA)
 - United States (US)
 
-### Termux (BROKEN)
+### Termux
 
 ```
 bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/wireguard-go/master/termux.sh)
