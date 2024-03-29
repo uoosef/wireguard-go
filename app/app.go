@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/netip"
-	"os"
-	"path/filepath"
 
 	"github.com/bepass-org/warp-plus/psiphon"
 	"github.com/bepass-org/warp-plus/warp"
@@ -38,18 +36,6 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 	if opts.Psiphon != nil && opts.Psiphon.Country == "" {
 		return errors.New("must provide country for psiphon")
 	}
-
-	// create necessary file structures
-	if err := makeDirs(); err != nil {
-		return err
-	}
-	l.Debug("'primary' and 'secondary' directories are ready")
-
-	// Change the current working directory to 'stuff'
-	if err := os.Chdir("stuff"); err != nil {
-		return fmt.Errorf("error changing to 'stuff' directory: %w", err)
-	}
-	l.Debug("Changed working directory to 'stuff'")
 
 	// create identities
 	if err := createPrimaryAndSecondaryIdentities(l.With("subsystem", "warp/account"), opts.License); err != nil {
@@ -94,7 +80,7 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 }
 
 func runWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoint string) error {
-	conf, err := wiresocks.ParseConfig("./primary/wgcf-profile.ini", endpoint)
+	conf, err := wiresocks.ParseConfig("./stuff/primary/wgcf-profile.ini", endpoint)
 	if err != nil {
 		return err
 	}
@@ -122,7 +108,7 @@ func runWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoint 
 }
 
 func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoint string, country string) error {
-	conf, err := wiresocks.ParseConfig("./primary/wgcf-profile.ini", endpoint)
+	conf, err := wiresocks.ParseConfig("./stuff/primary/wgcf-profile.ini", endpoint)
 	if err != nil {
 		return err
 	}
@@ -157,7 +143,7 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, bind netip.AddrPort
 
 func runWarpInWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoints []string) error {
 	// Run outer warp
-	conf, err := wiresocks.ParseConfig("./primary/wgcf-profile.ini", endpoints[0])
+	conf, err := wiresocks.ParseConfig("./stuff/primary/wgcf-profile.ini", endpoints[0])
 	if err != nil {
 		return err
 	}
@@ -181,7 +167,7 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, end
 	}
 
 	// Run inner warp
-	conf, err = wiresocks.ParseConfig("./secondary/wgcf-profile.ini", addr.String())
+	conf, err = wiresocks.ParseConfig("./stuff/secondary/wgcf-profile.ini", addr.String())
 	if err != nil {
 		return err
 	}
@@ -208,43 +194,17 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, end
 
 func createPrimaryAndSecondaryIdentities(l *slog.Logger, license string) error {
 	// make primary identity
-	warp.UpdatePath("./primary")
-	if !warp.CheckProfileExists(license) {
-		err := warp.LoadOrCreateIdentity(l, license)
-		if err != nil {
-			return err
-		}
+	err := warp.LoadOrCreateIdentity(l, "./stuff/primary", license)
+	if err != nil {
+		l.Error("couldn't load primary warp identity")
+		return err
 	}
+
 	// make secondary
-	warp.UpdatePath("./secondary")
-	if !warp.CheckProfileExists(license) {
-		err := warp.LoadOrCreateIdentity(l, license)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func makeDirs() error {
-	stuffDir := "stuff"
-	primaryDir := "primary"
-	secondaryDir := "secondary"
-
-	// Check if 'stuff' directory exists, if not create it
-	if _, err := os.Stat(stuffDir); os.IsNotExist(err) {
-		if err := os.Mkdir(stuffDir, 0o755); err != nil {
-			return fmt.Errorf("error creating 'stuff' directory: %w", err)
-		}
-	}
-
-	// Create 'primary' and 'secondary' directories if they don't exist
-	for _, dir := range []string{primaryDir, secondaryDir} {
-		if _, err := os.Stat(filepath.Join(stuffDir, dir)); os.IsNotExist(err) {
-			if err := os.Mkdir(filepath.Join(stuffDir, dir), 0o755); err != nil {
-				return fmt.Errorf("error creating '%s' directory: %w", dir, err)
-			}
-		}
+	err = warp.LoadOrCreateIdentity(l, "./stuff/secondary", license)
+	if err != nil {
+		l.Error("couldn't load secondary warp identity")
+		return err
 	}
 
 	return nil
