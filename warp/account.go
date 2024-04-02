@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -353,6 +354,10 @@ func LoadIdentity(path string) (Identity, error) {
 	err = json.Unmarshal(fileBytes, i)
 	if err != nil {
 		return Identity{}, err
+	}
+
+	if len(i.Config.Peers) < 1 {
+		return Identity{}, errors.New("identity contains 0 peers")
 	}
 
 	return *i, nil
