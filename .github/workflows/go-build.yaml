@@ -49,23 +49,23 @@ jobs:
       CGO_ENABLED: 0
     steps:
       - name: Checkout codebase
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Show workflow information
         run: |
-          export _NAME=$GOOS-$GOARCH$GOARM$GOMIPS.${GITHUB_SHA::6}
+          export _NAME=$GOOS-$GOARCH$GOARM$GOMIPS
           echo "GOOS: $GOOS, GOARCH: $GOARCH, GOARM: $GOARM, GOMIPS: $GOMIPS, RELEASE_NAME: $_NAME"
           echo "ASSET_NAME=$_NAME" >> $GITHUB_ENV
+          echo "REF=${GITHUB_SHA::6}" >> $GITHUB_ENV
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: '1.21'
           check-latest: true
 
       - name: Build warp-plus
         run: |
-          mkdir -p build_assets
           go build -v -o build_assets/ -trimpath -ldflags "-s -w -buildid=" .
 
       - name: Copy README.md & LICENSE
@@ -78,9 +78,9 @@ jobs:
         run: |
           pushd ./build_assets || exit 1
           touch -mt $(date +%Y01010000) *
-          zip -9vr ../warp-plus-${{ env.ASSET_NAME }}.zip .
+          zip -9vr ../warp-plus_${{ env.ASSET_NAME }}.zip .
           popd || exit 1
-          FILE=./warp-plus-${{ env.ASSET_NAME }}.zip
+          FILE=./warp-plus_${{ env.ASSET_NAME }}.zip
           DGST=$FILE.dgst
           for METHOD in {"md5","sha256","sha512"}
           do
@@ -89,20 +89,20 @@ jobs:
 
       - name: Change the name
         run: |
-          mv ./build_assets ./warp-plus-${{ env.ASSET_NAME }}
+          mv ./build_assets ./warp-plus_${{ env.ASSET_NAME }}
 
       - name: Upload files to Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: warp-plus-${{ env.ASSET_NAME }}
+          name: warp-plus_${{ env.ASSET_NAME }}_${{ env.REF }}
           path: |
-            ./warp-plus-${{ env.ASSET_NAME }}/*
+            ./warp-plus_${{ env.ASSET_NAME }}/*
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         if: github.event_name == 'release'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./warp-plus-${{ env.ASSET_NAME }}.zip*
+          file: ./warp-plus_${{ env.ASSET_NAME }}.zip*
           tag: ${{ github.ref }}
           file_glob: true
