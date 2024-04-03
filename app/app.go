@@ -12,8 +12,8 @@ import (
 	"github.com/bepass-org/warp-plus/wiresocks"
 )
 
-const singleMTU = 1400
-const doubleMTU = 1320
+const singleMTU = 1330
+const doubleMTU = 1250
 
 type WarpOptions struct {
 	Bind     netip.AddrPort
