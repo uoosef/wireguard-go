@@ -8,5 +8,7 @@
   "country": "DE",
   "scan": true,
   "rtt": "1000ms",
-  "cache-dir": ""
+  "cache-dir": "",
+  "tun": false,
+  "fwmark": "0x1375"
 }

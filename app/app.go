@@ -16,6 +16,7 @@ import (
 
 const singleMTU = 1330
 const doubleMTU = 1280 // minimum mtu for IPv6, may cause frag reassembly somewhere
+const connTestEndpoint = "http://1.1.1.1:80/"
 
 type WarpOptions struct {
 	Bind     netip.AddrPort
@@ -25,10 +26,15 @@ type WarpOptions struct {
 	Gool     bool
 	Scan     *wiresocks.ScanOptions
 	CacheDir string
+	Tun      *TunOptions
 }
 
 type PsiphonOptions struct {
 	Country string
+}
+
+type TunOptions struct {
+	FwMark uint32
 }
 
 func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
@@ -38,6 +44,10 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 
 	if opts.Psiphon != nil && opts.Psiphon.Country == "" {
 		return errors.New("must provide country for psiphon")
+	}
+
+	if opts.Psiphon != nil && opts.Tun != nil {
+		return errors.New("can't use psiphon and tun at the same time")
 	}
 
 	// create identities
@@ -94,12 +104,16 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 }
 
 func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint string) error {
+	// Set up primary/outer warp config
 	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
 	if err != nil {
 		return err
 	}
+
+	// Set up MTU
 	conf.Interface.MTU = singleMTU
 
+	// Enable trick and keepalive on all peers in config
 	for i, peer := range conf.Peers {
 		peer.Endpoint = endpoint
 		peer.Trick = true
@@ -107,28 +121,154 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 		conf.Peers[i] = peer
 	}
 
-	tnet, err := wiresocks.StartWireguard(ctx, l, conf)
+	if opts.Tun != nil {
+		// Create a new tun interface
+		tunDev, err := newNormalTun()
+		if err != nil {
+			return err
+		}
+
+		// Establish wireguard tunnel on tun interface
+		if err := establishWireguard(l, conf, tunDev, opts.Tun.FwMark); err != nil {
+			return err
+		}
+		l.Info("serving tun", "interface", "warp0")
+		return nil
+	}
+
+	// Create userspace tun network stack
+	tunDev, tnet, err := newUsermodeTun(conf)
 	if err != nil {
 		return err
 	}
 
-	_, err = tnet.StartProxy(opts.Bind)
+	// Establish wireguard on userspace stack
+	if err := establishWireguard(l, conf, tunDev, 0); err != nil {
+		return err
+	}
+
+	// Test wireguard connectivity
+	if err := usermodeTunTest(ctx, l, tnet); err != nil {
+		return err
+	}
+
+	// Run a proxy on the userspace stack
+	_, err = wiresocks.StartProxy(ctx, l, tnet, opts.Bind)
 	if err != nil {
 		return err
 	}
 
 	l.Info("serving proxy", "address", opts.Bind)
-
 	return nil
 }
 
-func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint string) error {
+func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoints []string) error {
+	// Set up primary/outer warp config
 	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
 	if err != nil {
 		return err
 	}
+
+	// Set up MTU
 	conf.Interface.MTU = singleMTU
 
+	// Enable trick and keepalive on all peers in config
+	for i, peer := range conf.Peers {
+		peer.Endpoint = endpoints[0]
+		peer.Trick = true
+		peer.KeepAlive = 3
+		conf.Peers[i] = peer
+	}
+
+	// Create userspace tun network stack
+	tunDev, tnet, err := newUsermodeTun(conf)
+	if err != nil {
+		return err
+	}
+
+	// Establish wireguard on userspace stack
+	if err := establishWireguard(l.With("gool", "outer"), conf, tunDev, 0); err != nil {
+		return err
+	}
+
+	// Test wireguard connectivity
+	if err := usermodeTunTest(ctx, l, tnet); err != nil {
+		return err
+	}
+
+	// Create a UDP port forward between localhost and the remote endpoint
+	addr, err := wiresocks.NewVtunUDPForwarder(ctx, netip.MustParseAddrPort("127.0.0.1:0"), endpoints[0], tnet, singleMTU)
+	if err != nil {
+		return err
+	}
+
+	// Set up secondary/inner warp config
+	conf, err = wiresocks.ParseConfig(path.Join(opts.CacheDir, "secondary", "wgcf-profile.ini"))
+	if err != nil {
+		return err
+	}
+
+	// Set up MTU
+	conf.Interface.MTU = doubleMTU
+
+	// Enable keepalive on all peers in config
+	for i, peer := range conf.Peers {
+		peer.Endpoint = addr.String()
+		peer.KeepAlive = 10
+		conf.Peers[i] = peer
+	}
+
+	if opts.Tun != nil {
+		// Create a new tun interface
+		tunDev, err := newNormalTun()
+		if err != nil {
+			return err
+		}
+
+		// Establish wireguard tunnel on tun interface
+		if err := establishWireguard(l.With("gool", "inner"), conf, tunDev, opts.Tun.FwMark); err != nil {
+			return err
+		}
+		l.Info("serving tun", "interface", "warp0")
+		return nil
+	}
+
+	// Create userspace tun network stack
+	tunDev, tnet, err = newUsermodeTun(conf)
+	if err != nil {
+		return err
+	}
+
+	// Establish wireguard on userspace stack
+	if err := establishWireguard(l.With("gool", "inner"), conf, tunDev, 0); err != nil {
+		return err
+	}
+
+	// Test wireguard connectivity
+	if err := usermodeTunTest(ctx, l, tnet); err != nil {
+		return err
+	}
+
+	_, err = wiresocks.StartProxy(ctx, l, tnet, opts.Bind)
+	if err != nil {
+		return err
+	}
+
+	l.Info("serving proxy", "address", opts.Bind)
+	return nil
+}
+
+func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint string) error {
+	// Set up primary/outer warp config
+	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
+	if err != nil {
+		return err
+	}
+
+	// Set up MTU
+	conf.Interface.MTU = singleMTU
+
+	// Enable trick and keepalive on all peers in config
 	for i, peer := range conf.Peers {
 		peer.Endpoint = endpoint
 		peer.Trick = true
@@ -136,12 +276,24 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 		conf.Peers[i] = peer
 	}
 
-	tnet, err := wiresocks.StartWireguard(ctx, l, conf)
+	// Create userspace tun network stack
+	tunDev, tnet, err := newUsermodeTun(conf)
 	if err != nil {
 		return err
 	}
 
-	warpBind, err := tnet.StartProxy(netip.MustParseAddrPort("127.0.0.1:0"))
+	// Establish wireguard on userspace stack
+	if err := establishWireguard(l, conf, tunDev, 0); err != nil {
+		return err
+	}
+
+	// Test wireguard connectivity
+	if err := usermodeTunTest(ctx, l, tnet); err != nil {
+		return err
+	}
+
+	// Run a proxy on the userspace stack
+	warpBind, err := wiresocks.StartProxy(ctx, l, tnet, netip.MustParseAddrPort("127.0.0.1:0"))
 	if err != nil {
 		return err
 	}
@@ -150,60 +302,6 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 	err = psiphon.RunPsiphon(ctx, l.With("subsystem", "psiphon"), warpBind.String(), opts.CacheDir, opts.Bind.String(), opts.Psiphon.Country)
 	if err != nil {
 		return fmt.Errorf("unable to run psiphon %w", err)
-	}
-
-	l.Info("serving proxy", "address", opts.Bind)
-
-	return nil
-}
-
-func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoints []string) error {
-	// Run outer warp
-	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
-	if err != nil {
-		return err
-	}
-	conf.Interface.MTU = singleMTU
-
-	for i, peer := range conf.Peers {
-		peer.Endpoint = endpoints[0]
-		peer.Trick = true
-		peer.KeepAlive = 3
-		conf.Peers[i] = peer
-	}
-
-	tnet, err := wiresocks.StartWireguard(ctx, l.With("gool", "outer"), conf)
-	if err != nil {
-		return err
-	}
-
-	// Create a UDP port forward between localhost and the remote endpoint
-	addr, err := wiresocks.NewVtunUDPForwarder(ctx, netip.MustParseAddrPort("127.0.0.1:0"), endpoints[1], tnet, singleMTU)
-	if err != nil {
-		return err
-	}
-
-	// Run inner warp
-	conf, err = wiresocks.ParseConfig(path.Join(opts.CacheDir, "secondary", "wgcf-profile.ini"))
-	if err != nil {
-		return err
-	}
-	conf.Interface.MTU = doubleMTU
-
-	for i, peer := range conf.Peers {
-		peer.Endpoint = addr.String()
-		peer.KeepAlive = 10
-		conf.Peers[i] = peer
-	}
-
-	tnet, err = wiresocks.StartWireguard(ctx, l.With("gool", "inner"), conf)
-	if err != nil {
-		return err
-	}
-
-	_, err = tnet.StartProxy(opts.Bind)
-	if err != nil {
-		return err
 	}
 
 	l.Info("serving proxy", "address", opts.Bind)
