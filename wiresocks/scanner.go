@@ -3,39 +3,28 @@ package wiresocks
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/bepass-org/warp-plus/ipscanner"
 	"github.com/bepass-org/warp-plus/warp"
-	"github.com/go-ini/ini"
 )
 
 type ScanOptions struct {
-	V4     bool
-	V6     bool
-	MaxRTT time.Duration
+	V4         bool
+	V6         bool
+	MaxRTT     time.Duration
+	PrivateKey string
+	PublicKey  string
 }
 
 func RunScan(ctx context.Context, l *slog.Logger, opts ScanOptions) (result []ipscanner.IPInfo, err error) {
-	cfg, err := ini.Load("./stuff/primary/wgcf-profile.ini")
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
-	}
-
-	// Reading the private key from the 'Interface' section
-	privateKey := cfg.Section("Interface").Key("PrivateKey").String()
-
-	// Reading the public key from the 'Peer' section
-	publicKey := cfg.Section("Peer").Key("PublicKey").String()
-
 	// new scanner
 	scanner := ipscanner.NewScanner(
 		ipscanner.WithLogger(l.With(slog.String("subsystem", "scanner"))),
 		ipscanner.WithWarpPing(),
-		ipscanner.WithWarpPrivateKey(privateKey),
-		ipscanner.WithWarpPeerPublicKey(publicKey),
+		ipscanner.WithWarpPrivateKey(opts.PrivateKey),
+		ipscanner.WithWarpPeerPublicKey(opts.PublicKey),
 		ipscanner.WithUseIPv4(opts.V4),
 		ipscanner.WithUseIPv6(opts.V6),
 		ipscanner.WithMaxDesirableRTT(opts.MaxRTT),

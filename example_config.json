@@ -7,5 +7,6 @@
   "cfon": false,
   "country": "DE",
   "scan": true,
-  "rtt": "1000ms"
+  "rtt": "1000ms",
+  "cache-dir": ""
 }

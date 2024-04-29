@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"log/slog"
 	"net/netip"
+	"path"
 
 	"github.com/bepass-org/warp-plus/psiphon"
 	"github.com/bepass-org/warp-plus/warp"
 	"github.com/bepass-org/warp-plus/wiresocks"
+	"github.com/go-ini/ini"
 )
 
 const singleMTU = 1330
@@ -22,6 +24,7 @@ type WarpOptions struct {
 	Psiphon  *PsiphonOptions
 	Gool     bool
 	Scan     *wiresocks.ScanOptions
+	CacheDir string
 }
 
 type PsiphonOptions struct {
@@ -38,7 +41,7 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 	}
 
 	// create identities
-	if err := createPrimaryAndSecondaryIdentities(l.With("subsystem", "warp/account"), opts.License); err != nil {
+	if err := createPrimaryAndSecondaryIdentities(l.With("subsystem", "warp/account"), opts); err != nil {
 		return err
 	}
 
@@ -46,6 +49,17 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 	endpoints := []string{opts.Endpoint, opts.Endpoint}
 
 	if opts.Scan != nil {
+		cfg, err := ini.Load(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
+		if err != nil {
+			return fmt.Errorf("failed to read file: %w", err)
+		}
+
+		// Reading the private key from the 'Interface' section
+		opts.Scan.PrivateKey = cfg.Section("Interface").Key("PrivateKey").String()
+
+		// Reading the public key from the 'Peer' section
+		opts.Scan.PublicKey = cfg.Section("Peer").Key("PublicKey").String()
+
 		res, err := wiresocks.RunScan(ctx, l, *opts.Scan)
 		if err != nil {
 			return err
@@ -65,22 +79,22 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 	case opts.Psiphon != nil:
 		l.Info("running in Psiphon (cfon) mode")
 		// run primary warp on a random tcp port and run psiphon on bind address
-		warpErr = runWarpWithPsiphon(ctx, l, opts.Bind, endpoints[0], opts.Psiphon.Country)
+		warpErr = runWarpWithPsiphon(ctx, l, opts, endpoints[0])
 	case opts.Gool:
 		l.Info("running in warp-in-warp (gool) mode")
 		// run warp in warp
-		warpErr = runWarpInWarp(ctx, l, opts.Bind, endpoints)
+		warpErr = runWarpInWarp(ctx, l, opts, endpoints)
 	default:
 		l.Info("running in normal warp mode")
 		// just run primary warp on bindAddress
-		warpErr = runWarp(ctx, l, opts.Bind, endpoints[0])
+		warpErr = runWarp(ctx, l, opts, endpoints[0])
 	}
 
 	return warpErr
 }
 
-func runWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoint string) error {
-	conf, err := wiresocks.ParseConfig("./stuff/primary/wgcf-profile.ini", endpoint)
+func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint string) error {
+	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"), endpoint)
 	if err != nil {
 		return err
 	}
@@ -97,18 +111,18 @@ func runWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoint 
 		return err
 	}
 
-	_, err = tnet.StartProxy(bind)
+	_, err = tnet.StartProxy(opts.Bind)
 	if err != nil {
 		return err
 	}
 
-	l.Info("serving proxy", "address", bind)
+	l.Info("serving proxy", "address", opts.Bind)
 
 	return nil
 }
 
-func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoint string, country string) error {
-	conf, err := wiresocks.ParseConfig("./stuff/primary/wgcf-profile.ini", endpoint)
+func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint string) error {
+	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"), endpoint)
 	if err != nil {
 		return err
 	}
@@ -131,19 +145,19 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, bind netip.AddrPort
 	}
 
 	// run psiphon
-	err = psiphon.RunPsiphon(ctx, l.With("subsystem", "psiphon"), warpBind.String(), bind.String(), country)
+	err = psiphon.RunPsiphon(ctx, l.With("subsystem", "psiphon"), warpBind.String(), opts.Bind.String(), opts.Psiphon.Country)
 	if err != nil {
 		return fmt.Errorf("unable to run psiphon %w", err)
 	}
 
-	l.Info("serving proxy", "address", bind)
+	l.Info("serving proxy", "address", opts.Bind)
 
 	return nil
 }
 
-func runWarpInWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, endpoints []string) error {
+func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoints []string) error {
 	// Run outer warp
-	conf, err := wiresocks.ParseConfig("./stuff/primary/wgcf-profile.ini", endpoints[0])
+	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"), endpoints[0])
 	if err != nil {
 		return err
 	}
@@ -167,7 +181,7 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, end
 	}
 
 	// Run inner warp
-	conf, err = wiresocks.ParseConfig("./stuff/secondary/wgcf-profile.ini", addr.String())
+	conf, err = wiresocks.ParseConfig(path.Join(opts.CacheDir, "secondary", "wgcf-profile.ini"), addr.String())
 	if err != nil {
 		return err
 	}
@@ -183,25 +197,25 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, bind netip.AddrPort, end
 		return err
 	}
 
-	_, err = tnet.StartProxy(bind)
+	_, err = tnet.StartProxy(opts.Bind)
 	if err != nil {
 		return err
 	}
 
-	l.Info("serving proxy", "address", bind)
+	l.Info("serving proxy", "address", opts.Bind)
 	return nil
 }
 
-func createPrimaryAndSecondaryIdentities(l *slog.Logger, license string) error {
+func createPrimaryAndSecondaryIdentities(l *slog.Logger, opts WarpOptions) error {
 	// make primary identity
-	err := warp.LoadOrCreateIdentity(l, "./stuff/primary", license)
+	err := warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "primary"), opts.License)
 	if err != nil {
 		l.Error("couldn't load primary warp identity")
 		return err
 	}
 
 	// make secondary
-	err = warp.LoadOrCreateIdentity(l, "./stuff/secondary", license)
+	err = warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "secondary"), opts.License)
 	if err != nil {
 		l.Error("couldn't load secondary warp identity")
 		return err

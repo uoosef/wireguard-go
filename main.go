@@ -8,11 +8,13 @@ import (
 	"net/netip"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 	"time"
 
 	_ "net/http/pprof"
 
+	"github.com/adrg/xdg"
 	"github.com/bepass-org/warp-plus/app"
 	"github.com/bepass-org/warp-plus/warp"
 	"github.com/bepass-org/warp-plus/wiresocks"
@@ -21,6 +23,8 @@ import (
 	"github.com/peterbourgon/ff/v4/ffhelp"
 	"github.com/peterbourgon/ff/v4/ffjson"
 )
+
+const appName = "warp-plus"
 
 var psiphonCountries = []string{
 	"AT",
@@ -56,7 +60,7 @@ var psiphonCountries = []string{
 }
 
 func main() {
-	fs := ff.NewFlagSet("warp-plus")
+	fs := ff.NewFlagSet(appName)
 	var (
 		v4       = fs.BoolShort('4', "only use IPv4 for random warp endpoint")
 		v6       = fs.BoolShort('6', "only use IPv6 for random warp endpoint")
@@ -69,6 +73,7 @@ func main() {
 		country  = fs.StringEnumLong("country", fmt.Sprintf("psiphon country code (valid values: %s)", psiphonCountries), psiphonCountries...)
 		scan     = fs.BoolLong("scan", "enable warp scanning")
 		rtt      = fs.DurationLong("rtt", 1000*time.Millisecond, "scanner rtt limit")
+		cacheDir = fs.StringLong("cache-dir", "", "directory to store generated profiles")
 		_        = fs.String('c', "config", "", "path to config file")
 	)
 
@@ -115,6 +120,17 @@ func main() {
 		Endpoint: *endpoint,
 		License:  *key,
 		Gool:     *gool,
+	}
+
+	switch {
+	case *cacheDir != "":
+		opts.CacheDir = *cacheDir
+	case xdg.CacheHome != "":
+		opts.CacheDir = path.Join(xdg.CacheHome, appName)
+	case os.Getenv("HOME") != "":
+		opts.CacheDir = path.Join(os.Getenv("HOME"), ".cache", appName)
+	default:
+		opts.CacheDir = "warp_plus_cache"
 	}
 
 	if *psiphon {
