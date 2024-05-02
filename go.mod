@@ -6,6 +6,8 @@ replace github.com/Psiphon-Labs/psiphon-tunnel-core => github.com/bepass-org/psi
 
 require (
 	github.com/Psiphon-Labs/psiphon-tunnel-core v2.0.28+incompatible
+	github.com/adrg/xdg v0.4.0
+	github.com/carlmjohnson/versioninfo v0.22.5
 	github.com/fatih/color v1.16.0
 	github.com/flynn/noise v1.1.0
 	github.com/frankban/quicktest v1.14.6
@@ -16,6 +18,7 @@ require (
 	github.com/quic-go/quic-go v0.40.1
 	github.com/refraction-networking/utls v1.3.3
 	github.com/rodaine/table v1.1.1
+	github.com/things-go/go-socks5 v0.0.5
 	golang.org/x/crypto v0.21.0
 	golang.org/x/net v0.22.0
 	golang.org/x/sys v0.18.0
@@ -31,11 +34,9 @@ require (
 	github.com/Psiphon-Labs/goptlib v0.0.0-20200406165125-c0e32a7a3464 // indirect
 	github.com/Psiphon-Labs/psiphon-tls v0.0.0-20240305020009-09f917290799 // indirect
 	github.com/Psiphon-Labs/quic-go v0.0.0-20240305203241-7c4a760d03cc // indirect
-	github.com/adrg/xdg v0.4.0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/armon/go-proxyproto v0.0.0-20180202201750-5b7edb60ff5f // indirect
 	github.com/bifurcation/mint v0.0.0-20180306135233-198357931e61 // indirect
-	github.com/carlmjohnson/versioninfo v0.22.5 // indirect
 	github.com/cheekybits/genny v0.0.0-20170328200008-9127e812e1e9 // indirect
 	github.com/cognusion/go-cache-lru v0.0.0-20170419142635-f73e2280ecea // indirect
 	github.com/dchest/siphash v1.2.3 // indirect

@@ -9,6 +9,7 @@ import (
 	"github.com/bepass-org/warp-plus/wireguard/conn"
 	"github.com/bepass-org/warp-plus/wireguard/device"
 	"github.com/bepass-org/warp-plus/wireguard/tun/netstack"
+	"github.com/things-go/go-socks5/bufferpool"
 )
 
 // StartWireguard creates a tun interface on netstack given a configuration
@@ -46,9 +47,10 @@ func StartWireguard(ctx context.Context, l *slog.Logger, conf *Configuration) (*
 	}
 
 	return &VirtualTun{
-		Tnet:      tnet,
-		Logger:    l.With("subsystem", "vtun"),
-		Dev:       dev,
-		Ctx:       ctx,
+		Tnet:   tnet,
+		Logger: l.With("subsystem", "vtun"),
+		Dev:    dev,
+		Ctx:    ctx,
+		pool:   bufferpool.NewPool(256 * 1024),
 	}, nil
 }
