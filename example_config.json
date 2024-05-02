@@ -9,6 +9,6 @@
   "scan": true,
   "rtt": "1000ms",
   "cache-dir": "",
-  "tun": false,
+  "tun-experimental": false,
   "fwmark": "0x1375"
 }

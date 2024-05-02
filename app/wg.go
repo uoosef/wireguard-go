@@ -16,15 +16,6 @@ import (
 	"github.com/bepass-org/warp-plus/wiresocks"
 )
 
-func newNormalTun() (wgtun.Device, error) {
-	tunDev, err := wgtun.CreateTUN("warp0", 1280)
-	if err != nil {
-		return nil, err
-	}
-
-	return tunDev, nil
-}
-
 func newUsermodeTun(conf *wiresocks.Configuration) (wgtun.Device, *netstack.Net, error) {
 	tunDev, tnet, err := netstack.CreateNetTUN(conf.Interface.Addresses, conf.Interface.DNS, conf.Interface.MTU)
 	if err != nil {
@@ -68,7 +59,7 @@ func usermodeTunTest(ctx context.Context, l *slog.Logger, tnet *netstack.Net) er
 	return nil
 }
 
-func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wgtun.Device, fwmark uint32) error {
+func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wgtun.Device, bind bool, fwmark uint32) error {
 	// create the IPC message to establish the wireguard conn
 	var request bytes.Buffer
 
@@ -101,6 +92,12 @@ func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wg
 
 	if err := dev.Up(); err != nil {
 		return err
+	}
+
+	if bind {
+		if err := bindToIface(dev); err != nil {
+			return err
+		}
 	}
 
 	return nil
