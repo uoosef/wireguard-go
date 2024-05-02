@@ -15,11 +15,14 @@ PrivateKey = aK8FWhiV1CtKFbKUPssL13P+Tv+c5owmYcU5PCP6yFw=
 DNS = 8.8.8.8
 Address = 172.16.0.2/24
 Address = 2606:4700:110:8cc0:1ad3:9155:6742:ea8d/128
+MTU = 1500
 [Peer]
 PublicKey = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
 AllowedIPs = 0.0.0.0/0
 AllowedIPs = ::/0
 Endpoint = engage.cloudflareclient.com:2408
+PersistentKeepalive = 3
+Trick = true
 `
 const (
 	privateKeyBase64   = "68af055a1895d42b4a15b2943ecb0bd773fe4eff9ce68c2661c5393c23fac85c"
@@ -47,7 +50,7 @@ func TestParseInterface(t *testing.T) {
 			netip.MustParseAddr("2606:4700:110:8cc0:1ad3:9155:6742:ea8d"),
 		},
 		DNS: []netip.Addr{netip.MustParseAddr("8.8.8.8")},
-		MTU: 0,
+		MTU: 1500,
 	}
 	qt.Assert(t, device, qt.CmpEquals(cmpopts.EquateComparable(netip.Addr{})), want)
 	t.Logf("%+v", device)
@@ -70,12 +73,12 @@ func TestParsePeers(t *testing.T) {
 		PublicKey:    publicKeyBase64,
 		PreSharedKey: presharedKeyBase64,
 		Endpoint:     "engage.cloudflareclient.com:2408",
-		KeepAlive:    0,
+		KeepAlive:    3,
 		AllowedIPs: []netip.Prefix{
 			netip.MustParsePrefix("0.0.0.0/0"),
 			netip.MustParsePrefix("::/0"),
 		},
-		Trick: false,
+		Trick: true,
 	}}
 	qt.Assert(t, peers, qt.CmpEquals(cmpopts.EquateComparable(netip.Prefix{})), want)
 	t.Logf("%+v", peers)

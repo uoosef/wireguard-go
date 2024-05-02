@@ -158,6 +158,14 @@ func ParsePeers(cfg *ini.File) ([]PeerConfig, error) {
 			peer.Endpoint = sectionKey.String()
 		}
 
+		if sectionKey, err := section.GetKey("Trick"); err == nil {
+			value, err := sectionKey.Bool()
+			if err != nil {
+				return nil, err
+			}
+			peer.Trick = value
+		}
+
 		peers[i] = peer
 	}
 
@@ -165,7 +173,7 @@ func ParsePeers(cfg *ini.File) ([]PeerConfig, error) {
 }
 
 // ParseConfig takes the path of a configuration file and parses it into Configuration
-func ParseConfig(path string, endpoint string) (*Configuration, error) {
+func ParseConfig(path string) (*Configuration, error) {
 	iniOpt := ini.LoadOptions{
 		Insensitive:            true,
 		AllowShadows:           true,
@@ -185,10 +193,6 @@ func ParseConfig(path string, endpoint string) (*Configuration, error) {
 	peers, err := ParsePeers(cfg)
 	if err != nil {
 		return nil, err
-	}
-	for i, peer := range peers {
-		peer.Endpoint = endpoint
-		peers[i] = peer
 	}
 
 	return &Configuration{Interface: &iface, Peers: peers}, nil

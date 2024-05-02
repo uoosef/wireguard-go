@@ -94,13 +94,14 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 }
 
 func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint string) error {
-	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"), endpoint)
+	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
 	if err != nil {
 		return err
 	}
 	conf.Interface.MTU = singleMTU
 
 	for i, peer := range conf.Peers {
+		peer.Endpoint = endpoint
 		peer.Trick = true
 		peer.KeepAlive = 3
 		conf.Peers[i] = peer
@@ -122,13 +123,14 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 }
 
 func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint string) error {
-	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"), endpoint)
+	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
 	if err != nil {
 		return err
 	}
 	conf.Interface.MTU = singleMTU
 
 	for i, peer := range conf.Peers {
+		peer.Endpoint = endpoint
 		peer.Trick = true
 		peer.KeepAlive = 3
 		conf.Peers[i] = peer
@@ -157,13 +159,14 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 
 func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoints []string) error {
 	// Run outer warp
-	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"), endpoints[0])
+	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
 	if err != nil {
 		return err
 	}
 	conf.Interface.MTU = singleMTU
 
 	for i, peer := range conf.Peers {
+		peer.Endpoint = endpoints[0]
 		peer.Trick = true
 		peer.KeepAlive = 3
 		conf.Peers[i] = peer
@@ -181,13 +184,14 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 	}
 
 	// Run inner warp
-	conf, err = wiresocks.ParseConfig(path.Join(opts.CacheDir, "secondary", "wgcf-profile.ini"), addr.String())
+	conf, err = wiresocks.ParseConfig(path.Join(opts.CacheDir, "secondary", "wgcf-profile.ini"))
 	if err != nil {
 		return err
 	}
 	conf.Interface.MTU = doubleMTU
 
 	for i, peer := range conf.Peers {
+		peer.Endpoint = addr.String()
 		peer.KeepAlive = 10
 		conf.Peers[i] = peer
 	}
