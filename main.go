@@ -19,6 +19,7 @@ import (
 	"github.com/bepass-org/warp-plus/warp"
 	"github.com/bepass-org/warp-plus/wiresocks"
 
+	"github.com/carlmjohnson/versioninfo"
 	"github.com/peterbourgon/ff/v4"
 	"github.com/peterbourgon/ff/v4/ffhelp"
 	"github.com/peterbourgon/ff/v4/ffjson"
@@ -59,6 +60,8 @@ var psiphonCountries = []string{
 	"US",
 }
 
+var version string = ""
+
 func main() {
 	fs := ff.NewFlagSet(appName)
 	var (
@@ -75,6 +78,7 @@ func main() {
 		rtt      = fs.DurationLong("rtt", 1000*time.Millisecond, "scanner rtt limit")
 		cacheDir = fs.StringLong("cache-dir", "", "directory to store generated profiles")
 		_        = fs.String('c', "config", "", "path to config file")
+		verFlag  = fs.BoolLong("version", "displays version number")
 	)
 
 	err := ff.Parse(
@@ -90,6 +94,14 @@ func main() {
 	case err != nil:
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
+	}
+
+	if *verFlag {
+		if version == "" {
+			version = versioninfo.Short()
+		}
+		fmt.Fprintf(os.Stderr, "%s\n", version)
+		os.Exit(0)
 	}
 
 	l := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
