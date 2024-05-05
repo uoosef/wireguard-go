@@ -63,20 +63,20 @@ type Option func(*Proxy)
 // SwitchConn wraps a net.Conn and a bufio.Reader
 type SwitchConn struct {
 	net.Conn
-	reader *bufio.Reader
+	*bufio.Reader
 }
 
 // NewSwitchConn creates a new SwitchConn
 func NewSwitchConn(conn net.Conn) *SwitchConn {
 	return &SwitchConn{
 		Conn:   conn,
-		reader: bufio.NewReader(conn),
+		Reader: bufio.NewReaderSize(conn, 2048),
 	}
 }
 
 // Read reads data into p, first from the bufio.Reader, then from the net.Conn
 func (c *SwitchConn) Read(p []byte) (n int, err error) {
-	return c.reader.Read(p)
+	return c.Reader.Read(p)
 }
 
 func (p *Proxy) ListenAndServe() error {
@@ -116,6 +116,7 @@ func (p *Proxy) ListenAndServe() error {
 			// Start a new goroutine to handle each connection
 			// This way, the server can handle multiple connections concurrently
 			go func() {
+				defer conn.Close()
 				err := p.handleConnection(conn)
 				if err != nil {
 					p.logger.Error(err.Error()) // Log errors from ServeConn
@@ -129,23 +130,16 @@ func (p *Proxy) handleConnection(conn net.Conn) error {
 	// Create a SwitchConn
 	switchConn := NewSwitchConn(conn)
 
-	// Read one byte to determine the protocol
-	buf := make([]byte, 1)
-	_, err := switchConn.Read(buf)
+	// Peek one byte to determine the protocol
+	buf, err := switchConn.Peek(1)
 	if err != nil {
 		return err
 	}
 
-	// Unread the byte so it's available for the next read
-	err = switchConn.reader.UnreadByte()
-	if err != nil {
-		return err
-	}
-
-	switch {
-	case buf[0] == 5:
+	switch buf[0] {
+	case 5:
 		err = p.socks5Proxy.ServeConn(switchConn)
-	case buf[0] == 4:
+	case 4:
 		err = p.socks4Proxy.ServeConn(switchConn)
 	default:
 		err = p.httpProxy.ServeConn(switchConn)
