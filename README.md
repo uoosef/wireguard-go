@@ -13,7 +13,7 @@ Warp-Plus is an open-source implementation of Cloudflare's Warp, enhanced with P
 
 ### Prerequisites
 
-- You can download prebuilt binaries or compile it with Go (You MUST use go 1.21)
+- You can download prebuilt binaries or compile it with Go (You MUST use go 1.22)
 - Basic understanding of VPN and proxy configurations
 
 ### Installation
