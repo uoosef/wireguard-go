@@ -15,7 +15,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/golang-lru v1.0.2
 	github.com/peterbourgon/ff/v4 v4.0.0-alpha.4
-	github.com/quic-go/quic-go v0.40.1
+	github.com/quic-go/quic-go v0.43.1
 	github.com/refraction-networking/utls v1.3.3
 	github.com/rodaine/table v1.1.1
 	github.com/things-go/go-socks5 v0.0.5
@@ -67,7 +67,6 @@ require (
 	github.com/pion/transport/v2 v2.2.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
-	github.com/quic-go/qtls-go1-20 v0.4.1 // indirect
 	github.com/refraction-networking/conjure v0.7.11-0.20240130155008-c8df96195ab2 // indirect
 	github.com/refraction-networking/ed25519 v0.1.2 // indirect
 	github.com/refraction-networking/gotapdance v1.7.10 // indirect
@@ -78,7 +77,7 @@ require (
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 // indirect
 	github.com/wader/filtertransport v0.0.0-20200316221534-bdd9e61eee78 // indirect
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.5.0 // indirect
-	go.uber.org/mock v0.3.0 // indirect
+	go.uber.org/mock v0.4.0 // indirect
 	golang.org/x/exp v0.0.0-20230725093048-515e97ebf090 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20240119083558-1b970713d09a // indirect
 	golang.org/x/mod v0.14.0 // indirect
