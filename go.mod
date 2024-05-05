@@ -2,10 +2,8 @@ module github.com/bepass-org/warp-plus
 
 go 1.21.1
 
-replace github.com/Psiphon-Labs/psiphon-tunnel-core => github.com/bepass-org/psiphon-tunnel-core v0.0.0-20240311155012-9c2e10df08e5
-
 require (
-	github.com/Psiphon-Labs/psiphon-tunnel-core v2.0.28+incompatible
+	github.com/Psiphon-Labs/psiphon-tunnel-core v1.0.11-0.20240424194431-3612a5a6fb4c
 	github.com/adrg/xdg v0.4.0
 	github.com/carlmjohnson/versioninfo v0.22.5
 	github.com/fatih/color v1.16.0
@@ -19,9 +17,9 @@ require (
 	github.com/refraction-networking/utls v1.3.3
 	github.com/rodaine/table v1.1.1
 	github.com/things-go/go-socks5 v0.0.5
-	golang.org/x/crypto v0.21.0
-	golang.org/x/net v0.22.0
-	golang.org/x/sys v0.18.0
+	golang.org/x/crypto v0.22.0
+	golang.org/x/net v0.24.0
+	golang.org/x/sys v0.19.0
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2
 	gvisor.dev/gvisor v0.0.0-20240313225113-67a078058255
 )
@@ -32,8 +30,8 @@ require (
 	github.com/AndreasBriese/bbloom v0.0.0-20170702084017-28f7e881ca57 // indirect
 	github.com/Psiphon-Labs/bolt v0.0.0-20200624191537-23cedaef7ad7 // indirect
 	github.com/Psiphon-Labs/goptlib v0.0.0-20200406165125-c0e32a7a3464 // indirect
-	github.com/Psiphon-Labs/psiphon-tls v0.0.0-20240305020009-09f917290799 // indirect
-	github.com/Psiphon-Labs/quic-go v0.0.0-20240305203241-7c4a760d03cc // indirect
+	github.com/Psiphon-Labs/psiphon-tls v0.0.0-20240424193802-52b2602ec60c // indirect
+	github.com/Psiphon-Labs/quic-go v0.0.0-20240424181006-45545f5e1536 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/armon/go-proxyproto v0.0.0-20180202201750-5b7edb60ff5f // indirect
 	github.com/bifurcation/mint v0.0.0-20180306135233-198357931e61 // indirect
