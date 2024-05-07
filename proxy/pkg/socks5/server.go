@@ -303,12 +303,12 @@ func (s *Server) embedHandleConnect(req *request) error {
 
 func (s *Server) handleAssociate(req *request) error {
 	destinationAddr := req.DestinationAddr.String()
-	udpConn, err := s.ProxyListenPacket(s.Context, "udp", destinationAddr)
+	udpConn, err := s.ProxyListenPacket(s.Context, "udp", "127.0.0.1:0")
 	if err != nil {
 		if err := sendReply(req.Conn, errToReply(err), nil); err != nil {
 			return fmt.Errorf("failed to send reply: %v", err)
 		}
-		return fmt.Errorf("connect to %v failed: %w", req.DestinationAddr, err)
+		return fmt.Errorf("line 312 connect to %v failed: %w", req.DestinationAddr, err)
 	}
 
 	ip, port, err := s.PacketForwardAddress(s.Context, destinationAddr, udpConn, req.Conn)
@@ -338,14 +338,14 @@ func (s *Server) handleAssociate(req *request) error {
 
 	proxyReq := &statute.ProxyRequest{
 		Conn:        cConn,
+		ConnUDP:     cConn.PacketConn,
 		Reader:      cConn,
 		Writer:      cConn,
 		Network:     "udp",
-		Destination: cConn.targetAddr.String(),
-		DestHost:    cConn.targetAddr.(*net.UDPAddr).IP.String(),
-		DestPort:    int32(cConn.targetAddr.(*net.UDPAddr).Port),
-	}
-
+		Destination: req.DestinationAddr.String(),
+		DestHost:    req.DestinationAddr.IP.String(),
+		DestPort:    int32(req.DestinationAddr.Port),
+		}
 	return s.UserAssociateHandle(proxyReq)
 }
 
