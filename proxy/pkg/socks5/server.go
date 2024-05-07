@@ -308,7 +308,7 @@ func (s *Server) handleAssociate(req *request) error {
 		if err := sendReply(req.Conn, errToReply(err), nil); err != nil {
 			return fmt.Errorf("failed to send reply: %v", err)
 		}
-		return fmt.Errorf("line 312 connect to %v failed: %w", req.DestinationAddr, err)
+		return fmt.Errorf("connect to %v failed: %w", req.DestinationAddr, err)
 	}
 
 	ip, port, err := s.PacketForwardAddress(s.Context, destinationAddr, udpConn, req.Conn)
@@ -338,7 +338,6 @@ func (s *Server) handleAssociate(req *request) error {
 
 	proxyReq := &statute.ProxyRequest{
 		Conn:        cConn,
-		ConnUDP:     cConn.PacketConn,
 		Reader:      cConn,
 		Writer:      cConn,
 		Network:     "udp",
