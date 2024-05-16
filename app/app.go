@@ -123,7 +123,7 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 
 	if opts.Tun {
 		// Create a new tun interface
-		tunDev, err := newNormalTun()
+		tunDev, err := newNormalTun([]netip.Addr{opts.DnsAddr})
 		if err != nil {
 			return err
 		}
@@ -224,7 +224,7 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 
 	if opts.Tun {
 		// Create a new tun interface
-		tunDev, err := newNormalTun()
+		tunDev, err := newNormalTun([]netip.Addr{opts.DnsAddr})
 		if err != nil {
 			return err
 		}

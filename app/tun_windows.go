@@ -18,7 +18,7 @@ const wintunGUID = "c33d325f-20cd-44e5-998c-19b0c15b4df1"
 const family4 = winipcfg.AddressFamily(windows.AF_INET)
 const family6 = winipcfg.AddressFamily(windows.AF_INET6)
 
-func newNormalTun() (wgtun.Device, error) {
+func newNormalTun(dns []netip.Addr) (wgtun.Device, error) {
 	guid, _ := windows.GUIDFromString(wintunGUID)
 	tunDev, err := wgtun.CreateTUNWithRequestedGUID("warp0", &guid, 1280)
 	if err != nil {
@@ -94,6 +94,11 @@ tryAgain6:
 		goto tryAgain6
 	} else if err != nil {
 		return nil, fmt.Errorf("unable to set metric and MTU: %w", err)
+	}
+
+	err = luid.SetDNS(family4, dns, nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to set DNS: %w", err)
 	}
 
 	return tunDev, nil
