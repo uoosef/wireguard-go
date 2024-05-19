@@ -73,6 +73,7 @@ func main() {
 		bind     = fs.String('b', "bind", "127.0.0.1:8086", "socks bind address")
 		endpoint = fs.String('e', "endpoint", "", "warp endpoint")
 		key      = fs.String('k', "key", "", "warp key")
+		dns      = fs.StringLong("dns", "1.1.1.1", "DNS address")
 		gool     = fs.BoolLong("gool", "enable gool mode (warp in warp)")
 		psiphon  = fs.BoolLong("cfon", "enable psiphon mode (must provide country as well)")
 		country  = fs.StringEnumLong("country", fmt.Sprintf("psiphon country code (valid values: %s)", psiphonCountries), psiphonCountries...)
@@ -131,10 +132,16 @@ func main() {
 		fatal(l, fmt.Errorf("invalid bind address: %w", err))
 	}
 
+	dnsAddr, err := netip.ParseAddr(*dns)
+	if err != nil {
+		fatal(l, fmt.Errorf("invalid DNS address: %w", err))
+	}
+
 	opts := app.WarpOptions{
 		Bind:     bindAddrPort,
 		Endpoint: *endpoint,
 		License:  *key,
+		DnsAddr:  dnsAddr,
 		Gool:     *gool,
 		Tun:      *tun,
 		FwMark:   uint32(*fwmark),

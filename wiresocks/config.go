@@ -78,20 +78,17 @@ func ParseInterface(cfg *ini.File) (InterfaceConfig, error) {
 	}
 	device.PrivateKey = privateKeyHex
 
-	key = iface.Key("DNS")
-	if key == nil {
-		return InterfaceConfig{}, nil
-	}
-
-	addresses = []netip.Addr{}
-	for _, str := range key.StringsWithShadows(",") {
-		ip, err := netip.ParseAddr(str)
-		if err != nil {
-			return InterfaceConfig{}, err
+	if sectionKey, err := iface.GetKey("DNS"); err == nil {
+		addrs := sectionKey.StringsWithShadows(",")
+		device.DNS = make([]netip.Addr, len(addrs))
+		for i, addr := range addrs {
+			ip, err := netip.ParseAddr(addr)
+			if err != nil {
+				return InterfaceConfig{}, err
+			}
+			device.DNS[i] = ip
 		}
-		addresses = append(addresses, ip)
 	}
-	device.DNS = addresses
 
 	if sectionKey, err := iface.GetKey("MTU"); err == nil {
 		value, err := sectionKey.Int()

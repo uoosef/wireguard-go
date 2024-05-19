@@ -266,19 +266,7 @@ func createConf(i Identity, path string) error {
 
 	buffer.WriteString("[Interface]\n")
 	buffer.WriteString(fmt.Sprintf("PrivateKey = %s\n", i.PrivateKey))
-	buffer.WriteString("DNS = ")
-	buffer.WriteString("1.1.1.1, ")
-	buffer.WriteString("1.0.0.1, ")
-	buffer.WriteString("8.8.8.8, ")
-	buffer.WriteString("8.8.4.4, ")
-	buffer.WriteString("9.9.9.9, ")
-	buffer.WriteString("149.112.112.112, ")
-	buffer.WriteString("2606:4700:4700::1111, ")
-	buffer.WriteString("2606:4700:4700::1001, ")
-	buffer.WriteString("2001:4860:4860::8888, ")
-	buffer.WriteString("2001:4860:4860::8844, ")
-	buffer.WriteString("2620:fe::fe, ")
-	buffer.WriteString("2620:fe::9\n")
+
 	buffer.WriteString(fmt.Sprintf("Address = %s/24\n", i.Config.Interface.Addresses.V4))
 	buffer.WriteString(fmt.Sprintf("Address = %s/128\n", i.Config.Interface.Addresses.V6))
 

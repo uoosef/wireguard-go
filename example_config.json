@@ -3,6 +3,7 @@
   "bind": "127.0.0.1:8086",
   "endpoint": "",
   "key": "",
+  "dns": "1.1.1.1",
   "gool": false,
   "cfon": false,
   "country": "DE",

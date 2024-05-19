@@ -22,6 +22,7 @@ type WarpOptions struct {
 	Bind     netip.AddrPort
 	Endpoint string
 	License  string
+	DnsAddr  netip.Addr
 	Psiphon  *PsiphonOptions
 	Gool     bool
 	Scan     *wiresocks.ScanOptions
@@ -109,6 +110,8 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 
 	// Set up MTU
 	conf.Interface.MTU = singleMTU
+	// Set up DNS Address
+	conf.Interface.DNS = []netip.Addr{opts.DnsAddr}
 
 	// Enable trick and keepalive on all peers in config
 	for i, peer := range conf.Peers {
@@ -168,6 +171,8 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 
 	// Set up MTU
 	conf.Interface.MTU = singleMTU
+	// Set up DNS Address
+	conf.Interface.DNS = []netip.Addr{opts.DnsAddr}
 
 	// Enable trick and keepalive on all peers in config
 	for i, peer := range conf.Peers {
@@ -207,6 +212,8 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 
 	// Set up MTU
 	conf.Interface.MTU = doubleMTU
+	// Set up DNS Address
+	conf.Interface.DNS = []netip.Addr{opts.DnsAddr}
 
 	// Enable keepalive on all peers in config
 	for i, peer := range conf.Peers {
@@ -265,6 +272,8 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 
 	// Set up MTU
 	conf.Interface.MTU = singleMTU
+	// Set up DNS Address
+	conf.Interface.DNS = []netip.Addr{opts.DnsAddr}
 
 	// Enable trick and keepalive on all peers in config
 	for i, peer := range conf.Peers {
