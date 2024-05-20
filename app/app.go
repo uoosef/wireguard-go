@@ -8,6 +8,7 @@ import (
 	"net/netip"
 	"path"
 
+	"github.com/bepass-org/warp-plus/iputils"
 	"github.com/bepass-org/warp-plus/psiphon"
 	"github.com/bepass-org/warp-plus/warp"
 	"github.com/bepass-org/warp-plus/wiresocks"
@@ -19,16 +20,17 @@ const doubleMTU = 1280 // minimum mtu for IPv6, may cause frag reassembly somewh
 const connTestEndpoint = "http://1.1.1.1:80/"
 
 type WarpOptions struct {
-	Bind     netip.AddrPort
-	Endpoint string
-	License  string
-	DnsAddr  netip.Addr
-	Psiphon  *PsiphonOptions
-	Gool     bool
-	Scan     *wiresocks.ScanOptions
-	CacheDir string
-	Tun      bool
-	FwMark   uint32
+	Bind            netip.AddrPort
+	Endpoint        string
+	License         string
+	DnsAddr         netip.Addr
+	Psiphon         *PsiphonOptions
+	Gool            bool
+	Scan            *wiresocks.ScanOptions
+	CacheDir        string
+	Tun             bool
+	FwMark          uint32
+	WireguardConfig string
 }
 
 type PsiphonOptions struct {
@@ -36,6 +38,14 @@ type PsiphonOptions struct {
 }
 
 func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
+	if opts.WireguardConfig != "" {
+		if err := runWireguard(ctx, l, opts); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
 	if opts.Psiphon != nil && opts.Gool {
 		return errors.New("can't use psiphon and gool at the same time")
 	}
@@ -99,6 +109,73 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 	}
 
 	return warpErr
+}
+
+func runWireguard(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
+	conf, err := wiresocks.ParseConfig(opts.WireguardConfig)
+	if err != nil {
+		return err
+	}
+
+	// Set up MTU
+	conf.Interface.MTU = singleMTU
+	// Set up DNS Address
+	conf.Interface.DNS = []netip.Addr{opts.DnsAddr}
+
+	// Enable trick and keepalive on all peers in config
+	for i, peer := range conf.Peers {
+		peer.Trick = true
+		peer.KeepAlive = 3
+
+		// Try resolving if the endpoint is a domain
+		addr, err := iputils.ParseResolveAddressPort(peer.Endpoint, false)
+		if err == nil {
+			peer.Endpoint = addr.String()
+		}
+
+		conf.Peers[i] = peer
+	}
+
+	if opts.Tun {
+		// Create a new tun interface
+		tunDev, err := newNormalTun([]netip.Addr{opts.DnsAddr})
+		if err != nil {
+			return err
+		}
+
+		// Establish wireguard tunnel on tun interface
+		if err := establishWireguard(l, conf, tunDev, true, opts.FwMark); err != nil {
+			return err
+		}
+		l.Info("serving tun", "interface", "warp0")
+		return nil
+	}
+
+	// Create userspace tun network stack
+	tunDev, tnet, err := newUsermodeTun(conf)
+	if err != nil {
+		return err
+	}
+
+	// Establish wireguard on userspace stack
+	if err := establishWireguard(l, conf, tunDev, false, opts.FwMark); err != nil {
+		return err
+	}
+
+	// Test wireguard connectivity
+	if err := usermodeTunTest(ctx, l, tnet); err != nil {
+		return err
+	}
+
+	// Run a proxy on the userspace stack
+	_, err = wiresocks.StartProxy(ctx, l, tnet, opts.Bind)
+	if err != nil {
+		return err
+	}
+
+	l.Info("serving proxy", "address", opts.Bind)
+
+	return nil
 }
 
 func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint string) error {

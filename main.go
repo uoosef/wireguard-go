@@ -82,6 +82,7 @@ func main() {
 		cacheDir = fs.StringLong("cache-dir", "", "directory to store generated profiles")
 		tun      = fs.BoolLong("tun-experimental", "enable tun interface (experimental)")
 		fwmark   = fs.UintLong("fwmark", 0x1375, "set linux firewall mark for tun mode")
+		wgConf   = fs.StringLong("wgconf", "", "path to a normal wireguard config")
 		_        = fs.String('c', "config", "", "path to config file")
 		verFlag  = fs.BoolLong("version", "displays version number")
 	)
@@ -138,13 +139,14 @@ func main() {
 	}
 
 	opts := app.WarpOptions{
-		Bind:     bindAddrPort,
-		Endpoint: *endpoint,
-		License:  *key,
-		DnsAddr:  dnsAddr,
-		Gool:     *gool,
-		Tun:      *tun,
-		FwMark:   uint32(*fwmark),
+		Bind:            bindAddrPort,
+		Endpoint:        *endpoint,
+		License:         *key,
+		DnsAddr:         dnsAddr,
+		Gool:            *gool,
+		Tun:             *tun,
+		FwMark:          uint32(*fwmark),
+		WireguardConfig: *wgConf,
 	}
 
 	switch {

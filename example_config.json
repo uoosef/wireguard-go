@@ -11,5 +11,6 @@
   "rtt": "1000ms",
   "cache-dir": "",
   "tun-experimental": false,
-  "fwmark": "0x1375"
+  "fwmark": "0x1375",
+  "wgconf": ""
 }
