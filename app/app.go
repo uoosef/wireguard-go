@@ -10,7 +10,6 @@ import (
 
 	"github.com/bepass-org/warp-plus/iputils"
 	"github.com/bepass-org/warp-plus/psiphon"
-	"github.com/bepass-org/warp-plus/warp"
 	"github.com/bepass-org/warp-plus/wiresocks"
 	"github.com/go-ini/ini"
 )
@@ -56,11 +55,6 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 
 	if opts.Psiphon != nil && opts.Tun {
 		return errors.New("can't use psiphon and tun at the same time")
-	}
-
-	// create identities
-	if err := createPrimaryAndSecondaryIdentities(l.With("subsystem", "warp/account"), opts); err != nil {
-		return err
 	}
 
 	// Decide Working Scenario
@@ -389,23 +383,5 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 	}
 
 	l.Info("serving proxy", "address", opts.Bind)
-	return nil
-}
-
-func createPrimaryAndSecondaryIdentities(l *slog.Logger, opts WarpOptions) error {
-	// make primary identity
-	err := warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "primary"), opts.License)
-	if err != nil {
-		l.Error("couldn't load primary warp identity")
-		return err
-	}
-
-	// make secondary
-	err = warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "secondary"), opts.License)
-	if err != nil {
-		l.Error("couldn't load secondary warp identity")
-		return err
-	}
-
 	return nil
 }

@@ -183,6 +183,11 @@ func main() {
 		opts.Endpoint = addrPort.String()
 	}
 
+	// create identities
+	if err := createPrimaryAndSecondaryIdentities(l.With("subsystem", "warp/account"), opts); err != nil {
+		fatal(l, err)
+	}
+
 	ctx, _ := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	go func() {
 		if err := app.RunWarp(ctx, l, opts); err != nil {
@@ -191,6 +196,24 @@ func main() {
 	}()
 
 	<-ctx.Done()
+}
+
+func createPrimaryAndSecondaryIdentities(l *slog.Logger, opts app.WarpOptions) error {
+	// make primary identity
+	err := warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "primary"), opts.License)
+	if err != nil {
+		l.Error("couldn't load primary warp identity")
+		return err
+	}
+
+	// make secondary
+	err = warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "secondary"), opts.License)
+	if err != nil {
+		l.Error("couldn't load secondary warp identity")
+		return err
+	}
+
+	return nil
 }
 
 func fatal(l *slog.Logger, err error) {
