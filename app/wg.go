@@ -64,7 +64,7 @@ func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wg
 	var request bytes.Buffer
 
 	request.WriteString(fmt.Sprintf("private_key=%s\n", conf.Interface.PrivateKey))
-	if fwmark != 0 {
+	if bind && fwmark != 0 {
 		request.WriteString(fmt.Sprintf("fwmark=%d\n", fwmark))
 	}
 
