@@ -183,9 +183,11 @@ func main() {
 		opts.Endpoint = addrPort.String()
 	}
 
-	// create identities
-	if err := createPrimaryAndSecondaryIdentities(l.With("subsystem", "warp/account"), opts); err != nil {
-		fatal(l, err)
+	if opts.WireguardConfig != "" {
+		// create identities
+		if err := createPrimaryAndSecondaryIdentities(l.With("subsystem", "warp/account"), opts); err != nil {
+			fatal(l, err)
+		}
 	}
 
 	ctx, _ := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
