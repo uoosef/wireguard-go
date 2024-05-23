@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/bepass-org/warp-plus/app"
+	"github.com/bepass-org/warp-plus/proxy/pkg/routing"
 	"github.com/bepass-org/warp-plus/warp"
 	"github.com/bepass-org/warp-plus/wiresocks"
 
@@ -67,24 +69,25 @@ var version string = ""
 func main() {
 	fs := ff.NewFlagSet(appName)
 	var (
-		v4       = fs.BoolShort('4', "only use IPv4 for random warp endpoint")
-		v6       = fs.BoolShort('6', "only use IPv6 for random warp endpoint")
-		verbose  = fs.Bool('v', "verbose", "enable verbose logging")
-		bind     = fs.String('b', "bind", "127.0.0.1:8086", "socks bind address")
-		endpoint = fs.String('e', "endpoint", "", "warp endpoint")
-		key      = fs.String('k', "key", "", "warp key")
-		dns      = fs.StringLong("dns", "1.1.1.1", "DNS address")
-		gool     = fs.BoolLong("gool", "enable gool mode (warp in warp)")
-		psiphon  = fs.BoolLong("cfon", "enable psiphon mode (must provide country as well)")
-		country  = fs.StringEnumLong("country", fmt.Sprintf("psiphon country code (valid values: %s)", psiphonCountries), psiphonCountries...)
-		scan     = fs.BoolLong("scan", "enable warp scanning")
-		rtt      = fs.DurationLong("rtt", 1000*time.Millisecond, "scanner rtt limit")
-		cacheDir = fs.StringLong("cache-dir", "", "directory to store generated profiles")
-		tun      = fs.BoolLong("tun-experimental", "enable tun interface (experimental)")
-		fwmark   = fs.UintLong("fwmark", 0x1375, "set linux firewall mark for tun mode")
-		wgConf   = fs.StringLong("wgconf", "", "path to a normal wireguard config")
-		_        = fs.String('c', "config", "", "path to config file")
-		verFlag  = fs.BoolLong("version", "displays version number")
+		v4          = fs.BoolShort('4', "only use IPv4 for random warp endpoint")
+		v6          = fs.BoolShort('6', "only use IPv6 for random warp endpoint")
+		verbose     = fs.Bool('v', "verbose", "enable verbose logging")
+		bind        = fs.String('b', "bind", "127.0.0.1:8086", "socks bind address")
+		endpoint    = fs.String('e', "endpoint", "", "warp endpoint")
+		key         = fs.String('k', "key", "", "warp key")
+		dns         = fs.StringLong("dns", "1.1.1.1", "DNS address")
+		gool        = fs.BoolLong("gool", "enable gool mode (warp in warp)")
+		psiphon     = fs.BoolLong("cfon", "enable psiphon mode (must provide country as well)")
+		country     = fs.StringEnumLong("country", fmt.Sprintf("psiphon country code (valid values: %s)", psiphonCountries), psiphonCountries...)
+		scan        = fs.BoolLong("scan", "enable warp scanning")
+		rtt         = fs.DurationLong("rtt", 1000*time.Millisecond, "scanner rtt limit")
+		cacheDir    = fs.StringLong("cache-dir", "", "directory to store generated profiles")
+		tun         = fs.BoolLong("tun-experimental", "enable tun interface (experimental)")
+		fwmark      = fs.UintLong("fwmark", 0x1375, "set linux firewall mark for tun mode")
+		wgConf      = fs.StringLong("wgconf", "", "path to a normal wireguard config")
+		routingFile = fs.StringLong("routing", "", "path to routing rule config file")
+		_           = fs.String('c', "config", "", "path to config file")
+		verFlag     = fs.BoolLong("version", "displays version number")
 	)
 
 	err := ff.Parse(
@@ -138,15 +141,37 @@ func main() {
 		fatal(l, fmt.Errorf("invalid DNS address: %w", err))
 	}
 
+	// Load routing rule configuration from file
+	routingRuleConfigList := []*routing.RoutingRuleConfig{}
+
+	if *routingFile != "" {
+		var routingRuleRawConfigList []routing.RoutingRuleRawConfig
+
+		routingRuleData, err := os.ReadFile(*routingFile)
+		if err != nil {
+			fatal(l, fmt.Errorf("error reading routing rule config file: %w", err))
+		}
+
+		err = json.Unmarshal(routingRuleData, &routingRuleRawConfigList)
+		if err != nil {
+			fatal(l, fmt.Errorf("error unmarshalling routing rule config JSON: %w", err))
+		}
+
+		for _, rawRoutingRule := range routingRuleRawConfigList {
+			routingRuleConfigList = append(routingRuleConfigList, routing.NewRoutingRuleConfig(rawRoutingRule))
+		}
+	}
+
 	opts := app.WarpOptions{
-		Bind:            bindAddrPort,
-		Endpoint:        *endpoint,
-		License:         *key,
-		DnsAddr:         dnsAddr,
-		Gool:            *gool,
-		Tun:             *tun,
-		FwMark:          uint32(*fwmark),
-		WireguardConfig: *wgConf,
+		Bind:                  bindAddrPort,
+		Endpoint:              *endpoint,
+		License:               *key,
+		DnsAddr:               dnsAddr,
+		Gool:                  *gool,
+		Tun:                   *tun,
+		FwMark:                uint32(*fwmark),
+		WireguardConfig:       *wgConf,
+		RoutingRuleConfigList: routingRuleConfigList,
 	}
 
 	switch {

@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net"
 
+	"github.com/bepass-org/warp-plus/proxy/pkg/routing"
 	"github.com/bepass-org/warp-plus/proxy/pkg/statute"
 )
 
@@ -36,6 +37,8 @@ type Server struct {
 	Context context.Context
 	// BytesPool getting and returning temporary bytes for use by io.CopyBuffer
 	BytesPool statute.BytesPool
+	// Routing Config
+	RoutingRuleList []*routing.RoutingRuleConfig
 }
 
 func NewServer(options ...ServerOption) *Server {
@@ -46,6 +49,7 @@ func NewServer(options ...ServerOption) *Server {
 		PacketForwardAddress: defaultReplyPacketForwardAddress,
 		Logger:               slog.Default(),
 		Context:              statute.DefaultContext(),
+		RoutingRuleList:      []*routing.RoutingRuleConfig{},
 	}
 
 	for _, option := range options {
@@ -157,6 +161,12 @@ func WithBytesPool(bytesPool statute.BytesPool) ServerOption {
 	}
 }
 
+func WithRoutingRuleConfig(routeConfig ...*routing.RoutingRuleConfig) ServerOption {
+	return func(p *Server) {
+		p.RoutingRuleList = append(p.RoutingRuleList, routeConfig...)
+	}
+}
+
 func (s *Server) ServeConn(conn net.Conn) error {
 	version, err := readByte(conn)
 	if err != nil {
@@ -235,7 +245,14 @@ func (s *Server) handle(req *request) error {
 }
 
 func (s *Server) handleConnect(req *request) error {
-	if s.UserConnectHandle == nil {
+
+	routingRuleType := routing.GetRoutingRule(s.RoutingRuleList, req.DestinationAddr.String())
+	if routingRuleType == routing.BlockRoutingRule {
+		s.Logger.Info("drop connection, (Block Routing Rule)", "Destination", req.DestinationAddr.String())
+		return routing.ErrBlockRoutingRule
+	}
+
+	if s.UserConnectHandle == nil || routingRuleType == routing.DirectRoutingRule {
 		return s.embedHandleConnect(req)
 	}
 

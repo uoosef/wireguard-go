@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/bepass-org/warp-plus/proxy/pkg/mixed"
+	"github.com/bepass-org/warp-plus/proxy/pkg/routing"
 	"github.com/bepass-org/warp-plus/proxy/pkg/statute"
 	"github.com/bepass-org/warp-plus/wireguard/device"
 	"github.com/bepass-org/warp-plus/wireguard/tun/netstack"
@@ -26,7 +27,7 @@ type VirtualTun struct {
 }
 
 // StartProxy spawns a socks5 server.
-func StartProxy(ctx context.Context, l *slog.Logger, tnet *netstack.Net, bindAddress netip.AddrPort) (netip.AddrPort, error) {
+func StartProxy(ctx context.Context, l *slog.Logger, tnet *netstack.Net, bindAddress netip.AddrPort, routeConfig ...*routing.RoutingRuleConfig) (netip.AddrPort, error) {
 	ln, err := net.Listen("tcp", bindAddress.String())
 	if err != nil {
 		return netip.AddrPort{}, err // Return error if binding was unsuccessful
@@ -47,6 +48,7 @@ func StartProxy(ctx context.Context, l *slog.Logger, tnet *netstack.Net, bindAdd
 		mixed.WithUserHandler(func(request *statute.ProxyRequest) error {
 			return vt.generalHandler(request)
 		}),
+		mixed.WithRoutingRuleConfig(routeConfig...),
 	)
 	go func() {
 		_ = proxy.ListenAndServe()

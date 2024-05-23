@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/bepass-org/warp-plus/proxy/pkg/routing"
 	"github.com/bepass-org/warp-plus/proxy/pkg/statute"
 )
 
@@ -29,14 +30,17 @@ type Server struct {
 	Context context.Context
 	// BytesPool getting and returning temporary bytes for use by io.CopyBuffer
 	BytesPool statute.BytesPool
+	// Routing Config
+	RoutingRuleList []*routing.RoutingRuleConfig
 }
 
 func NewServer(options ...ServerOption) *Server {
 	s := &Server{
-		Bind:      statute.DefaultBindAddress,
-		ProxyDial: statute.DefaultProxyDial(),
-		Logger:    slog.Default(),
-		Context:   statute.DefaultContext(),
+		Bind:            statute.DefaultBindAddress,
+		ProxyDial:       statute.DefaultProxyDial(),
+		Logger:          slog.Default(),
+		Context:         statute.DefaultContext(),
+		RoutingRuleList: []*routing.RoutingRuleConfig{},
 	}
 
 	for _, option := range options {
@@ -130,6 +134,12 @@ func WithBytesPool(bytesPool statute.BytesPool) ServerOption {
 	}
 }
 
+func WithRoutingRuleConfig(routeConfig ...*routing.RoutingRuleConfig) ServerOption {
+	return func(p *Server) {
+		p.RoutingRuleList = append(p.RoutingRuleList, routeConfig...)
+	}
+}
+
 func (s *Server) ServeConn(conn net.Conn) error {
 	reader := bufio.NewReader(conn)
 	req, err := http.ReadRequest(reader)
@@ -141,7 +151,15 @@ func (s *Server) ServeConn(conn net.Conn) error {
 }
 
 func (s *Server) handleHTTP(conn net.Conn, req *http.Request, isConnectMethod bool) error {
-	if s.UserConnectHandle == nil {
+
+	routingRuleType := routing.GetRoutingRule(s.RoutingRuleList, req.URL.Host)
+
+	if routingRuleType == routing.BlockRoutingRule {
+		s.Logger.Info("drop connection, (Block Routing Rule)", "Destination", req.URL.Host)
+		return routing.ErrBlockRoutingRule
+	}
+
+	if s.UserConnectHandle == nil || routingRuleType == routing.DirectRoutingRule {
 		return s.embedHandleHTTP(conn, req, isConnectMethod)
 	}
 

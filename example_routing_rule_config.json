@@ -1,0 +1,16 @@
+[
+  {
+    "type": "Direct",
+    "ip_list":["127.0.0.1"],
+    "cidr_list":["127.0.0.1/24", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"],
+    "domain_list":["digikala.com"],
+    "domain_regexp_list":[".*\\.ir$", ".*\\.iran$", ".*\\.aparat.com$"]
+  },
+  {
+    "type": "Block",
+    "ip_list":[],
+    "cidr_list":[],
+    "domain_list":["4fcom.top"],
+    "domain_regexp_list":[]
+  }
+]

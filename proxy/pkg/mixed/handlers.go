@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net"
 
+	"github.com/bepass-org/warp-plus/proxy/pkg/routing"
 	"github.com/bepass-org/warp-plus/proxy/pkg/statute"
 )
 
@@ -96,5 +97,13 @@ func WithBytesPool(bytesPool statute.BytesPool) Option {
 		p.socks5Proxy.BytesPool = bytesPool
 		p.socks4Proxy.BytesPool = bytesPool
 		p.httpProxy.BytesPool = bytesPool
+	}
+}
+
+func WithRoutingRuleConfig(routeConfig ...*routing.RoutingRuleConfig) Option {
+	return func(p *Proxy) {
+		p.socks5Proxy.RoutingRuleList = append(p.socks5Proxy.RoutingRuleList, routeConfig...)
+		p.socks4Proxy.RoutingRuleList = append(p.socks4Proxy.RoutingRuleList, routeConfig...)
+		p.httpProxy.RoutingRuleList = append(p.httpProxy.RoutingRuleList, routeConfig...)
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"path"
 
 	"github.com/bepass-org/warp-plus/iputils"
+	"github.com/bepass-org/warp-plus/proxy/pkg/routing"
 	"github.com/bepass-org/warp-plus/psiphon"
 	"github.com/bepass-org/warp-plus/wiresocks"
 	"github.com/go-ini/ini"
@@ -19,17 +20,18 @@ const doubleMTU = 1280 // minimum mtu for IPv6, may cause frag reassembly somewh
 const connTestEndpoint = "http://1.1.1.1:80/"
 
 type WarpOptions struct {
-	Bind            netip.AddrPort
-	Endpoint        string
-	License         string
-	DnsAddr         netip.Addr
-	Psiphon         *PsiphonOptions
-	Gool            bool
-	Scan            *wiresocks.ScanOptions
-	CacheDir        string
-	Tun             bool
-	FwMark          uint32
-	WireguardConfig string
+	Bind                  netip.AddrPort
+	Endpoint              string
+	License               string
+	DnsAddr               netip.Addr
+	Psiphon               *PsiphonOptions
+	Gool                  bool
+	Scan                  *wiresocks.ScanOptions
+	CacheDir              string
+	Tun                   bool
+	FwMark                uint32
+	WireguardConfig       string
+	RoutingRuleConfigList []*routing.RoutingRuleConfig
 }
 
 type PsiphonOptions struct {
@@ -162,7 +164,7 @@ func runWireguard(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 	}
 
 	// Run a proxy on the userspace stack
-	_, err = wiresocks.StartProxy(ctx, l, tnet, opts.Bind)
+	_, err = wiresocks.StartProxy(ctx, l, tnet, opts.Bind, opts.RoutingRuleConfigList...)
 	if err != nil {
 		return err
 	}
@@ -224,7 +226,7 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 	}
 
 	// Run a proxy on the userspace stack
-	_, err = wiresocks.StartProxy(ctx, l, tnet, opts.Bind)
+	_, err = wiresocks.StartProxy(ctx, l, tnet, opts.Bind, opts.RoutingRuleConfigList...)
 	if err != nil {
 		return err
 	}
@@ -325,7 +327,7 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 		return err
 	}
 
-	_, err = wiresocks.StartProxy(ctx, l, tnet, opts.Bind)
+	_, err = wiresocks.StartProxy(ctx, l, tnet, opts.Bind, opts.RoutingRuleConfigList...)
 	if err != nil {
 		return err
 	}
@@ -371,7 +373,7 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 	}
 
 	// Run a proxy on the userspace stack
-	warpBind, err := wiresocks.StartProxy(ctx, l, tnet, netip.MustParseAddrPort("127.0.0.1:0"))
+	warpBind, err := wiresocks.StartProxy(ctx, l, tnet, netip.MustParseAddrPort("127.0.0.1:0"), opts.RoutingRuleConfigList...)
 	if err != nil {
 		return err
 	}
