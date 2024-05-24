@@ -70,7 +70,7 @@ jobs:
 
       - name: Build warp-plus
         run: |
-          go build -v -o build_assets/ -trimpath -ldflags "-s -w -buildid= -X main.version=${{ github.ref }}" .
+          go build -v -o build_assets/ -trimpath -ldflags "-s -w -buildid= -X main.version=${{ github.ref }}" ./cmd/warp-plus
 
       - name: Copy README.md & LICENSE
         run: |

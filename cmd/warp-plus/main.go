@@ -12,8 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	_ "net/http/pprof"
-
 	"github.com/adrg/xdg"
 	"github.com/bepass-org/warp-plus/app"
 	"github.com/bepass-org/warp-plus/warp"
