@@ -77,7 +77,7 @@ FLAGS
 - Slovakia (SK)
 - Ukraine (UA)
 - United States (US)
-
+![0](https://raw.githubusercontent.com/Ptechgithub/configs/main/media/line.gif)
 ### Termux
 
 ```
