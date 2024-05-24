@@ -128,10 +128,40 @@ gool() {
         echo -e "${green}Please install Warp first.${rest}"
         return
     fi
+    
     echo -e "${purple}*********************************${rest}"
     echo -e "${green}This option changes your current location to the nearest and best location.${rest}"
     echo -e "${purple}*********************************${rest}"
-    warp --gool
+    
+    while true; do
+        echo -e "${cyan}Choose an option: ${purple}*${rest}"
+        echo -e "${purple}                  *${rest}"
+        echo -e "${cyan}[1] ${green}IPV4${purple}          *${rest}"
+        echo -e "${cyan}[2] ${green}IPV6${purple}          *${rest}"
+        echo -e "${cyan}[3] ${yellow}Back to Menu${purple}  *${rest}"
+        echo -e "${purple}*******************${rest}"
+        
+        echo -en "${green}Please Choose: ${rest}"
+        read -r option
+
+        case $option in
+            1)
+                echo -e "${green}Running Warp with IPV4...${rest}"
+                warp --gool -4
+                ;;
+            2)
+                echo -e "${green}Running Warp with IPV6...${rest}"
+                warp --gool -6
+                ;;
+            3)
+                echo -e "${purple}Back to Menu.${rest}"
+                menu
+                ;;
+            *)
+                echo -e "${red}Invalid option.${rest}"
+                ;;
+        esac
+    done
 }
 
 # Psiphon
@@ -214,11 +244,39 @@ psiphon_location() {
         *) echo "Invalid choice. Please select a valid location number." ;;
     esac
 
-    # Now use the selected location variable $location in your script
     echo -e "${purple}*********************************${rest}"
     echo -e "${green}Selected location: $location${rest}"
     echo -e "${blue}*********************************${rest}"
-    warp --cfon --country $location
+
+    while true; do
+        echo -e "${cyan}Choose an option: ${purple}*${rest}"
+        echo -e "${purple}                  *${rest}"
+        echo -e "${cyan}[1] ${green}IPV4${purple}          *${rest}"
+        echo -e "${cyan}[2] ${green}IPV6${purple}          *${rest}"
+        echo -e "${cyan}[3] ${yellow}Back to Menu${purple}  *${rest}"
+        echo -e "${purple}*******************${rest}"
+        
+        echo -en "${green}Please Choose: ${rest}"
+        read -r option
+
+        case $option in
+            1)
+                echo -e "${green}Running Psiphon with IPV4...${rest}"
+                warp --cfon --country $location -4
+                ;;
+            2)
+                echo -e "${green}Running Psiphon with IPV6...${rest}"
+                warp --cfon --country $location -6
+                ;;
+            3)
+                echo -e "${purple}Back to Menu.${rest}"
+                menu
+                ;;
+            *)
+                echo -e "${red}Invalid option.${rest}"
+                ;;
+        esac
+    done
 }
 
 #Uninstall
@@ -227,7 +285,7 @@ uninstall() {
     directory="/data/data/com.termux/files/home/warp-plus"
     home="/data/data/com.termux/files/home"
     if [ -f "$warp" ]; then
-        rm -rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$PREFIX/bin/warp-plus" "warp" "stuff" > /dev/null 2>&1
+        rm -rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$PREFIX/bin/warp-plus" "warp" "/data/data/com.termux/files/home/.cache/warp-plus" > /dev/null 2>&1
         echo -e "${purple}*********************************${rest}"
         echo -e "${red}Uninstallation completed.${rest}"
         echo -e "${purple}*********************************${rest}"
@@ -273,42 +331,41 @@ menu() {
     echo -e "                              ${purple}  * ${rest}"
     echo -e "${red}0]${rest} ${green}Exit                         ${purple}* ${rest}"
     echo -e "${purple}*********************************${rest}"
+    
+    echo -en "${cyan}Please enter your selection [${yellow}0-6${green}]:${rest}"
+    read -r choice
+
+    case "$choice" in
+       1)
+            install
+            warp
+            ;;
+        2)
+            install_arm
+            warp
+            ;;
+        3)
+            uninstall
+            ;;
+        4)
+            gool
+            ;;
+        5)
+            psiphon_location
+            ;;
+        6)
+            warp_plus
+            ;;
+        0)
+            echo -e "${purple}*********************************${rest}"
+            echo -e "${cyan}By 🖐${rest}"
+            exit
+            ;;
+        *)
+            echo -e "${purple}*********************************${rest}"
+            echo -e "${red}Invalid choice. Please select a valid option.${rest}"
+            echo -e "${purple}*********************************${rest}"
+            ;;
+    esac
 }
-
-# Main
 menu
-echo -en "${cyan}Please enter your selection [${yellow}0-6${green}]:${rest}"
-read -r choice
-
-case "$choice" in
-   1)
-        install
-        warp
-        ;;
-    2)
-        install_arm
-        warp
-        ;;
-    3)
-        uninstall
-        ;;
-    4)
-        gool
-        ;;
-    5)
-        psiphon_location
-        ;;
-    6)
-        warp_plus
-        ;;
-    0)
-        echo -e "${purple}*********************************${rest}"
-        echo -e "${cyan}By 🖐${rest}"
-        exit
-        ;;
-    *)
-        echo -e "${purple}*********************************${rest}"
-        echo -e "${red}Invalid choice. Please select a valid option.${rest}"
-        echo -e "${purple}*********************************${rest}"
-        ;;
-esac
