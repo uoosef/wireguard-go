@@ -46,7 +46,7 @@ install() {
     pacman -Syu openssh = apt update; apt full-upgrade -y; apt install -y openssh
     check_dependencies
 
-    if wget https://github.com/bepass-org/warp-plus/releases/download/v1.1.3/warp-plus_android-arm64.zip &&
+    if wget https://github.com/bepass-org/warp-plus/releases/download/v1.2.1/warp-plus_android-arm64.zip &&
         unzip warp-plus_android-arm64.zip &&
         mv warp-plus warp &&
         chmod +x warp &&
@@ -85,7 +85,7 @@ install_arm() {
         *) echo -e "${red}Unsupported architecture.${rest}"; return ;;
     esac
 
-    WARP_URL="https://github.com/bepass-org/warp-plus/releases/download/v1.1.3/warp-plus_linux-$ARCH.zip"
+    WARP_URL="https://github.com/bepass-org/warp-plus/releases/download/v1.2.1/warp-plus_linux-$ARCH.zip"
 
     if wget "$WARP_URL" &&
         unzip "warp-plus_linux-$ARCH.zip" &&
