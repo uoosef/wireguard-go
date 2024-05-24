@@ -5,9 +5,11 @@ import (
 	"net"
 	"net/netip"
 	"sync"
+
+	"github.com/bepass-org/warp-plus/wireguard/tun/netstack"
 )
 
-func NewVtunUDPForwarder(ctx context.Context, localBind netip.AddrPort, dest string, vtun *VirtualTun, mtu int) (netip.AddrPort, error) {
+func NewVtunUDPForwarder(ctx context.Context, localBind netip.AddrPort, dest string, tnet *netstack.Net, mtu int) (netip.AddrPort, error) {
 	destAddr, err := net.ResolveUDPAddr("udp", dest)
 	if err != nil {
 		return netip.AddrPort{}, err
@@ -18,7 +20,7 @@ func NewVtunUDPForwarder(ctx context.Context, localBind netip.AddrPort, dest str
 		return netip.AddrPort{}, err
 	}
 
-	rconn, err := vtun.Tnet.DialUDP(nil, destAddr)
+	rconn, err := tnet.DialUDP(nil, destAddr)
 	if err != nil {
 		return netip.AddrPort{}, err
 	}

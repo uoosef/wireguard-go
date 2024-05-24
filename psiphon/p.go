@@ -103,8 +103,6 @@ func StartTunnel(
 	configJSON []byte,
 	embeddedServerEntryList string,
 	params Parameters,
-	paramsDelta ParametersDelta,
-	noticeReceiver func(NoticeEvent),
 ) (retTunnel *Tunnel, retErr error) {
 	config, err := psiphon.LoadConfig(configJSON)
 	if err != nil {
@@ -145,14 +143,6 @@ func StartTunnel(
 	err = config.Commit(true)
 	if err != nil {
 		return nil, errors.New("config.Commit failed")
-	}
-
-	// If supplied, apply the parameters delta
-	if len(paramsDelta) > 0 {
-		err = config.SetParameters("", false, paramsDelta)
-		if err != nil {
-			return nil, fmt.Errorf("set parameters failed for delta %v : %w", paramsDelta, err)
-		}
 	}
 
 	// Will receive a value when the tunnel has successfully connected.
@@ -198,12 +188,6 @@ func StartTunnel(
 					default:
 					}
 				}
-			}
-
-			// Some users of this package may need to add special processing of notices.
-			// If the caller has requested it, we'll pass on the notices.
-			if noticeReceiver != nil {
-				noticeReceiver(event)
 			}
 		}))
 
@@ -316,7 +300,7 @@ func (tunnel *Tunnel) Stop() {
 	psiphon.CloseDataStore()
 }
 
-func RunPsiphon(ctx context.Context, l *slog.Logger, wgBind, localSocksPort, country string) error {
+func RunPsiphon(ctx context.Context, l *slog.Logger, wgBind, dir, localSocksPort, country string) error {
 	// Embedded configuration
 	host, port, err := net.SplitHostPort(localSocksPort)
 	if err != nil {
@@ -342,7 +326,6 @@ func RunPsiphon(ctx context.Context, l *slog.Logger, wgBind, localSocksPort, cou
 		"AllowDefaultDNSResolverWithBindToDevice":true
 	}`
 
-	dir := "."
 	ClientPlatform := "Android_4.0.4_com.example.exampleClientLibraryApp"
 	network := "test"
 	timeout := 60
@@ -371,7 +354,7 @@ func RunPsiphon(ctx context.Context, l *slog.Logger, wgBind, localSocksPort, cou
 			}
 			return errors.New("psiphon handshake maximum time exceeded")
 		case <-t.C:
-			tunnel, err := StartTunnel(ctx, []byte(configJSON), "", p, nil, nil)
+			tunnel, err := StartTunnel(ctx, []byte(configJSON), "", p)
 			if err != nil {
 				l.Info("Unable to start psiphon", err, "reconnecting...")
 				continue

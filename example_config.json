@@ -3,9 +3,14 @@
   "bind": "127.0.0.1:8086",
   "endpoint": "",
   "key": "",
+  "dns": "1.1.1.1",
   "gool": false,
   "cfon": false,
   "country": "DE",
   "scan": true,
-  "rtt": "1000ms"
+  "rtt": "1000ms",
+  "cache-dir": "",
+  "tun-experimental": false,
+  "fwmark": "0x1375",
+  "wgconf": ""
 }

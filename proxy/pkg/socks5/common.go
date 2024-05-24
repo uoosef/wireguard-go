@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"net"
 	"strconv"
 	"strings"
@@ -20,7 +19,7 @@ var (
 )
 
 const (
-	maxUdpPacket = math.MaxUint16 - 28
+	maxUdpPacket = 2048
 )
 
 const (
@@ -321,10 +320,17 @@ func (cc *udpCustomConn) RemoteAddr() net.Addr {
 
 func (cc *udpCustomConn) asyncReadPackets() {
 	go func() {
+		tempBuf := make([]byte, maxUdpPacket)
 		for {
-			tempBuf := make([]byte, maxUdpPacket)
 			n, addr, err := cc.ReadFrom(tempBuf)
 			if err != nil {
+				cc.packetQueue <- &readStruct{
+					data: nil,
+					err:  err,
+				}
+				break
+			}
+			if n < 3 {
 				cc.packetQueue <- &readStruct{
 					data: nil,
 					err:  err,
@@ -334,15 +340,8 @@ func (cc *udpCustomConn) asyncReadPackets() {
 			if cc.sourceAddr == nil {
 				cc.sourceAddr = addr
 			}
-			packetData := tempBuf[:n]
-			if len(packetData) < 3 {
-				cc.packetQueue <- &readStruct{
-					data: nil,
-					err:  err,
-				}
-				break
-			}
-			reader := bytes.NewBuffer(packetData[3:])
+
+			reader := bytes.NewBuffer(tempBuf[3:n])
 			targetAddr, err := readAddr(reader)
 
 			if err != nil {

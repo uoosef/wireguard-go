@@ -13,21 +13,8 @@ Warp-Plus is an open-source implementation of Cloudflare's Warp, enhanced with P
 
 ### Prerequisites
 
-- You can download prebuilt binaries or compile it with Go (You MUST use go 1.21)
+- [Download the latest version from the releases page](https://github.com/bepass-org/warp-plus/releases)
 - Basic understanding of VPN and proxy configurations
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/bepass-org/warp-plus.git
-   cd warp-plus
-   ```
-
-2. Build the project:
-   ```bash
-   go build
-   ```
 
 ### Usage
 
@@ -36,18 +23,24 @@ NAME
   warp-plus
 
 FLAGS
-  -4                      only use IPv4 for random warp endpoint
-  -6                      only use IPv6 for random warp endpoint
-  -v, --verbose           enable verbose logging
-  -b, --bind STRING       socks bind address (default: 127.0.0.1:8086)
-  -e, --endpoint STRING   warp endpoint
-  -k, --key STRING        warp key
-      --gool              enable gool mode (warp in warp)
-      --cfon              enable psiphon mode (must provide country as well)
-      --country STRING    psiphon country code (valid values: [AT BE BG BR CA CH CZ DE DK EE ES FI FR GB HU IE IN IT JP LV NL NO PL RO RS SE SG SK UA US]) (default: AT)
-      --scan              enable warp scanning
-      --rtt DURATION      scanner rtt limit (default: 1s)
-  -c, --config STRING     path to config file
+  -4                       only use IPv4 for random warp endpoint
+  -6                       only use IPv6 for random warp endpoint
+  -v, --verbose            enable verbose logging
+  -b, --bind STRING        socks bind address (default: 127.0.0.1:8086)
+  -e, --endpoint STRING    warp endpoint
+  -k, --key STRING         warp key
+      --dns STRING         DNS address (default: 1.1.1.1)
+      --gool               enable gool mode (warp in warp)
+      --cfon               enable psiphon mode (must provide country as well)
+      --country STRING     psiphon country code (valid values: [AT BE BG BR CA CH CZ DE DK EE ES FI FR GB HR HU IE IN IT JP LV NL NO PL PT RO RS SE SG SK UA US]) (default: AT)
+      --scan               enable warp scanning
+      --rtt DURATION       scanner rtt limit (default: 1s)
+      --cache-dir STRING   directory to store generated profiles
+      --tun-experimental   enable tun interface (experimental)
+      --fwmark UINT        set linux firewall mark for tun mode (default: 4981)
+      --wgconf STRING      path to a normal wireguard config
+  -c, --config STRING      path to config file
+      --version            displays version number
 ```
 
 ### Country Codes for Psiphon
@@ -67,6 +60,7 @@ FLAGS
 - France (FR)
 - United Kingdom (GB)
 - Hungary (HU)
+- Croatia (HR)
 - Ireland (IE)
 - India (IN)
 - Italy (IT)
@@ -75,6 +69,7 @@ FLAGS
 - Netherlands (NL)
 - Norway (NO)
 - Poland (PL)
+- Portugal (PT)
 - Romania (RO)
 - Serbia (RS)
 - Sweden (SE)

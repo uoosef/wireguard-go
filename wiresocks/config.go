@@ -78,20 +78,17 @@ func ParseInterface(cfg *ini.File) (InterfaceConfig, error) {
 	}
 	device.PrivateKey = privateKeyHex
 
-	key = iface.Key("DNS")
-	if key == nil {
-		return InterfaceConfig{}, nil
-	}
-
-	addresses = []netip.Addr{}
-	for _, str := range key.StringsWithShadows(",") {
-		ip, err := netip.ParseAddr(str)
-		if err != nil {
-			return InterfaceConfig{}, err
+	if sectionKey, err := iface.GetKey("DNS"); err == nil {
+		addrs := sectionKey.StringsWithShadows(",")
+		device.DNS = make([]netip.Addr, len(addrs))
+		for i, addr := range addrs {
+			ip, err := netip.ParseAddr(addr)
+			if err != nil {
+				return InterfaceConfig{}, err
+			}
+			device.DNS[i] = ip
 		}
-		addresses = append(addresses, ip)
 	}
-	device.DNS = addresses
 
 	if sectionKey, err := iface.GetKey("MTU"); err == nil {
 		value, err := sectionKey.Int()
@@ -158,6 +155,14 @@ func ParsePeers(cfg *ini.File) ([]PeerConfig, error) {
 			peer.Endpoint = sectionKey.String()
 		}
 
+		if sectionKey, err := section.GetKey("Trick"); err == nil {
+			value, err := sectionKey.Bool()
+			if err != nil {
+				return nil, err
+			}
+			peer.Trick = value
+		}
+
 		peers[i] = peer
 	}
 
@@ -165,7 +170,7 @@ func ParsePeers(cfg *ini.File) ([]PeerConfig, error) {
 }
 
 // ParseConfig takes the path of a configuration file and parses it into Configuration
-func ParseConfig(path string, endpoint string) (*Configuration, error) {
+func ParseConfig(path string) (*Configuration, error) {
 	iniOpt := ini.LoadOptions{
 		Insensitive:            true,
 		AllowShadows:           true,
@@ -185,10 +190,6 @@ func ParseConfig(path string, endpoint string) (*Configuration, error) {
 	peers, err := ParsePeers(cfg)
 	if err != nil {
 		return nil, err
-	}
-	for i, peer := range peers {
-		peer.Endpoint = endpoint
-		peers[i] = peer
 	}
 
 	return &Configuration{Interface: &iface, Peers: peers}, nil

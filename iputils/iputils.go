@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
+	"net"
 	"net/netip"
+	"strconv"
 	"time"
 )
 
@@ -55,40 +57,48 @@ func RandomIPFromPrefix(cidr netip.Prefix) (netip.Addr, error) {
 	return randomAddress.Unmap(), nil
 }
 
-// func ParseResolveAddressPort(hostname string) (netip.AddrPort, error) {
-// 	// Attempt to split the hostname into a host and port
-// 	host, port, err := net.SplitHostPort(hostname)
-// 	if err != nil {
-// 		return netip.AddrPort{}, fmt.Errorf("can't parse provided hostname into host and port: %w", err)
-// 	}
+func ParseResolveAddressPort(hostname string, includev6 bool) (netip.AddrPort, error) {
+	// Attempt to split the hostname into a host and port
+	host, port, err := net.SplitHostPort(hostname)
+	if err != nil {
+		return netip.AddrPort{}, fmt.Errorf("can't parse provided hostname into host and port: %w", err)
+	}
 
-// 	// Convert the string port to a uint16
-// 	portInt, err := strconv.Atoi(port)
-// 	if err != nil {
-// 		return netip.AddrPort{}, fmt.Errorf("error parsing port: %w", err)
-// 	}
+	// Convert the string port to a uint16
+	portInt, err := strconv.Atoi(port)
+	if err != nil {
+		return netip.AddrPort{}, fmt.Errorf("error parsing port: %w", err)
+	}
 
-// 	if portInt < 1 || portInt > 65535 {
-// 		return netip.AddrPort{}, fmt.Errorf("port number %d is out of range", portInt)
-// 	}
+	if portInt < 1 || portInt > 65535 {
+		return netip.AddrPort{}, fmt.Errorf("port number %d is out of range", portInt)
+	}
 
-// 	// Attempt to parse the host into an IP. Return on success.
-// 	addr, err := netip.ParseAddr(host)
-// 	if err == nil {
-// 		return netip.AddrPortFrom(addr.Unmap(), uint16(portInt)), nil
-// 	}
+	// Attempt to parse the host into an IP. Return on success.
+	addr, err := netip.ParseAddr(host)
+	if err == nil {
+		return netip.AddrPortFrom(addr.Unmap(), uint16(portInt)), nil
+	}
 
-// 	// If the host wasn't an IP, perform a lookup
-// 	ips, err := net.LookupIP(host)
-// 	if err != nil {
-// 		return netip.AddrPort{}, fmt.Errorf("hostname lookup failed: %w", err)
-// 	}
+	// If the host wasn't an IP, perform a lookup
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		return netip.AddrPort{}, fmt.Errorf("hostname lookup failed: %w", err)
+	}
 
-// 	// Take the first IP and then return it
-// 	addr, ok := netip.AddrFromSlice(ips[0])
-// 	if !ok {
-// 		return netip.AddrPort{}, errors.New("failed to parse ip")
-// 	}
+	for _, ip := range ips {
+		// Take the first IP and then return it
+		addr, ok := netip.AddrFromSlice(ip)
+		if !ok {
+			continue
+		}
 
-// 	return netip.AddrPortFrom(addr.Unmap(), uint16(portInt)), nil
-// }
+		if addr.Unmap().Is4() {
+			return netip.AddrPortFrom(addr.Unmap(), uint16(portInt)), nil
+		} else if includev6 {
+			return netip.AddrPortFrom(addr.Unmap(), uint16(portInt)), nil
+		}
+	}
+
+	return netip.AddrPort{}, errors.New("no valid IP addresses found")
+}
