@@ -14,56 +14,7 @@ import (
 // Dialer is a struct that holds various options for custom dialing.
 type Dialer struct{}
 
-const (
-	extensionServerName   uint16 = 0x0
-	utlsExtensionSNICurve uint16 = 0x15
-)
-
-func hostnameInSNI(name string) string {
-	return name
-}
-
-// SNIExtension implements server_name (0)
-type SNIExtension struct {
-	*tls.GenericExtension
-	ServerName string // not an array because go crypto/tls doesn't support multiple SNIs
-}
-
-// Len returns the length of the SNIExtension.
-func (e *SNIExtension) Len() int {
-	// Literal IP addresses, absolute FQDNs, and empty strings are not permitted as SNI values.
-	// See RFC 6066, Section 3.
-	hostName := hostnameInSNI(e.ServerName)
-	if len(hostName) == 0 {
-		return 0
-	}
-	return 4 + 2 + 1 + 2 + len(hostName)
-}
-
-// Read reads the SNIExtension.
-func (e *SNIExtension) Read(b []byte) (int, error) {
-	// Literal IP addresses, absolute FQDNs, and empty strings are not permitted as SNI values.
-	// See RFC 6066, Section 3.
-	hostName := hostnameInSNI(e.ServerName)
-	if len(hostName) == 0 {
-		return 0, io.EOF
-	}
-	if len(b) < e.Len() {
-		return 0, io.ErrShortBuffer
-	}
-	// RFC 3546, section 3.1
-	b[0] = byte(extensionServerName >> 8)
-	b[1] = byte(extensionServerName)
-	b[2] = byte((len(hostName) + 5) >> 8)
-	b[3] = byte(len(hostName) + 5)
-	b[4] = byte((len(hostName) + 3) >> 8)
-	b[5] = byte(len(hostName) + 3)
-	// b[6] Server Name Type: host_name (0)
-	b[7] = byte(len(hostName) >> 8)
-	b[8] = byte(len(hostName))
-	copy(b[9:], hostName)
-	return e.Len(), io.EOF
-}
+const utlsExtensionSNICurve uint16 = 0x15
 
 // SNICurveExtension implements SNICurve (0x15) extension
 type SNICurveExtension struct {
@@ -146,9 +97,7 @@ func (d *Dialer) makeTLSHelloPacketWithSNICurve(plainConn net.Conn, config *tls.
 				{Group: tls.X25519},
 			}},
 			&tls.PSKKeyExchangeModesExtension{Modes: []uint8{1}}, // pskModeDHE
-			&SNIExtension{
-				ServerName: sni,
-			},
+			&tls.SNIExtension{ServerName: sni},
 		},
 		GetSessionID: nil,
 	}
@@ -180,12 +129,7 @@ func (d *Dialer) TLSDial(plainDialer *net.Dialer, network, addr string) (net.Con
 		return nil, err
 	}
 
-	config := tls.Config{
-		ServerName:         sni,
-		InsecureSkipVerify: true,
-		NextProtos:         nil,
-		MinVersion:         tls.VersionTLS10,
-	}
+	config := tls.Config{ServerName: sni, MinVersion: tls.VersionTLS12}
 
 	utlsConn, handshakeErr := d.makeTLSHelloPacketWithSNICurve(plainConn, &config, sni)
 	if handshakeErr != nil {
