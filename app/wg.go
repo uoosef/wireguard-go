@@ -74,6 +74,7 @@ func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wg
 		request.WriteString(fmt.Sprintf("preshared_key=%s\n", peer.PreSharedKey))
 		request.WriteString(fmt.Sprintf("endpoint=%s\n", peer.Endpoint))
 		request.WriteString(fmt.Sprintf("trick=%t\n", peer.Trick))
+		request.WriteString(fmt.Sprintf("reserved=%d,%d,%d\n", peer.Reserved[0], peer.Reserved[1], peer.Reserved[2]))
 
 		for _, cidr := range peer.AllowedIPs {
 			request.WriteString(fmt.Sprintf("allowed_ip=%s\n", cidr))

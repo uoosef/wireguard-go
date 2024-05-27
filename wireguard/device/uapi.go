@@ -120,6 +120,7 @@ func (device *Device) IpcGetOperation(w io.Writer) error {
 			sendf("rx_bytes=%d", peer.rxBytes.Load())
 			sendf("persistent_keepalive_interval=%d", peer.persistentKeepaliveInterval.Load())
 			sendf("trick=%t", peer.trick)
+			sendf("reserved=%d,%d,%d", peer.reserved[0], peer.reserved[1], peer.reserved[2])
 
 			device.allowedips.EntriesForPeer(peer, func(prefix netip.Prefix) bool {
 				sendf("allowed_ip=%s", prefix.String())
@@ -394,6 +395,25 @@ func (device *Device) handlePeerLine(peer *ipcSetPeer, key, value string) error 
 			return ipcErrorf(ipc.IpcErrorInvalid, "invalid trick value: %v", value)
 		}
 		peer.trick = parsedBool
+
+	case "reserved":
+		device.log.Verbosef("%v - UAPI: Setting reserved: %s", peer.Peer, value)
+		vals := strings.Split(value, ",")
+		if len(vals) != 3 {
+			return ipcErrorf(ipc.IpcErrorInvalid, "invalid reserved value: %v", value)
+		}
+		reserved := [3]byte{}
+		for i, val := range vals {
+			parsed, err := strconv.Atoi(val)
+			if err != nil {
+				return ipcErrorf(ipc.IpcErrorInvalid, "invalid reserved value: %v", value)
+			}
+			if parsed < 0 || parsed > 0xff {
+				return ipcErrorf(ipc.IpcErrorInvalid, "invalid reserved value: %v", value)
+			}
+			reserved[i] = uint8(parsed)
+		}
+		peer.reserved = reserved
 
 	default:
 		return ipcErrorf(ipc.IpcErrorInvalid, "invalid UAPI peer key: %v", key)

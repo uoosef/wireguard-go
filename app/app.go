@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -10,8 +11,8 @@ import (
 
 	"github.com/bepass-org/warp-plus/iputils"
 	"github.com/bepass-org/warp-plus/psiphon"
+	"github.com/bepass-org/warp-plus/warp"
 	"github.com/bepass-org/warp-plus/wiresocks"
-	"github.com/go-ini/ini"
 )
 
 const singleMTU = 1330
@@ -30,6 +31,7 @@ type WarpOptions struct {
 	Tun             bool
 	FwMark          uint32
 	WireguardConfig string
+	Reserved        string
 }
 
 type PsiphonOptions struct {
@@ -61,16 +63,18 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 	endpoints := []string{opts.Endpoint, opts.Endpoint}
 
 	if opts.Scan != nil {
-		cfg, err := ini.Load(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
+		// make primary identity
+		ident, err := warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "primary"), opts.License)
 		if err != nil {
-			return fmt.Errorf("failed to read file: %w", err)
+			l.Error("couldn't load primary warp identity")
+			return err
 		}
 
 		// Reading the private key from the 'Interface' section
-		opts.Scan.PrivateKey = cfg.Section("Interface").Key("PrivateKey").String()
+		opts.Scan.PrivateKey = ident.PrivateKey
 
 		// Reading the public key from the 'Peer' section
-		opts.Scan.PublicKey = cfg.Section("Peer").Key("PublicKey").String()
+		opts.Scan.PublicKey = ident.Config.Peers[0].PublicKey
 
 		res, err := wiresocks.RunScan(ctx, l, *opts.Scan)
 		if err != nil {
@@ -173,11 +177,14 @@ func runWireguard(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 }
 
 func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint string) error {
-	// Set up primary/outer warp config
-	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
+	// make primary identity
+	ident, err := warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "primary"), opts.License)
 	if err != nil {
+		l.Error("couldn't load primary warp identity")
 		return err
 	}
+
+	conf := generateWireguardConfig(ident)
 
 	// Set up MTU
 	conf.Interface.MTU = singleMTU
@@ -189,6 +196,15 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 		peer.Endpoint = endpoint
 		peer.Trick = true
 		peer.KeepAlive = 3
+
+		if opts.Reserved != "" {
+			r, err := wiresocks.ParseReserved(opts.Reserved)
+			if err != nil {
+				return err
+			}
+			peer.Reserved = r
+		}
+
 		conf.Peers[i] = peer
 	}
 
@@ -200,7 +216,7 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 		}
 
 		// Establish wireguard tunnel on tun interface
-		if err := establishWireguard(l, conf, tunDev, true, opts.FwMark); err != nil {
+		if err := establishWireguard(l, &conf, tunDev, true, opts.FwMark); err != nil {
 			return err
 		}
 		l.Info("serving tun", "interface", "warp0")
@@ -208,13 +224,13 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 	}
 
 	// Create userspace tun network stack
-	tunDev, tnet, err := newUsermodeTun(conf)
+	tunDev, tnet, err := newUsermodeTun(&conf)
 	if err != nil {
 		return err
 	}
 
 	// Establish wireguard on userspace stack
-	if err := establishWireguard(l, conf, tunDev, false, opts.FwMark); err != nil {
+	if err := establishWireguard(l, &conf, tunDev, false, opts.FwMark); err != nil {
 		return err
 	}
 
@@ -234,11 +250,14 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 }
 
 func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoints []string) error {
-	// Set up primary/outer warp config
-	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
+	// make primary identity
+	ident1, err := warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "primary"), opts.License)
 	if err != nil {
+		l.Error("couldn't load primary warp identity")
 		return err
 	}
+
+	conf := generateWireguardConfig(ident1)
 
 	// Set up MTU
 	conf.Interface.MTU = singleMTU
@@ -250,17 +269,26 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 		peer.Endpoint = endpoints[0]
 		peer.Trick = true
 		peer.KeepAlive = 3
+
+		if opts.Reserved != "" {
+			r, err := wiresocks.ParseReserved(opts.Reserved)
+			if err != nil {
+				return err
+			}
+			peer.Reserved = r
+		}
+
 		conf.Peers[i] = peer
 	}
 
 	// Create userspace tun network stack
-	tunDev, tnet, err := newUsermodeTun(conf)
+	tunDev, tnet, err := newUsermodeTun(&conf)
 	if err != nil {
 		return err
 	}
 
 	// Establish wireguard on userspace stack and bind the wireguard sockets to the default interface and apply
-	if err := establishWireguard(l.With("gool", "outer"), conf, tunDev, opts.Tun, opts.FwMark); err != nil {
+	if err := establishWireguard(l.With("gool", "outer"), &conf, tunDev, opts.Tun, opts.FwMark); err != nil {
 		return err
 	}
 
@@ -275,11 +303,14 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 		return err
 	}
 
-	// Set up secondary/inner warp config
-	conf, err = wiresocks.ParseConfig(path.Join(opts.CacheDir, "secondary", "wgcf-profile.ini"))
+	// make secondary
+	ident2, err := warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "secondary"), opts.License)
 	if err != nil {
+		l.Error("couldn't load secondary warp identity")
 		return err
 	}
+
+	conf = generateWireguardConfig(ident2)
 
 	// Set up MTU
 	conf.Interface.MTU = doubleMTU
@@ -290,6 +321,15 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 	for i, peer := range conf.Peers {
 		peer.Endpoint = addr.String()
 		peer.KeepAlive = 10
+
+		if opts.Reserved != "" {
+			r, err := wiresocks.ParseReserved(opts.Reserved)
+			if err != nil {
+				return err
+			}
+			peer.Reserved = r
+		}
+
 		conf.Peers[i] = peer
 	}
 
@@ -302,7 +342,7 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 
 		// Establish wireguard tunnel on tun interface but don't bind
 		// wireguard sockets to default interface and don't apply fwmark.
-		if err := establishWireguard(l.With("gool", "inner"), conf, tunDev, false, opts.FwMark); err != nil {
+		if err := establishWireguard(l.With("gool", "inner"), &conf, tunDev, false, opts.FwMark); err != nil {
 			return err
 		}
 		l.Info("serving tun", "interface", "warp0")
@@ -310,13 +350,13 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 	}
 
 	// Create userspace tun network stack
-	tunDev, tnet, err = newUsermodeTun(conf)
+	tunDev, tnet, err = newUsermodeTun(&conf)
 	if err != nil {
 		return err
 	}
 
 	// Establish wireguard on userspace stack
-	if err := establishWireguard(l.With("gool", "inner"), conf, tunDev, false, opts.FwMark); err != nil {
+	if err := establishWireguard(l.With("gool", "inner"), &conf, tunDev, false, opts.FwMark); err != nil {
 		return err
 	}
 
@@ -335,11 +375,14 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 }
 
 func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint string) error {
-	// Set up primary/outer warp config
-	conf, err := wiresocks.ParseConfig(path.Join(opts.CacheDir, "primary", "wgcf-profile.ini"))
+	// make primary identity
+	ident, err := warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "primary"), opts.License)
 	if err != nil {
+		l.Error("couldn't load primary warp identity")
 		return err
 	}
+
+	conf := generateWireguardConfig(ident)
 
 	// Set up MTU
 	conf.Interface.MTU = singleMTU
@@ -351,17 +394,26 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 		peer.Endpoint = endpoint
 		peer.Trick = true
 		peer.KeepAlive = 3
+
+		if opts.Reserved != "" {
+			r, err := wiresocks.ParseReserved(opts.Reserved)
+			if err != nil {
+				return err
+			}
+			peer.Reserved = r
+		}
+
 		conf.Peers[i] = peer
 	}
 
 	// Create userspace tun network stack
-	tunDev, tnet, err := newUsermodeTun(conf)
+	tunDev, tnet, err := newUsermodeTun(&conf)
 	if err != nil {
 		return err
 	}
 
 	// Establish wireguard on userspace stack
-	if err := establishWireguard(l, conf, tunDev, false, opts.FwMark); err != nil {
+	if err := establishWireguard(l, &conf, tunDev, false, opts.FwMark); err != nil {
 		return err
 	}
 
@@ -384,4 +436,29 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 
 	l.Info("serving proxy", "address", opts.Bind)
 	return nil
+}
+
+func generateWireguardConfig(i *warp.Identity) wiresocks.Configuration {
+	priv, _ := wiresocks.EncodeBase64ToHex(i.PrivateKey)
+	pub, _ := wiresocks.EncodeBase64ToHex(i.Config.Peers[0].PublicKey)
+	clientID, _ := base64.StdEncoding.DecodeString(i.Config.ClientID)
+	return wiresocks.Configuration{
+		Interface: &wiresocks.InterfaceConfig{
+			PrivateKey: priv,
+			Addresses: []netip.Addr{
+				netip.MustParseAddr(i.Config.Interface.Addresses.V4),
+				netip.MustParseAddr(i.Config.Interface.Addresses.V6),
+			},
+		},
+		Peers: []wiresocks.PeerConfig{{
+			PublicKey:    pub,
+			PreSharedKey: "0000000000000000000000000000000000000000000000000000000000000000",
+			AllowedIPs: []netip.Prefix{
+				netip.MustParsePrefix("0.0.0.0/0"),
+				netip.MustParsePrefix("::/0"),
+			},
+			Endpoint: i.Config.Peers[0].Endpoint.Host,
+			Reserved: [3]byte{clientID[0], clientID[1], clientID[2]},
+		}},
+	}
 }

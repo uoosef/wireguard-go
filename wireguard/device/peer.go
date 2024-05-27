@@ -53,7 +53,8 @@ type Peer struct {
 		inbound  *autodrainingInboundQueue            // sequential ordering of tun writing
 	}
 
-	trick bool
+	trick    bool
+	reserved [3]byte
 
 	cookieGenerator             CookieGenerator
 	trieEntries                 list.List
@@ -133,6 +134,12 @@ func (peer *Peer) SendBuffers(buffers [][]byte) error {
 		peer.endpoint.clearSrcOnTx = false
 	}
 	peer.endpoint.Unlock()
+
+	for i := range buffers {
+		if len(buffers[i]) > 3 && buffers[i][0] > 0 && buffers[i][0] < 5 {
+			copy(buffers[i][1:4], peer.reserved[:])
+		}
+	}
 
 	err := peer.device.net.bind.Send(buffers, endpoint)
 	if err == nil {

@@ -80,6 +80,7 @@ func main() {
 		cacheDir = fs.StringLong("cache-dir", "", "directory to store generated profiles")
 		tun      = fs.BoolLong("tun-experimental", "enable tun interface (experimental)")
 		fwmark   = fs.UintLong("fwmark", 0x1375, "set linux firewall mark for tun mode")
+		reserved = fs.StringLong("reserved", "", "override wireguard reserved value (format: '1,2,3')")
 		wgConf   = fs.StringLong("wgconf", "", "path to a normal wireguard config")
 		_        = fs.String('c', "config", "", "path to config file")
 		verFlag  = fs.BoolLong("version", "displays version number")
@@ -145,6 +146,7 @@ func main() {
 		Tun:             *tun,
 		FwMark:          uint32(*fwmark),
 		WireguardConfig: *wgConf,
+		Reserved:        *reserved,
 	}
 
 	switch {
@@ -181,13 +183,6 @@ func main() {
 		opts.Endpoint = addrPort.String()
 	}
 
-	if opts.WireguardConfig == "" {
-		// create identities
-		if err := createPrimaryAndSecondaryIdentities(l.With("subsystem", "warp/account"), opts); err != nil {
-			fatal(l, err)
-		}
-	}
-
 	ctx, _ := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	go func() {
 		if err := app.RunWarp(ctx, l, opts); err != nil {
@@ -196,24 +191,6 @@ func main() {
 	}()
 
 	<-ctx.Done()
-}
-
-func createPrimaryAndSecondaryIdentities(l *slog.Logger, opts app.WarpOptions) error {
-	// make primary identity
-	err := warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "primary"), opts.License)
-	if err != nil {
-		l.Error("couldn't load primary warp identity")
-		return err
-	}
-
-	// make secondary
-	err = warp.LoadOrCreateIdentity(l, path.Join(opts.CacheDir, "secondary"), opts.License)
-	if err != nil {
-		l.Error("couldn't load secondary warp identity")
-		return err
-	}
-
-	return nil
 }
 
 func fatal(l *slog.Logger, err error) {

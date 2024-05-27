@@ -88,7 +88,6 @@ func randomInt(min, max int) int {
 }
 
 func (peer *Peer) sendRandomPackets() {
-	// Generate a random number of packets between 5 and 10
 	numPackets := randomInt(8, 15)
 	randomPacket := make([]byte, 100)
 	for i := 0; i < numPackets; i++ {
@@ -96,21 +95,18 @@ func (peer *Peer) sendRandomPackets() {
 			return
 		}
 
-		// Generate a random packet size between 10 and 40 bytes
 		packetSize := randomInt(40, 100)
 		_, err := rand.Read(randomPacket[:packetSize])
 		if err != nil {
 			return
 		}
 
-		// Send the random packet
 		err = peer.SendBuffers([][]byte{randomPacket[:packetSize]})
 		if err != nil {
 			return
 		}
 
-		// Wait for a random duration between 20 and 250 milliseconds
-		<-time.After(time.Duration(randomInt(20, 250)) * time.Millisecond)
+		time.Sleep(time.Duration(randomInt(20, 250)) * time.Millisecond)
 	}
 }
 
@@ -118,10 +114,9 @@ func (peer *Peer) sendRandomPackets() {
  */
 func (peer *Peer) SendKeepalive() {
 	if len(peer.queue.staged) == 0 && peer.isRunning.Load() {
-		// Send some random packets on every keepalive
 		if peer.trick {
 			peer.device.log.Verbosef("%v - Running tricks! (keepalive)", peer)
-			go peer.sendRandomPackets()
+			peer.sendRandomPackets()
 		}
 
 		elem := peer.device.NewOutboundElement()
@@ -157,10 +152,9 @@ func (peer *Peer) SendHandshakeInitiation(isRetry bool) error {
 		return nil
 	}
 
-	// send some random packets on handshake
 	if peer.trick {
 		peer.device.log.Verbosef("%v - Running tricks! (handshake)", peer)
-		go peer.sendRandomPackets()
+		peer.sendRandomPackets()
 	}
 
 	peer.handshake.lastSentHandshake = time.Now()

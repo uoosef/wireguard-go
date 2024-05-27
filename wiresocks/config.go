@@ -1,11 +1,14 @@
 package wiresocks
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/netip"
+	"strconv"
+	"strings"
 
 	"github.com/go-ini/ini"
 )
@@ -17,6 +20,7 @@ type PeerConfig struct {
 	KeepAlive    int
 	AllowedIPs   []netip.Prefix
 	Trick        bool
+	Reserved     [3]byte
 }
 
 type InterfaceConfig struct {
@@ -31,7 +35,7 @@ type Configuration struct {
 	Peers     []PeerConfig
 }
 
-func encodeBase64ToHex(key string) (string, error) {
+func EncodeBase64ToHex(key string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(key)
 	if err != nil {
 		return "", fmt.Errorf("invalid base64 string: %s", key)
@@ -72,7 +76,7 @@ func ParseInterface(cfg *ini.File) (InterfaceConfig, error) {
 		return InterfaceConfig{}, errors.New("PrivateKey should not be empty")
 	}
 
-	privateKeyHex, err := encodeBase64ToHex(key.String())
+	privateKeyHex, err := EncodeBase64ToHex(key.String())
 	if err != nil {
 		return InterfaceConfig{}, err
 	}
@@ -116,7 +120,7 @@ func ParsePeers(cfg *ini.File) ([]PeerConfig, error) {
 		}
 
 		if sectionKey, err := section.GetKey("PublicKey"); err == nil {
-			value, err := encodeBase64ToHex(sectionKey.String())
+			value, err := EncodeBase64ToHex(sectionKey.String())
 			if err != nil {
 				return nil, err
 			}
@@ -124,7 +128,7 @@ func ParsePeers(cfg *ini.File) ([]PeerConfig, error) {
 		}
 
 		if sectionKey, err := section.GetKey("PreSharedKey"); err == nil {
-			value, err := encodeBase64ToHex(sectionKey.String())
+			value, err := EncodeBase64ToHex(sectionKey.String())
 			if err != nil {
 				return nil, err
 			}
@@ -163,10 +167,46 @@ func ParsePeers(cfg *ini.File) ([]PeerConfig, error) {
 			peer.Trick = value
 		}
 
+		if sectionKey, err := section.GetKey("Reserved"); err == nil {
+			value := sectionKey.String()
+			reserved, err := ParseReserved(value)
+			if err != nil {
+				return nil, fmt.Errorf("'%s' is not a valid value for Reserved, use 1,2,3 format or 'random'", value)
+			}
+			peer.Reserved = reserved
+		}
 		peers[i] = peer
 	}
 
 	return peers, nil
+}
+
+func ParseReserved(str string) ([3]byte, error) {
+	if str == "random" {
+		r := [3]byte{}
+		_, err := rand.Read(r[:3])
+		if err != nil {
+			return [3]byte{}, err
+		}
+		return r, nil
+	}
+
+	vals := strings.Split(str, ",")
+	if len(vals) != 3 {
+		return [3]byte{}, fmt.Errorf("not 1,2,3 format")
+	}
+	reserved := [3]byte{}
+	for i, val := range vals {
+		parsed, err := strconv.Atoi(val)
+		if err != nil {
+			return [3]byte{}, fmt.Errorf("not 1,2,3 format: %w", err)
+		}
+		if parsed < 0 || parsed > 0xff {
+			return [3]byte{}, fmt.Errorf("not 1,2,3 format")
+		}
+		reserved[i] = uint8(parsed)
+	}
+	return reserved, nil
 }
 
 // ParseConfig takes the path of a configuration file and parses it into Configuration

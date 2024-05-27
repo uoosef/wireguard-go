@@ -23,6 +23,7 @@ AllowedIPs = ::/0
 Endpoint = engage.cloudflareclient.com:2408
 PersistentKeepalive = 3
 Trick = true
+Reserved = 1,2,3
 `
 const (
 	privateKeyBase64   = "68af055a1895d42b4a15b2943ecb0bd773fe4eff9ce68c2661c5393c23fac85c"
@@ -78,7 +79,8 @@ func TestParsePeers(t *testing.T) {
 			netip.MustParsePrefix("0.0.0.0/0"),
 			netip.MustParsePrefix("::/0"),
 		},
-		Trick: true,
+		Trick:    true,
+		Reserved: [3]byte{1, 2, 3},
 	}}
 	qt.Assert(t, peers, qt.CmpEquals(cmpopts.EquateComparable(netip.Prefix{})), want)
 	t.Logf("%+v", peers)
