@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/netip"
 
-	"github.com/bepass-org/warp-plus/ipscanner/internal/cache"
 	"github.com/bepass-org/warp-plus/ipscanner/internal/statute"
 )
 
@@ -143,42 +142,12 @@ func lastIP(prefix netip.Prefix) netip.Addr {
 	return lastAddr
 }
 
-var biDirectionalCache, _ = cache.NewBiDirectionalCache(big.MaxBase) // initial cache size
-
-func ipToBigInt(ip netip.Addr) *big.Int {
-	if bigInt, found := biDirectionalCache.GetBigIntFromIP(ip); found {
-		return bigInt
-	}
-	result := new(big.Int).SetBytes(ip.AsSlice())
-	biDirectionalCache.PutIPAndBigInt(ip, result)
-	return result
-}
-
-func bigIntToIP(n *big.Int) netip.Addr {
-	if ip, found := biDirectionalCache.GetIPFromBigInt(n.String()); found {
-		return ip
-	}
-	ipBytes := n.Bytes()
-	var lastAddr netip.Addr
-	if len(ipBytes) <= net.IPv4len { // Adjust for IPv4
-		if len(ipBytes) < net.IPv4len {
-			ipBytes = append(make([]byte, net.IPv4len-len(ipBytes)), ipBytes...)
-		}
-		lastAddr, _ = netip.AddrFromSlice(ipBytes)
-	} else { // Adjust for IPv6
-		if len(ipBytes) < net.IPv6len {
-			ipBytes = append(make([]byte, net.IPv6len-len(ipBytes)), ipBytes...)
-		}
-		lastAddr, _ = netip.AddrFromSlice(ipBytes)
-	}
-	biDirectionalCache.PutIPAndBigInt(lastAddr, n)
-	return lastAddr
-}
-
 func addIP(ip netip.Addr, num *big.Int) netip.Addr {
-	ipInt := ipToBigInt(ip)
+	addrAs16 := ip.As16()
+	ipInt := new(big.Int).SetBytes(addrAs16[:])
 	ipInt.Add(ipInt, num)
-	return bigIntToIP(ipInt)
+	addr, _ := netip.AddrFromSlice(ipInt.FillBytes(make([]byte, 16)))
+	return addr.Unmap()
 }
 
 func ipRangeSize(prefix netip.Prefix) *big.Int {
@@ -274,7 +243,5 @@ func NewIterator(opts *statute.ScannerOptions) *IpGenerator {
 		// TODO
 		return nil
 	}
-	return &IpGenerator{
-		ipRanges: ranges,
-	}
+	return &IpGenerator{ipRanges: ranges}
 }

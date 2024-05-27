@@ -207,25 +207,21 @@ func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKe
 	}
 	defer conn.Close()
 
-	// Generate a random number of packets between 5 and 10
-	numPackets := randomInt(1, 2)
+	numPackets := randomInt(8, 15)
+	randomPacket := make([]byte, 100)
 	for i := 0; i < numPackets; i++ {
-		// Generate a random packet size between 10 and 40 bytes
-		packetSize := randomInt(1, 100)
-		randomPacket := make([]byte, packetSize)
-		_, err := rand.Read(randomPacket)
+		packetSize := randomInt(40, 100)
+		_, err := rand.Read(randomPacket[:packetSize])
 		if err != nil {
 			return 0, fmt.Errorf("error generating random packet: %w", err)
 		}
 
-		// Send the random packet
-		_, err = conn.Write(randomPacket)
+		_, err = conn.Write(randomPacket[:packetSize])
 		if err != nil {
 			return 0, fmt.Errorf("error sending random packet: %w", err)
 		}
 
-		// Wait for a random duration between 200 and 500 milliseconds
-		time.Sleep(time.Duration(randomInt(200, 500)) * time.Millisecond)
+		time.Sleep(time.Duration(randomInt(20, 250)) * time.Millisecond)
 	}
 
 	_, err = initiationPacket.WriteTo(conn)
