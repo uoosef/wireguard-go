@@ -64,7 +64,7 @@ func main() {
 		ipscanner.WithUseIPv6(*v6),
 		ipscanner.WithMaxDesirableRTT(*rtt),
 		ipscanner.WithCidrList(warp.WarpPrefixes()),
-		ipscanner.WithIPQueueSize(0xffffffff),
+		ipscanner.WithIPQueueSize(0xffff),
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
