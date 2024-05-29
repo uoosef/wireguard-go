@@ -88,6 +88,19 @@ func LoadIdentity(path string) (Identity, error) {
 }
 
 func CreateIdentity(l *slog.Logger, path, license string) (Identity, error) {
+	i, err := CreateIdentityOnly(l, license)
+	if err != nil {
+		return Identity{}, err
+	}
+	err = saveIdentity(i, path)
+	if err != nil {
+		return Identity{}, err
+	}
+
+	return i, nil
+}
+
+func CreateIdentityOnly(l *slog.Logger, license string) (Identity, error) {
 	priv, err := GeneratePrivateKey()
 	if err != nil {
 		return Identity{}, err
@@ -111,11 +124,6 @@ func CreateIdentity(l *slog.Logger, path, license string) (Identity, error) {
 	}
 
 	i.PrivateKey = privateKey
-
-	err = saveIdentity(i, path)
-	if err != nil {
-		return Identity{}, err
-	}
 
 	return i, nil
 }
