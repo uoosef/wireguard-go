@@ -289,7 +289,7 @@ uninstall() {
     directory="/data/data/com.termux/files/home/warp-plus"
     home="/data/data/com.termux/files/home"
     if [ -f "$warp" ]; then
-        rm-rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$PREFIX/bin/warp-plus" "warp" "/data/data/com.termux/files/home/.cache/warp-plus" > /dev/null 2>&1
+        rm -rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$PREFIX/bin/warp-plus" "warp" "/data/data/com.termux/files/home/.cache/warp-plus" > /dev/null 2>&1
         echo -e "${red}*********************************${rest}"
         echo -e "Uninstallation completed."
         echo -e "${red}*********************************${rest}"
