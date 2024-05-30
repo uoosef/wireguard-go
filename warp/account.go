@@ -35,25 +35,35 @@ func LoadOrCreateIdentity(l *slog.Logger, path, license string) (*Identity, erro
 		if err := os.RemoveAll(path); err != nil {
 			return nil, err
 		}
+
 		if err := os.MkdirAll(path, os.ModePerm); err != nil {
 			return nil, err
 		}
-		i, err = CreateIdentity(l, path, license)
+
+		i, err = CreateIdentity(l, license)
 		if err != nil {
+			return nil, err
+		}
+
+		if err = saveIdentity(i, path); err != nil {
 			return nil, err
 		}
 	}
 
 	if license != "" && i.Account.License != license {
-		l.Info("license recreating identity with new license")
-		if err := os.RemoveAll(path); err != nil {
-			return nil, err
-		}
-		if err := os.MkdirAll(path, os.ModePerm); err != nil {
-			return nil, err
-		}
-		i, err = CreateIdentity(l, path, license)
+		l.Info("updating account license key")
+		_, err := UpdateAccount(i.Token, i.ID, license)
 		if err != nil {
+			return nil, err
+		}
+
+		iAcc, err := GetAccount(i.Token, i.ID)
+		if err != nil {
+			return nil, err
+		}
+		i.Account = iAcc
+
+		if err = saveIdentity(i, path); err != nil {
 			return nil, err
 		}
 	}
@@ -87,7 +97,7 @@ func LoadIdentity(path string) (Identity, error) {
 	return *i, nil
 }
 
-func CreateIdentity(l *slog.Logger, path, license string) (Identity, error) {
+func CreateIdentity(l *slog.Logger, license string) (Identity, error) {
 	priv, err := GeneratePrivateKey()
 	if err != nil {
 		return Identity{}, err
@@ -103,7 +113,12 @@ func CreateIdentity(l *slog.Logger, path, license string) (Identity, error) {
 
 	if license != "" {
 		l.Info("updating account license key")
-		ac, err := UpdateAccount(i.Token, i.ID, license)
+		_, err := UpdateAccount(i.Token, i.ID, license)
+		if err != nil {
+			return Identity{}, err
+		}
+
+		ac, err := GetAccount(i.Token, i.ID)
 		if err != nil {
 			return Identity{}, err
 		}
@@ -111,11 +126,6 @@ func CreateIdentity(l *slog.Logger, path, license string) (Identity, error) {
 	}
 
 	i.PrivateKey = privateKey
-
-	err = saveIdentity(i, path)
-	if err != nil {
-		return Identity{}, err
-	}
 
 	return i, nil
 }
