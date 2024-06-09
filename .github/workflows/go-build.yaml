@@ -53,7 +53,7 @@ jobs:
       GOOS: ${{ matrix.goos }}
       GOARCH: ${{ matrix.goarch }}
       GOARM: ${{ matrix.goarm }}
-      GOMIPS: ${ matrix.gomips }
+      GOMIPS: ${{ matrix.gomips }}
       CGO_ENABLED: 0
     steps:
       - name: Checkout codebase
