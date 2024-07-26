@@ -13,6 +13,43 @@ import (
 	"github.com/Psiphon-Labs/psiphon-tunnel-core/psiphon"
 )
 
+var Countries = []string{
+	"AT",
+	"AU",
+	"BE",
+	"BG",
+	"BR",
+	"CA",
+	"CH",
+	"CZ",
+	"DE",
+	"DK",
+	"EE",
+	"ES",
+	"FI",
+	"FR",
+	"GB",
+	"HR",
+	"HU",
+	"ID",
+	"IE",
+	"IN",
+	"IT",
+	"JP",
+	"LV",
+	"NL",
+	"NO",
+	"PL",
+	"PT",
+	"RO",
+	"RS",
+	"SE",
+	"SG",
+	"SK",
+	"UA",
+	"US",
+}
+
 // NoticeEvent represents the notices emitted by tunnel core. It will be passed to
 // noticeReceiver, if supplied.
 // NOTE: Ordinary users of this library should never need this.
