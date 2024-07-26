@@ -27,6 +27,7 @@ const appName = "warp-plus"
 
 var psiphonCountries = []string{
 	"AT",
+	"AU",
 	"BE",
 	"BG",
 	"BR",
@@ -42,6 +43,7 @@ var psiphonCountries = []string{
 	"GB",
 	"HR",
 	"HU",
+	"ID",
 	"IE",
 	"IN",
 	"IT",
