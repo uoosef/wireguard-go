@@ -60,11 +60,18 @@ func StartProxy(ctx context.Context, l *slog.Logger, tnet *netstack.Net, bindAdd
 }
 
 func (vt *VirtualTun) generalHandler(req *statute.ProxyRequest) error {
-	vt.Logger.Info("handling connection", "protocol", req.Network, "destination", req.Destination)
+	vt.Logger.Debug("handling connection", "protocol", req.Network, "destination", req.Destination)
 	conn, err := vt.Tnet.Dial(req.Network, req.Destination)
 	if err != nil {
 		return err
 	}
+
+	timeout := 0 * time.Second
+	switch req.Network {
+	case "udp", "udp4", "udp6":
+		timeout = 15 * time.Second
+	}
+
 	// Close the connections when this function exits
 	defer conn.Close()
 	defer req.Conn.Close()
@@ -72,18 +79,16 @@ func (vt *VirtualTun) generalHandler(req *statute.ProxyRequest) error {
 	done := make(chan error, 1)
 	// Copy data from req.Conn to conn
 	go func() {
-		req.Conn.SetReadDeadline(time.Now().Add(15 * time.Second))
 		buf1 := vt.pool.Get()
 		defer vt.pool.Put(buf1)
-		_, err := copyConnTimeout(conn, req.Conn, buf1[:cap(buf1)], 15*time.Second)
+		_, err := copyConnTimeout(conn, req.Conn, buf1[:cap(buf1)], timeout)
 		done <- err
 	}()
 	// Copy data from conn to req.Conn
 	go func() {
-		conn.SetReadDeadline(time.Now().Add(15 * time.Second))
 		buf2 := vt.pool.Get()
 		defer vt.pool.Put(buf2)
-		_, err := copyConnTimeout(req.Conn, conn, buf2[:cap(buf2)], 15*time.Second)
+		_, err := copyConnTimeout(req.Conn, conn, buf2[:cap(buf2)], timeout)
 		done <- err
 	}()
 	// Wait for one of the copy operations to finish
@@ -113,7 +118,11 @@ func copyConnTimeout(dst net.Conn, src net.Conn, buf []byte, timeout time.Durati
 	}
 
 	for {
-		if err := src.SetReadDeadline(time.Now().Add(timeout)); err != nil {
+		deadline := time.Time{}
+		if timeout != 0 {
+			deadline = time.Now().Add(timeout)
+		}
+		if err := src.SetReadDeadline(deadline); err != nil {
 			return 0, err
 		}
 
