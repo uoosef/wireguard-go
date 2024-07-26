@@ -428,7 +428,7 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 	}
 
 	// run psiphon
-	err = psiphon.RunPsiphon(ctx, l.With("subsystem", "psiphon"), warpBind.String(), opts.CacheDir, opts.Bind.String(), opts.Psiphon.Country)
+	err = psiphon.RunPsiphon(ctx, l.With("subsystem", "psiphon"), warpBind, opts.CacheDir, opts.Bind, opts.Psiphon.Country)
 	if err != nil {
 		return fmt.Errorf("unable to run psiphon %w", err)
 	}
