@@ -5,7 +5,7 @@ go 1.22.0
 toolchain go1.22.1
 
 require (
-	github.com/Psiphon-Labs/psiphon-tunnel-core v1.0.11-0.20240424194431-3612a5a6fb4c
+	github.com/Psiphon-Labs/psiphon-tunnel-core v1.0.11-0.20240705153833-eea9ace08cd1
 	github.com/adrg/xdg v0.4.0
 	github.com/carlmjohnson/versioninfo v0.22.5
 	github.com/fatih/color v1.16.0
@@ -44,12 +44,11 @@ require (
 	github.com/dgryski/go-farm v0.0.0-20180109070241-2de33835d102 // indirect
 	github.com/gaukas/godicttls v0.0.4 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/pprof v0.0.0-20211214055906-6f57359322fd // indirect
 	github.com/grafov/m3u8 v0.0.0-20171211212457-6ab8f28ed427 // indirect
-	github.com/hashicorp/golang-lru v1.0.2 // indirect
-	github.com/juju/ratelimit v1.0.2 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect

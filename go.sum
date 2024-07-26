@@ -10,12 +10,14 @@ github.com/Psiphon-Inc/rotate-safe-writer v0.0.0-20210303140923-464a7a37606e h1:
 github.com/Psiphon-Inc/rotate-safe-writer v0.0.0-20210303140923-464a7a37606e/go.mod h1:ZdY5pBfat/WVzw3eXbIf7N1nZN0XD5H5+X8ZMDWbCs4=
 github.com/Psiphon-Labs/bolt v0.0.0-20200624191537-23cedaef7ad7 h1:Hx/NCZTnvoKZuIBwSmxE58KKoNLXIGG6hBJYN7pj9Ag=
 github.com/Psiphon-Labs/bolt v0.0.0-20200624191537-23cedaef7ad7/go.mod h1:alTtZBo3j4AWFvUrAH6F5ZaHcTj4G5Y01nHz8dkU6vU=
+github.com/Psiphon-Labs/consistent v0.0.0-20240322131436-20aaa4e05737 h1:QTMy7Uc2Xc7fz6O/Khy1xi0VBND13GqzLUE2mHw6HUU=
+github.com/Psiphon-Labs/consistent v0.0.0-20240322131436-20aaa4e05737/go.mod h1:Enj/Gszv2zCbuRbHbabmNvfO9EM+5kmaGj8CyjwNPlY=
 github.com/Psiphon-Labs/goptlib v0.0.0-20200406165125-c0e32a7a3464 h1:VmnMMMheFXwLV0noxYhbJbLmkV4iaVW3xNnj6xcCNHo=
 github.com/Psiphon-Labs/goptlib v0.0.0-20200406165125-c0e32a7a3464/go.mod h1:Pe5BqN2DdIdChorAXl6bDaQd/wghpCleJfid2NoSli0=
 github.com/Psiphon-Labs/psiphon-tls v0.0.0-20240424193802-52b2602ec60c h1:+SEszyxW7yu+smufzSlAszj/WmOYJ054DJjb5jllulc=
 github.com/Psiphon-Labs/psiphon-tls v0.0.0-20240424193802-52b2602ec60c/go.mod h1:AaKKoshr8RI1LZTheeNDtNuZ39qNVPWVK4uir2c2XIs=
-github.com/Psiphon-Labs/psiphon-tunnel-core v1.0.11-0.20240424194431-3612a5a6fb4c h1:fGq255KuBSpc9Odea+VhbMSbQcW07uWfypbUU0QWjVM=
-github.com/Psiphon-Labs/psiphon-tunnel-core v1.0.11-0.20240424194431-3612a5a6fb4c/go.mod h1:M5yXGzsfrz2dPQtdjssbwYNpnWlhAeIDXwX7FrG5uv8=
+github.com/Psiphon-Labs/psiphon-tunnel-core v1.0.11-0.20240705153833-eea9ace08cd1 h1:8aJm5EFss3dxEjBpD0DF2B0GDiv30E+pgAvwg3T2Bz0=
+github.com/Psiphon-Labs/psiphon-tunnel-core v1.0.11-0.20240705153833-eea9ace08cd1/go.mod h1:OMEMJwRTN9F/nH9K8Q+CO3bwrMYRJXK/CFP6soAkyYg=
 github.com/Psiphon-Labs/quic-go v0.0.0-20240424181006-45545f5e1536 h1:pM5ex1QufkHV8lDR6Tc1Crk1bW5lYZjrFIJGZNBWE9k=
 github.com/Psiphon-Labs/quic-go v0.0.0-20240424181006-45545f5e1536/go.mod h1:2MTiPsgoOqWs3Bo6Xr3ElMBX6zzfjd3YkDFpQJLwHdQ=
 github.com/adrg/xdg v0.4.0 h1:RzRqFcjH4nE5C6oTAxhBtoE2IRyjBSa62SCbyPidvls=
@@ -28,6 +30,8 @@ github.com/bifurcation/mint v0.0.0-20180306135233-198357931e61 h1:BU+NxuoaYPIvvp
 github.com/bifurcation/mint v0.0.0-20180306135233-198357931e61/go.mod h1:zVt7zX3K/aDCk9Tj+VM7YymsX66ERvzCJzw8rFCX2JU=
 github.com/carlmjohnson/versioninfo v0.22.5 h1:O00sjOLUAFxYQjlN/bzYTuZiS0y6fWDQjMRvwtKgwwc=
 github.com/carlmjohnson/versioninfo v0.22.5/go.mod h1:QT9mph3wcVfISUKd0i9sZfVrPviHuSF+cUtLjm2WSf8=
+github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=
+github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
 github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=
 github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cheekybits/genny v0.0.0-20170328200008-9127e812e1e9 h1:a1zrFsLFac2xoM6zG1u72DWJwZG3ayttYLfmLbxVETk=
@@ -97,8 +101,6 @@ github.com/hashicorp/golang-lru v1.0.2/go.mod h1:iADmTwqILo4mZ8BN3D2Q6+9jd8WM5uG
 github.com/ianlancetaylor/demangle v0.0.0-20210905161508-09a460cdf81d/go.mod h1:aYm2/VgdVmcIU8iMfdMvDMsRAQjcfZSKFby6HOFvi/w=
 github.com/josharian/native v1.1.0 h1:uuaP0hAbW7Y4l0ZRQ6C9zfb7Mg1mbFKry/xzDAfmtLA=
 github.com/josharian/native v1.1.0/go.mod h1:7X/raswPFr05uY3HiLlYeyQntB6OO7E/d2Cu7qoaN2w=
-github.com/juju/ratelimit v1.0.2 h1:sRxmtRiajbvrcLQT7S+JbqU0ntsb9W2yhSdNN8tWfaI=
-github.com/juju/ratelimit v1.0.2/go.mod h1:qapgC/Gy+xNh9UxzV13HGGl/6UXNN+ct+vwSgWNm/qk=
 github.com/klauspost/compress v1.16.7 h1:2mk3MPGNzKyxErAw8YaohYh69+pa4sIQSC0fPGCFR9I=
 github.com/klauspost/compress v1.16.7/go.mod h1:ntbaceVETuRiXiv4DpjP66DpAtAGkEQskQzEyD//IeE=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
