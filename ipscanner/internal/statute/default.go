@@ -8,6 +8,7 @@ import (
 	"net/netip"
 	"time"
 
+	"github.com/noql-net/certpool"
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
 )
@@ -114,6 +115,7 @@ func defaultTLSConfig(addr string) *tls.Config {
 		MinVersion:         FinalOptions.TlsVersion,
 		MaxVersion:         FinalOptions.TlsVersion,
 		NextProtos:         alpnProtocols,
+		RootCAs:            certpool.Roots(),
 	}
 }
 

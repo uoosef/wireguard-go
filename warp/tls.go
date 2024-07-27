@@ -8,6 +8,7 @@ import (
 
 	"github.com/bepass-org/warp-plus/iputils"
 
+	"github.com/noql-net/certpool"
 	tls "github.com/refraction-networking/utls"
 )
 
@@ -129,7 +130,11 @@ func (d *Dialer) TLSDial(plainDialer *net.Dialer, network, addr string) (net.Con
 		return nil, err
 	}
 
-	config := tls.Config{ServerName: sni, MinVersion: tls.VersionTLS12}
+	config := tls.Config{
+		ServerName: sni,
+		MinVersion: tls.VersionTLS12,
+		RootCAs:    certpool.Roots(),
+	}
 
 	utlsConn, handshakeErr := d.makeTLSHelloPacketWithSNICurve(plainConn, &config, sni)
 	if handshakeErr != nil {
