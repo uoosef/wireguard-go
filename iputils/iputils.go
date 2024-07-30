@@ -1,6 +1,7 @@
 package iputils
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/big"
@@ -57,7 +58,7 @@ func RandomIPFromPrefix(cidr netip.Prefix) (netip.Addr, error) {
 	return randomAddress.Unmap(), nil
 }
 
-func ParseResolveAddressPort(hostname string, includev6 bool) (netip.AddrPort, error) {
+func ParseResolveAddressPort(hostname string, includev6 bool, dnsServer string) (netip.AddrPort, error) {
 	// Attempt to split the hostname into a host and port
 	host, port, err := net.SplitHostPort(hostname)
 	if err != nil {
@@ -80,8 +81,16 @@ func ParseResolveAddressPort(hostname string, includev6 bool) (netip.AddrPort, e
 		return netip.AddrPortFrom(addr.Unmap(), uint16(portInt)), nil
 	}
 
+	// Use Go's built-in DNS resolver
+	resolver := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			return net.Dial("udp", net.JoinHostPort(dnsServer, "53"))
+		},
+	}
+
 	// If the host wasn't an IP, perform a lookup
-	ips, err := net.LookupIP(host)
+	ips, err := resolver.LookupIP(context.Background(), "ip", host)
 	if err != nil {
 		return netip.AddrPort{}, fmt.Errorf("hostname lookup failed: %w", err)
 	}

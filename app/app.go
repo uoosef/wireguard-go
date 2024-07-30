@@ -125,7 +125,7 @@ func runWireguard(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 		peer.KeepAlive = 3
 
 		// Try resolving if the endpoint is a domain
-		addr, err := iputils.ParseResolveAddressPort(peer.Endpoint, false)
+		addr, err := iputils.ParseResolveAddressPort(peer.Endpoint, false, opts.DnsAddr.String())
 		if err == nil {
 			peer.Endpoint = addr.String()
 		}
