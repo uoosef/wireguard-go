@@ -55,9 +55,10 @@ func (h *WarpPing) Ping() statute.IPingResult {
 	return h.PingContext(context.Background())
 }
 
-func (h *WarpPing) PingContext(_ context.Context) statute.IPingResult {
+func (h *WarpPing) PingContext(ctx context.Context) statute.IPingResult {
 	addr := netip.AddrPortFrom(h.IP, warp.RandomWarpPort())
 	rtt, err := initiateHandshake(
+		ctx,
 		addr,
 		h.PrivateKey,
 		h.PeerPublicKey,
@@ -117,15 +118,21 @@ func ephemeralKeypair() (noise.DHKey, error) {
 	}, nil
 }
 
-func randomInt(min, max int) int {
-	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(max-min+1)))
+func randomInt(min, max uint64) uint64 {
+	rangee := max - min
+	if rangee < 1 {
+		return 0
+	}
+
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(rangee)))
 	if err != nil {
 		panic(err)
 	}
-	return int(nBig.Int64()) + min
+
+	return min + n.Uint64()
 }
 
-func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKeyBase64, presharedKeyBase64 string) (time.Duration, error) {
+func initiateHandshake(ctx context.Context, serverAddr netip.AddrPort, privateKeyBase64, peerPublicKeyBase64, presharedKeyBase64 string) (time.Duration, error) {
 	staticKeyPair, err := staticKeypair(privateKeyBase64)
 	if err != nil {
 		return 0, err
@@ -209,19 +216,24 @@ func initiateHandshake(serverAddr netip.AddrPort, privateKeyBase64, peerPublicKe
 
 	numPackets := randomInt(8, 15)
 	randomPacket := make([]byte, 100)
-	for i := 0; i < numPackets; i++ {
-		packetSize := randomInt(40, 100)
-		_, err := rand.Read(randomPacket[:packetSize])
-		if err != nil {
-			return 0, fmt.Errorf("error generating random packet: %w", err)
-		}
+	for i := uint64(0); i < numPackets; i++ {
+		select {
+		case <-ctx.Done():
+			return 0, ctx.Err()
+		default:
+			packetSize := randomInt(40, 100)
+			_, err := rand.Read(randomPacket[:packetSize])
+			if err != nil {
+				return 0, fmt.Errorf("error generating random packet: %w", err)
+			}
 
-		_, err = conn.Write(randomPacket[:packetSize])
-		if err != nil {
-			return 0, fmt.Errorf("error sending random packet: %w", err)
-		}
+			_, err = conn.Write(randomPacket[:packetSize])
+			if err != nil {
+				return 0, fmt.Errorf("error sending random packet: %w", err)
+			}
 
-		time.Sleep(time.Duration(randomInt(20, 250)) * time.Millisecond)
+			time.Sleep(time.Duration(randomInt(20, 250)) * time.Millisecond)
+		}
 	}
 
 	_, err = initiationPacket.WriteTo(conn)

@@ -29,7 +29,7 @@ func NewIPQueue(opts *statute.ScannerOptions) *IPQueue {
 		maxTTL:       opts.IPQueueTTL,
 		rttThreshold: opts.MaxDesirableRTT,
 		available:    make(chan struct{}, opts.IPQueueSize),
-		log:          opts.Logger.With(slog.String("subsystem", "engine/queue")),
+		log:          opts.Logger,
 		reserved:     reserved,
 	}
 }
@@ -122,15 +122,19 @@ func (q *IPQueue) Dequeue() (statute.IPInfo, bool) {
 	return info, true
 }
 
-func (q *IPQueue) Expire() {
+func (q *IPQueue) Init() {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
 	if !q.inIdealMode {
-		q.log.Debug("Expire: Not in ideal mode")
 		q.available <- struct{}{}
 		return
 	}
+}
+
+func (q *IPQueue) Expire() {
+	q.mu.Lock()
+	defer q.mu.Unlock()
 
 	q.log.Debug("Expire: In ideal mode")
 	defer func() {
