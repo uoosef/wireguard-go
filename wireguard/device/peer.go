@@ -53,7 +53,7 @@ type Peer struct {
 		inbound  *autodrainingInboundQueue            // sequential ordering of tun writing
 	}
 
-	trick    bool
+	trick    string
 	reserved [3]byte
 
 	cookieGenerator             CookieGenerator
@@ -115,7 +115,7 @@ func (device *Device) NewPeer(pk NoisePublicKey) (*Peer, error) {
 	return peer, nil
 }
 
-func (peer *Peer) SendBuffers(buffers [][]byte) error {
+func (peer *Peer) SendBuffers(buffers [][]byte, trick bool) error {
 	peer.device.net.RLock()
 	defer peer.device.net.RUnlock()
 
@@ -135,9 +135,11 @@ func (peer *Peer) SendBuffers(buffers [][]byte) error {
 	}
 	peer.endpoint.Unlock()
 
-	for i := range buffers {
-		if len(buffers[i]) > 3 && buffers[i][0] > 0 && buffers[i][0] < 5 {
-			copy(buffers[i][1:4], peer.reserved[:])
+	if !trick {
+		for i := range buffers {
+			if len(buffers[i]) > 3 && buffers[i][0] > 0 && buffers[i][0] < 5 {
+				copy(buffers[i][1:4], peer.reserved[:])
+			}
 		}
 	}
 
@@ -153,6 +155,7 @@ func (peer *Peer) SendBuffers(buffers [][]byte) error {
 }
 
 func (peer *Peer) String() string {
+	return ""
 	// The awful goo that follows is identical to:
 	//
 	//   base64Key := base64.StdEncoding.EncodeToString(peer.handshake.remoteStatic[:])

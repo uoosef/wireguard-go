@@ -1,12 +1,13 @@
 package app
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/bepass-org/warp-plus/wireguard/conn"
@@ -16,19 +17,10 @@ import (
 	"github.com/bepass-org/warp-plus/wiresocks"
 )
 
-const connTestEndpoint = "https://www.gstatic.com/generate_204"
-
-func newUsermodeTun(conf *wiresocks.Configuration) (wgtun.Device, *netstack.Net, error) {
-	tunDev, tnet, err := netstack.CreateNetTUN(conf.Interface.Addresses, conf.Interface.DNS, conf.Interface.MTU)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return tunDev, tnet, nil
-}
+const connTestEndpoint = "http://1.1.1.1/cdn-cgi/trace"
 
 func usermodeTunTest(ctx context.Context, l *slog.Logger, tnet *netstack.Net) error {
-	ctx, cancel := context.WithDeadline(ctx, time.Now().Add(30*time.Second))
+	ctx, cancel := context.WithDeadline(ctx, time.Now().Add(5*time.Second))
 	defer cancel()
 
 	for {
@@ -42,15 +34,13 @@ func usermodeTunTest(ctx context.Context, l *slog.Logger, tnet *netstack.Net) er
 			DialContext:           tnet.DialContext,
 			ResponseHeaderTimeout: 5 * time.Second,
 		}}
-		resp, err := client.Get(connTestEndpoint)
+		resp, err := client.Head(connTestEndpoint)
 		if err != nil {
-			l.Error("connection test failed", "error", err.Error())
+			l.Error("connection test failed")
 			continue
 		}
-		_, err = io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			l.Error("connection test failed", "error", err.Error())
+		if resp.StatusCode != http.StatusOK {
+			l.Error("connection test failed")
 			continue
 		}
 
@@ -61,7 +51,49 @@ func usermodeTunTest(ctx context.Context, l *slog.Logger, tnet *netstack.Net) er
 	return nil
 }
 
-func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wgtun.Device, bind bool, fwmark uint32) error {
+func waitHandshake(ctx context.Context, l *slog.Logger, dev *device.Device) error {
+	lastHandshakeSecs := "0"
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		get, err := dev.IpcGet()
+		if err != nil {
+			continue
+		}
+		scanner := bufio.NewScanner(strings.NewReader(get))
+		for scanner.Scan() {
+			line := scanner.Text()
+			if line == "" {
+				break
+			}
+
+			key, value, ok := strings.Cut(line, "=")
+			if !ok {
+				continue
+			}
+
+			if key == "last_handshake_time_sec" {
+				lastHandshakeSecs = value
+				break
+			}
+		}
+		if lastHandshakeSecs != "0" {
+			l.Debug("handshake complete")
+			break
+		}
+
+		l.Debug("waiting on handshake")
+		time.Sleep(1 * time.Second)
+	}
+
+	return nil
+}
+
+func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wgtun.Device, bind bool, fwmark uint32, t string) error {
 	// create the IPC message to establish the wireguard conn
 	var request bytes.Buffer
 
@@ -75,7 +107,7 @@ func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wg
 		request.WriteString(fmt.Sprintf("persistent_keepalive_interval=%d\n", peer.KeepAlive))
 		request.WriteString(fmt.Sprintf("preshared_key=%s\n", peer.PreSharedKey))
 		request.WriteString(fmt.Sprintf("endpoint=%s\n", peer.Endpoint))
-		request.WriteString(fmt.Sprintf("trick=%t\n", peer.Trick))
+		request.WriteString(fmt.Sprintf("trick=%s\n", t))
 		request.WriteString(fmt.Sprintf("reserved=%d,%d,%d\n", peer.Reserved[0], peer.Reserved[1], peer.Reserved[2]))
 
 		for _, cidr := range peer.AllowedIPs {
@@ -101,6 +133,14 @@ func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wg
 		if err := bindToIface(dev); err != nil {
 			return err
 		}
+	}
+
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(15*time.Second))
+	defer cancel()
+	if err := waitHandshake(ctx, l, dev); err != nil {
+		dev.BindClose()
+		dev.Close()
+		return err
 	}
 
 	return nil
