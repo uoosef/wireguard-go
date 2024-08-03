@@ -68,7 +68,6 @@ func (s *Server) ListenAndServe() error {
 	}
 
 	s.Bind = s.Listener.Addr().(*net.TCPAddr).String()
-	s.Logger.Debug("started proxy", "address", s.Bind)
 
 	// ensure listener will be closed
 	defer func() {

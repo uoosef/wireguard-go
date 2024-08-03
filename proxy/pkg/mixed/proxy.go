@@ -90,7 +90,6 @@ func (p *Proxy) ListenAndServe() error {
 	}
 
 	p.bind = p.listener.Addr().(*net.TCPAddr).String()
-	p.logger.Debug("started proxy", "address", p.bind)
 
 	// ensure listener will be closed
 	defer func() {
