@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net"
 	"net/netip"
+	"syscall"
 	"time"
 
 	"github.com/bepass-org/warp-plus/proxy/pkg/mixed"
@@ -82,6 +83,10 @@ func (vt *VirtualTun) generalHandler(req *statute.ProxyRequest) error {
 		buf1 := vt.pool.Get()
 		defer vt.pool.Put(buf1)
 		_, err := copyConnTimeout(conn, req.Conn, buf1[:cap(buf1)], timeout)
+		if errors.Is(err, syscall.ECONNRESET) {
+			done <- nil
+			return
+		}
 		done <- err
 	}()
 	// Copy data from conn to req.Conn
