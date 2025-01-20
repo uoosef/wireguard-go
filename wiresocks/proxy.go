@@ -3,6 +3,7 @@ package wiresocks
 import (
 	"context"
 	"errors"
+	"github.com/sagernet/sing/common/buf"
 	"io"
 	"log/slog"
 	"net"
@@ -14,7 +15,6 @@ import (
 	"github.com/bepass-org/warp-plus/proxy/pkg/statute"
 	"github.com/bepass-org/warp-plus/wireguard/device"
 	"github.com/bepass-org/warp-plus/wireguard/tun/netstack"
-	"github.com/things-go/go-socks5/bufferpool"
 )
 
 // VirtualTun stores a reference to netstack network and DNS configuration
@@ -23,8 +23,11 @@ type VirtualTun struct {
 	Logger *slog.Logger
 	Dev    *device.Device
 	Ctx    context.Context
-	pool   bufferpool.BufPool
+	pool   buf.Allocator
+	//pool bufferpool.BufPool
 }
+
+var BuffSize = 65536
 
 // StartProxy spawns a socks5 server.
 func StartProxy(ctx context.Context, l *slog.Logger, tnet *netstack.Net, bindAddress netip.AddrPort) (netip.AddrPort, error) {
@@ -38,7 +41,7 @@ func StartProxy(ctx context.Context, l *slog.Logger, tnet *netstack.Net, bindAdd
 		Logger: l.With("subsystem", "vtun"),
 		Dev:    nil,
 		Ctx:    ctx,
-		pool:   bufferpool.NewPool(256 * 1024),
+		pool:   buf.DefaultAllocator,
 	}
 
 	proxy := mixed.NewProxy(
@@ -80,9 +83,11 @@ func (vt *VirtualTun) generalHandler(req *statute.ProxyRequest) error {
 	done := make(chan error, 1)
 	// Copy data from req.Conn to conn
 	go func() {
-		buf1 := vt.pool.Get()
-		defer vt.pool.Put(buf1)
-		_, err := copyConnTimeout(conn, req.Conn, buf1[:cap(buf1)], timeout)
+		buf1 := vt.pool.Get(BuffSize)
+		defer func(pool buf.Allocator, buf []byte) {
+			_ = pool.Put(buf)
+		}(vt.pool, buf1)
+		_, err := copyConnTimeout(conn, req.Conn, buf1, timeout)
 		if errors.Is(err, syscall.ECONNRESET) {
 			done <- nil
 			return
@@ -91,9 +96,11 @@ func (vt *VirtualTun) generalHandler(req *statute.ProxyRequest) error {
 	}()
 	// Copy data from conn to req.Conn
 	go func() {
-		buf2 := vt.pool.Get()
-		defer vt.pool.Put(buf2)
-		_, err := copyConnTimeout(req.Conn, conn, buf2[:cap(buf2)], timeout)
+		buf2 := vt.pool.Get(BuffSize)
+		defer func(pool buf.Allocator, buf []byte) {
+			_ = pool.Put(buf)
+		}(vt.pool, buf2)
+		_, err := copyConnTimeout(req.Conn, conn, buf2, timeout)
 		done <- err
 	}()
 	// Wait for one of the copy operations to finish
