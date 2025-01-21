@@ -46,7 +46,7 @@ install() {
     pacman -Syu openssh = apt update; apt full-upgrade -y; apt install -y openssh
     check_dependencies
 
-    if wget https://github.com/bepass-org/warp-plus/releases/download/v1.2.4/warp-plus_android-arm64.zip &&
+    if wget https://github.com/bepass-org/warp-plus/releases/latest/download/warp-plus_android-arm64.zip &&
         unzip warp-plus_android-arm64.zip &&
         mv warp-plus warp &&
         chmod +x warp &&
@@ -68,7 +68,7 @@ install_arm() {
         echo -e "${green}Warp is already installed.${rest}"
         return
     fi
-    
+
     echo -e "${purple}*********************************${rest}"
     echo -e "${green}Installing Warp...${rest}"
     pkg update -y && pkg upgrade -y
@@ -85,7 +85,7 @@ install_arm() {
         *) echo -e "${red}Unsupported architecture.${rest}"; return ;;
     esac
 
-    WARP_URL="https://github.com/bepass-org/warp-plus/releases/download/v1.2.4/warp-plus_linux-$ARCH.zip"
+    WARP_URL="https://github.com/bepass-org/warp-plus/releases/latest/download/warp-plus_linux-$ARCH.zip"
 
     if wget "$WARP_URL" &&
         unzip "warp-plus_linux-$ARCH.zip" &&
@@ -128,11 +128,11 @@ gool() {
         echo -e "${green}Please install Warp first.${rest}"
         return
     fi
-    
+
     echo -e "${purple}*********************************${rest}"
     echo -e "${green}This option changes your current location to the nearest and best location.${rest}"
     echo -e "${purple}*********************************${rest}"
-    
+
     while true; do
         echo -e "${cyan}Choose an option: ${purple}*${rest}"
         echo -e "${purple}                  *${rest}"
@@ -140,7 +140,7 @@ gool() {
         echo -e "${cyan}[2] ${green}IPV6${purple}          *${rest}"
         echo -e "${cyan}[3] ${yellow}Back to Menu${purple}  *${rest}"
         echo -e "${purple}*******************${rest}"
-        
+
         echo -en "${green}Please Choose: ${rest}"
         read -r option
 
@@ -209,7 +209,7 @@ psiphon_location() {
     echo -en "${green}Enter the ${yellow}number${green} of the location [${yellow}default: 1${green}]: ${rest}"
     read -r choice
     choice=${choice:-1}
-    
+
     case "$choice" in
         1) location="AT" ;;
         2) location="BE" ;;
@@ -255,7 +255,7 @@ psiphon_location() {
         echo -e "${cyan}[2] ${green}IPV6${purple}          *${rest}"
         echo -e "${cyan}[3] ${yellow}Back to Menu${purple}  *${rest}"
         echo -e "${purple}*******************${rest}"
-        
+
         echo -en "${green}Please Choose: ${rest}"
         read -r option
 
@@ -331,7 +331,7 @@ menu() {
     echo -e "                              ${purple}  * ${rest}"
     echo -e "${red}0]${rest} ${green}Exit                         ${purple}* ${rest}"
     echo -e "${purple}*********************************${rest}"
-    
+
     echo -en "${cyan}Please enter your selection [${yellow}0-6${green}]:${rest}"
     read -r choice
 
