@@ -18,9 +18,9 @@ require (
 	github.com/quic-go/quic-go v0.43.1
 	github.com/refraction-networking/utls v1.3.3
 	github.com/rodaine/table v1.1.1
-	github.com/things-go/go-socks5 v0.0.5
+	github.com/sagernet/sing v0.5.1
 	golang.org/x/crypto v0.31.0
-	golang.org/x/net v0.25.0
+	golang.org/x/net v0.33.0
 	golang.org/x/sys v0.28.0
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2
 	golang.zx2c4.com/wireguard/windows v0.5.3
@@ -74,10 +74,8 @@ require (
 	github.com/refraction-networking/gotapdance v1.7.10 // indirect
 	github.com/refraction-networking/obfs4 v0.1.2 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
-	github.com/sagernet/sing v0.5.1 // indirect
 	github.com/sergeyfrolov/bsbuffer v0.0.0-20180903213811-94e85abb8507 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 // indirect
 	github.com/wader/filtertransport v0.0.0-20200316221534-bdd9e61eee78 // indirect
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.5.0 // indirect
