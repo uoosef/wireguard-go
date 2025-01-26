@@ -17,7 +17,7 @@ require (
 	github.com/peterbourgon/ff/v4 v4.0.0-alpha.4
 	github.com/quic-go/quic-go v0.43.1
 	github.com/refraction-networking/utls v1.3.3
-	github.com/rodaine/table v1.1.1
+	github.com/rodaine/table v1.3.0
 	github.com/sagernet/sing v0.5.1
 	golang.org/x/crypto v0.31.0
 	golang.org/x/net v0.33.0
