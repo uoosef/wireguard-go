@@ -16,7 +16,7 @@ require (
 	github.com/noql-net/certpool v0.0.0-20240829011701-581572c93b1a
 	github.com/peterbourgon/ff/v4 v4.0.0-alpha.4
 	github.com/quic-go/quic-go v0.43.1
-	github.com/refraction-networking/utls v1.3.3
+	github.com/refraction-networking/utls v1.6.7
 	github.com/rodaine/table v1.3.0
 	github.com/sagernet/sing v0.5.1
 	golang.org/x/crypto v0.31.0
@@ -55,7 +55,6 @@ require (
 	github.com/dgraph-io/badger v1.5.4-0.20180815194500-3a87f6d9c273 // indirect
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
-	github.com/gaukas/godicttls v0.0.4 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
