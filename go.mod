@@ -8,7 +8,7 @@ require (
 	github.com/Psiphon-Labs/psiphon-tunnel-core v1.0.11-0.20250122170852-4ba6e22a08f1
 	github.com/adrg/xdg v0.5.3
 	github.com/carlmjohnson/versioninfo v0.22.5
-	github.com/fatih/color v1.16.0
+	github.com/fatih/color v1.18.0
 	github.com/flynn/noise v1.1.0
 	github.com/frankban/quicktest v1.14.6
 	github.com/go-ini/ini v1.67.0
