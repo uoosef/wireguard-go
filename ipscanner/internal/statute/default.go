@@ -9,13 +9,11 @@ import (
 	"time"
 
 	"github.com/noql-net/certpool"
-	"github.com/quic-go/quic-go"
-	"github.com/quic-go/quic-go/http3"
 )
 
 var FinalOptions *ScannerOptions
 
-func DefaultHTTPClientFunc(rawDialer TDialerFunc, tlsDialer TDialerFunc, quicDialer TQuicDialerFunc, targetAddr ...string) *http.Client {
+func DefaultHTTPClientFunc(rawDialer TDialerFunc, tlsDialer TDialerFunc, targetAddr ...string) *http.Client {
 	var defaultDialer TDialerFunc
 	if rawDialer == nil {
 		defaultDialer = DefaultDialerFunc
@@ -28,38 +26,17 @@ func DefaultHTTPClientFunc(rawDialer TDialerFunc, tlsDialer TDialerFunc, quicDia
 	} else {
 		defaultTLSDialer = tlsDialer
 	}
-	var defaultQuicDialer TQuicDialerFunc
-	if quicDialer == nil {
-		defaultQuicDialer = DefaultQuicDialerFunc
-	} else {
-		defaultQuicDialer = quicDialer
-	}
 
-	var transport http.RoundTripper
-	if FinalOptions.UseHTTP3 {
-		transport = &http3.RoundTripper{
-			DisableCompression: FinalOptions.DisableCompression,
-			Dial: func(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (quic.EarlyConnection, error) {
-				dest := addr
-				if len(targetAddr) > 0 {
-					dest = targetAddr[0]
-				}
-				return defaultQuicDialer(ctx, dest, tlsCfg, cfg)
-			},
-		}
-	} else {
-		trans := &http.Transport{
-			DialContext:         defaultDialer,
-			DialTLSContext:      defaultTLSDialer,
-			ForceAttemptHTTP2:   FinalOptions.UseHTTP2,
-			DisableCompression:  FinalOptions.DisableCompression,
-			MaxIdleConnsPerHost: -1,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: FinalOptions.InsecureSkipVerify,
-				ServerName:         FinalOptions.Hostname,
-			},
-		}
-		transport = trans
+	transport := &http.Transport{
+		DialContext:         defaultDialer,
+		DialTLSContext:      defaultTLSDialer,
+		ForceAttemptHTTP2:   FinalOptions.UseHTTP2,
+		DisableCompression:  FinalOptions.DisableCompression,
+		MaxIdleConnsPerHost: -1,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: FinalOptions.InsecureSkipVerify,
+			ServerName:         FinalOptions.Hostname,
+		},
 	}
 
 	return &http.Client{
@@ -101,9 +78,6 @@ func defaultTLSConfig(addr string) *tls.Config {
 	alpnProtocols := []string{"http/1.1"}
 
 	// Add protocols based on flags
-	if FinalOptions.UseHTTP3 {
-		alpnProtocols = []string{"http/1.1"} // ALPN token for HTTP/3
-	}
 	if FinalOptions.UseHTTP2 {
 		alpnProtocols = []string{"h2", "http/1.1"} // ALPN token for HTTP/2
 	}
@@ -158,14 +132,6 @@ func DefaultTLSDialerFunc(ctx context.Context, network, addr string) (net.Conn, 
 	// Cancel the deferred closure of rawConn since everything succeeded
 	err = nil
 	return tlsClientConn, nil
-}
-
-func DefaultQuicDialerFunc(ctx context.Context, addr string, _ *tls.Config, _ *quic.Config) (quic.EarlyConnection, error) {
-	quicConfig := &quic.Config{
-		MaxIdleTimeout:       FinalOptions.ConnectionTimeout,
-		HandshakeIdleTimeout: FinalOptions.HandshakeTimeout,
-	}
-	return quic.DialAddrEarly(ctx, addr, defaultTLSConfig(addr), quicConfig)
 }
 
 func DefaultCFRanges() []netip.Prefix {
