@@ -19,9 +19,9 @@ require (
 	github.com/refraction-networking/utls v1.6.7
 	github.com/rodaine/table v1.3.0
 	github.com/sagernet/sing v0.5.1
-	golang.org/x/crypto v0.31.0
-	golang.org/x/net v0.33.0
-	golang.org/x/sys v0.28.0
+	golang.org/x/crypto v0.32.0
+	golang.org/x/net v0.34.0
+	golang.org/x/sys v0.29.0
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2
 	golang.zx2c4.com/wireguard/windows v0.5.3
 	gvisor.dev/gvisor v0.0.0-20240503213918-b7c924bc64f8
