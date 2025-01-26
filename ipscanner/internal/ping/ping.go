@@ -39,14 +39,6 @@ func (p *Ping) DoPing(ctx context.Context, ip netip.Addr) (statute.IPInfo, error
 
 		return res, nil
 	}
-	if p.Options.SelectedOps&statute.QUICPing > 0 {
-		res, err := p.quicPing(ctx, ip)
-		if err != nil {
-			return statute.IPInfo{}, err
-		}
-
-		return res, nil
-	}
 	if p.Options.SelectedOps&statute.WARPPing > 0 {
 		res, err := p.warpPing(ctx, ip)
 		if err != nil {
@@ -89,12 +81,6 @@ func (p *Ping) tlsPing(ctx context.Context, ip netip.Addr) (statute.IPInfo, erro
 func (p *Ping) tcpPing(ctx context.Context, ip netip.Addr) (statute.IPInfo, error) {
 	return p.calc(ctx,
 		NewTcpPing(ip, p.Options.Hostname, p.Options.Port, p.Options),
-	)
-}
-
-func (p *Ping) quicPing(ctx context.Context, ip netip.Addr) (statute.IPInfo, error) {
-	return p.calc(ctx,
-		NewQuicPing(ip, p.Options.Hostname, p.Options.Port, p.Options),
 	)
 }
 

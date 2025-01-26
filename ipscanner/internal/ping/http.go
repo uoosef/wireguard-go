@@ -76,7 +76,7 @@ func (h *HttpPing) PingContext(ctx context.Context) statute.IPingResult {
 	req.Host = orighost
 
 	addr := netip.AddrPortFrom(h.IP, h.opts.Port)
-	client := h.opts.HttpClientFunc(h.opts.RawDialerFunc, h.opts.TLSDialerFunc, h.opts.QuicDialerFunc, addr.String())
+	client := h.opts.HttpClientFunc(h.opts.RawDialerFunc, h.opts.TLSDialerFunc, addr.String())
 
 	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse

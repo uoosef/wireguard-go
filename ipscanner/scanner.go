@@ -28,9 +28,7 @@ func NewScanner(options ...Option) *IPScanner {
 			InsecureSkipVerify: true,
 			RawDialerFunc:      statute.DefaultDialerFunc,
 			TLSDialerFunc:      statute.DefaultTLSDialerFunc,
-			QuicDialerFunc:     statute.DefaultQuicDialerFunc,
 			HttpClientFunc:     statute.DefaultHTTPClientFunc,
-			UseHTTP3:           false,
 			UseHTTP2:           false,
 			DisableCompression: false,
 			HTTPPath:           "/",
@@ -84,21 +82,9 @@ func WithTLSDialer(t statute.TDialerFunc) Option {
 	}
 }
 
-func WithQuicDialer(q statute.TQuicDialerFunc) Option {
-	return func(i *IPScanner) {
-		i.options.QuicDialerFunc = q
-	}
-}
-
 func WithHttpClientFunc(h statute.THTTPClientFunc) Option {
 	return func(i *IPScanner) {
 		i.options.HttpClientFunc = h
-	}
-}
-
-func WithUseHTTP3(useHTTP3 bool) Option {
-	return func(i *IPScanner) {
-		i.options.UseHTTP3 = useHTTP3
 	}
 }
 
@@ -172,12 +158,6 @@ func WithHTTPPing() Option {
 func WithWarpPing() Option {
 	return func(i *IPScanner) {
 		i.options.SelectedOps |= statute.WARPPing
-	}
-}
-
-func WithQUICPing() Option {
-	return func(i *IPScanner) {
-		i.options.SelectedOps |= statute.QUICPing
 	}
 }
 

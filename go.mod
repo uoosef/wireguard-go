@@ -15,7 +15,6 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/noql-net/certpool v0.0.0-20240829011701-581572c93b1a
 	github.com/peterbourgon/ff/v4 v4.0.0-alpha.4
-	github.com/quic-go/quic-go v0.43.1
 	github.com/refraction-networking/utls v1.6.7
 	github.com/rodaine/table v1.3.0
 	github.com/sagernet/sing v0.5.1
@@ -115,7 +114,6 @@ require (
 	github.com/wlynxg/anet v0.0.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/goptlib v1.5.0 // indirect
-	go.uber.org/mock v0.4.0 // indirect
 	go4.org/mem v0.0.0-20220726221520-4f986261bf13 // indirect
 	go4.org/netipx v0.0.0-20230824141953-6213f710f925 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
