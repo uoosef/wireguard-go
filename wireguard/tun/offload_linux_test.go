@@ -10,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/bepass-org/warp-plus/wireguard/conn"
+	"github.com/sagernet/gvisor/pkg/tcpip"
+	"github.com/sagernet/gvisor/pkg/tcpip/header"
 	"golang.org/x/sys/unix"
-	"gvisor.dev/gvisor/pkg/tcpip"
-	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
 const (
