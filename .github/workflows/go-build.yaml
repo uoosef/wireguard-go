@@ -83,30 +83,6 @@ jobs:
           go-version: '1.22'
           check-latest: true
 
-      - name: Cache wintun
-        id: cache
-        uses: actions/cache@v4
-        if: matrix.goos == 'windows'
-        env:
-          cache-name: cache-wintun
-        with:
-          path: ~/wintun-0.14.1.zip
-          key: wintun-0.14.1.zip
-
-      - name: Download wintun
-        if: matrix.goos == 'windows' && steps.cache.outputs.cache-hit != 'true'
-        run: |
-          curl -LO https://www.wintun.net/builds/wintun-0.14.1.zip --output-dir ~/
-          ls -lah ~/
-
-      - name: Validate wintun
-        if: matrix.goos == 'windows'
-        run: |
-          pushd ~/
-          echo "07c256185d6ee3652e09fa55c0b673e2624b565e02c4b9091c79ca7d2f24ef51 wintun-0.14.1.zip" | sha256sum --check --status
-          unzip ~/wintun-0.14.1.zip -d ~/wintun
-          popd
-
       - name: Build warp-plus
         run: |
           go build -v -o warp-plus_${{ env.ASSET_NAME }}/ -trimpath -ldflags "-s -w -buildid= -X main.version=${{ github.ref }}" ./cmd/warp-plus
@@ -116,17 +92,6 @@ jobs:
         run: |
           cp ${GITHUB_WORKSPACE}/README.md ./warp-plus_${{ env.ASSET_NAME }}/README.md
           cp ${GITHUB_WORKSPACE}/LICENSE ./warp-plus_${{ env.ASSET_NAME }}/LICENSE
-
-      - name: Redistribute wintun.dll
-        if: matrix.goos == 'windows'
-        run: |
-          if [ "$GOARCH" = "amd64" ]; then
-            mv ~/wintun/wintun/bin/amd64/wintun.dll ./warp-plus_${{ env.ASSET_NAME }}/
-          elif [ "$GOARCH" = "arm64" ]; then
-            mv ~/wintun/wintun/bin/arm64/wintun.dll ./warp-plus_${{ env.ASSET_NAME }}/
-          elif [ "$GOARCH" = "386" ]; then
-            mv ~/wintun/wintun/bin/x86/wintun.dll ./warp-plus_${{ env.ASSET_NAME }}/
-          fi
 
       - name: Create ZIP archive
         shell: bash

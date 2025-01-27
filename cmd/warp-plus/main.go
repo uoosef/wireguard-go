@@ -44,8 +44,7 @@ func main() {
 		scan     = fs.BoolLong("scan", "enable warp scanning")
 		rtt      = fs.DurationLong("rtt", 1000*time.Millisecond, "scanner rtt limit")
 		cacheDir = fs.StringLong("cache-dir", "", "directory to store generated profiles")
-		tun      = fs.BoolLong("tun-experimental", "enable tun interface (experimental)")
-		fwmark   = fs.UintLong("fwmark", 0x1375, "set linux firewall mark for tun mode")
+		fwmark   = fs.UintLong("fwmark", 0x0, "set linux firewall mark for tun mode (requires sudo/root/CAP_NET_ADMIN)")
 		reserved = fs.StringLong("reserved", "", "override wireguard reserved value (format: '1,2,3')")
 		wgConf   = fs.StringLong("wgconf", "", "path to a normal wireguard config")
 		_        = fs.String('c', "config", "", "path to config file")
@@ -109,7 +108,6 @@ func main() {
 		License:         *key,
 		DnsAddr:         dnsAddr,
 		Gool:            *gool,
-		Tun:             *tun,
 		FwMark:          uint32(*fwmark),
 		WireguardConfig: *wgConf,
 		Reserved:        *reserved,
@@ -134,10 +132,6 @@ func main() {
 	if *scan {
 		l.Info("scanner mode enabled", "max-rtt", rtt)
 		opts.Scan = &wiresocks.ScanOptions{V4: *v4, V6: *v6, MaxRTT: *rtt}
-	}
-
-	if *tun {
-		l.Info("tun mode enabled")
 	}
 
 	// If the endpoint is not set, choose a random warp endpoint

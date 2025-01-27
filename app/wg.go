@@ -93,12 +93,12 @@ func waitHandshake(ctx context.Context, l *slog.Logger, dev *device.Device) erro
 	return nil
 }
 
-func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wgtun.Device, bind bool, fwmark uint32, t string) error {
+func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wgtun.Device, fwmark uint32, t string) error {
 	// create the IPC message to establish the wireguard conn
 	var request bytes.Buffer
 
 	request.WriteString(fmt.Sprintf("private_key=%s\n", conf.Interface.PrivateKey))
-	if bind && fwmark != 0 {
+	if fwmark != 0 {
 		request.WriteString(fmt.Sprintf("fwmark=%d\n", fwmark))
 	}
 
@@ -127,12 +127,6 @@ func establishWireguard(l *slog.Logger, conf *wiresocks.Configuration, tunDev wg
 
 	if err := dev.Up(); err != nil {
 		return err
-	}
-
-	if bind {
-		if err := bindToIface(dev); err != nil {
-			return err
-		}
 	}
 
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(15*time.Second))
