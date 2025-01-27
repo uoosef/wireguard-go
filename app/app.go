@@ -29,7 +29,6 @@ type WarpOptions struct {
 	Gool            bool
 	Scan            *wiresocks.ScanOptions
 	CacheDir        string
-	Tun             bool
 	FwMark          uint32
 	WireguardConfig string
 	Reserved        string
@@ -54,10 +53,6 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 
 	if opts.Psiphon != nil && opts.Psiphon.Country == "" {
 		return errors.New("must provide country for psiphon")
-	}
-
-	if opts.Psiphon != nil && opts.Tun {
-		return errors.New("can't use psiphon and tun at the same time")
 	}
 
 	// Decide Working Scenario
@@ -135,31 +130,6 @@ func runWireguard(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 		conf.Peers[i] = peer
 	}
 
-	if opts.Tun {
-		// Establish wireguard tunnel on tun interface
-		var werr error
-		var tunDev tun.Device
-		for _, t := range []string{"t1", "t2"} {
-			// Create a new tun interface
-			tunDev, werr = newNormalTun([]netip.Addr{opts.DnsAddr})
-			if werr != nil {
-				continue
-			}
-
-			werr = establishWireguard(l, conf, tunDev, true, opts.FwMark, t)
-			if werr != nil {
-				continue
-			}
-			break
-		}
-		if werr != nil {
-			return werr
-		}
-
-		l.Info("serving tun", "interface", "warp0")
-		return nil
-	}
-
 	// Establish wireguard on userspace stack
 	var werr error
 	var tnet *netstack.Net
@@ -167,11 +137,11 @@ func runWireguard(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 	for _, t := range []string{"t1", "t2"} {
 		// Create userspace tun network stack
 		tunDev, tnet, werr = netstack.CreateNetTUN(conf.Interface.Addresses, conf.Interface.DNS, conf.Interface.MTU)
-		if err != nil {
+		if werr != nil {
 			continue
 		}
 
-		werr = establishWireguard(l, conf, tunDev, false, opts.FwMark, t)
+		werr = establishWireguard(l, conf, tunDev, opts.FwMark, t)
 		if werr != nil {
 			continue
 		}
@@ -230,31 +200,6 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 		conf.Peers[i] = peer
 	}
 
-	if opts.Tun {
-		// Establish wireguard tunnel on tun interface
-		var werr error
-		var tunDev tun.Device
-		for _, t := range []string{"t1", "t2"} {
-			// Create a new tun interface
-			tunDev, werr = newNormalTun([]netip.Addr{opts.DnsAddr})
-			if werr != nil {
-				continue
-			}
-
-			// Create userspace tun network stack
-			werr = establishWireguard(l, &conf, tunDev, true, opts.FwMark, t)
-			if werr != nil {
-				continue
-			}
-			break
-		}
-		if werr != nil {
-			return werr
-		}
-		l.Info("serving tun", "interface", "warp0")
-		return nil
-	}
-
 	// Establish wireguard on userspace stack
 	var werr error
 	var tnet *netstack.Net
@@ -265,7 +210,7 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 			continue
 		}
 
-		werr = establishWireguard(l, &conf, tunDev, false, opts.FwMark, t)
+		werr = establishWireguard(l, &conf, tunDev, opts.FwMark, t)
 		if werr != nil {
 			continue
 		}
@@ -334,7 +279,7 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 			continue
 		}
 
-		werr = establishWireguard(l.With("gool", "outer"), &conf, tunDev, opts.Tun, opts.FwMark, t)
+		werr = establishWireguard(l.With("gool", "outer"), &conf, tunDev, opts.FwMark, t)
 		if werr != nil {
 			continue
 		}
@@ -386,22 +331,6 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 		conf.Peers[i] = peer
 	}
 
-	if opts.Tun {
-		// Create a new tun interface
-		tunDev, err := newNormalTun([]netip.Addr{opts.DnsAddr})
-		if err != nil {
-			return err
-		}
-
-		// Establish wireguard tunnel on tun interface but don't bind
-		// wireguard sockets to default interface and don't apply fwmark.
-		if err := establishWireguard(l.With("gool", "inner"), &conf, tunDev, false, opts.FwMark, "t0"); err != nil {
-			return err
-		}
-		l.Info("serving tun", "interface", "warp0")
-		return nil
-	}
-
 	// Create userspace tun network stack
 	tunDev, tnet2, err := netstack.CreateNetTUN(conf.Interface.Addresses, conf.Interface.DNS, conf.Interface.MTU)
 	if err != nil {
@@ -409,7 +338,7 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 	}
 
 	// Establish wireguard on userspace stack
-	if err := establishWireguard(l.With("gool", "inner"), &conf, tunDev, false, opts.FwMark, "t0"); err != nil {
+	if err := establishWireguard(l.With("gool", "inner"), &conf, tunDev, opts.FwMark, "t0"); err != nil {
 		return err
 	}
 
@@ -470,7 +399,7 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 			continue
 		}
 
-		werr = establishWireguard(l, &conf, tunDev, false, opts.FwMark, t)
+		werr = establishWireguard(l, &conf, tunDev, opts.FwMark, t)
 		if werr != nil {
 			continue
 		}
