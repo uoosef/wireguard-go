@@ -32,6 +32,7 @@ type WarpOptions struct {
 	FwMark          uint32
 	WireguardConfig string
 	Reserved        string
+	TestURL         string
 }
 
 type PsiphonOptions struct {
@@ -147,7 +148,7 @@ func runWireguard(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 		}
 
 		// Test wireguard connectivity
-		werr = usermodeTunTest(ctx, l, tnet)
+		werr = usermodeTunTest(ctx, l, tnet, opts.TestURL)
 		if werr != nil {
 			continue
 		}
@@ -216,7 +217,7 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 		}
 
 		// Test wireguard connectivity
-		werr = usermodeTunTest(ctx, l, tnet)
+		werr = usermodeTunTest(ctx, l, tnet, opts.TestURL)
 		if werr != nil {
 			continue
 		}
@@ -285,7 +286,7 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 		}
 
 		// Test wireguard connectivity
-		werr = usermodeTunTest(ctx, l, tnet1)
+		werr = usermodeTunTest(ctx, l, tnet1, opts.TestURL)
 		if werr != nil {
 			continue
 		}
@@ -343,7 +344,7 @@ func runWarpInWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoi
 	}
 
 	// Test wireguard connectivity
-	if err := usermodeTunTest(ctx, l, tnet2); err != nil {
+	if err := usermodeTunTest(ctx, l, tnet2, opts.TestURL); err != nil {
 		return err
 	}
 
@@ -405,7 +406,7 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 		}
 
 		// Test wireguard connectivity
-		werr = usermodeTunTest(ctx, l, tnet)
+		werr = usermodeTunTest(ctx, l, tnet, opts.TestURL)
 		if werr != nil {
 			continue
 		}

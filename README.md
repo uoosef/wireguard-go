@@ -32,13 +32,14 @@ FLAGS
       --dns STRING         DNS address (default: 1.1.1.1)
       --gool               enable gool mode (warp in warp)
       --cfon               enable psiphon mode (must provide country as well)
-      --country STRING     psiphon country code (valid values: [AT BE BG BR CA CH CZ DE DK EE ES FI FR GB HR HU IE IN IT JP LV NL NO PL PT RO RS SE SG SK UA US]) (default: AT)
+      --country STRING     psiphon country code (valid values: [AT AU BE BG CA CH CZ DE DK EE ES FI FR GB HR HU IE IN IT JP LV NL NO PL PT RO RS SE SG SK US]) (default: AT)
       --scan               enable warp scanning
       --rtt DURATION       scanner rtt limit (default: 1s)
       --cache-dir STRING   directory to store generated profiles
-      --fwmark UINT        set linux firewall mark for tun mode (default: 4981)
+      --fwmark UINT        set linux firewall mark for tun mode (requires sudo/root/CAP_NET_ADMIN) (default: 0)
       --reserved STRING    override wireguard reserved value (format: '1,2,3')
       --wgconf STRING      path to a normal wireguard config
+      --test-url STRING    connectivity test url (default: http://connectivity.cloudflareclient.com/cdn-cgi/trace)
   -c, --config STRING      path to config file
       --version            displays version number
 ```
