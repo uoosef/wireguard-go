@@ -47,6 +47,7 @@ func main() {
 		fwmark   = fs.UintLong("fwmark", 0x0, "set linux firewall mark for tun mode (requires sudo/root/CAP_NET_ADMIN)")
 		reserved = fs.StringLong("reserved", "", "override wireguard reserved value (format: '1,2,3')")
 		wgConf   = fs.StringLong("wgconf", "", "path to a normal wireguard config")
+		testUrl  = fs.StringLong("test-url", "http://connectivity.cloudflareclient.com/cdn-cgi/trace", "connectivity test url")
 		_        = fs.String('c', "config", "", "path to config file")
 		verFlag  = fs.BoolLong("version", "displays version number")
 	)
@@ -111,6 +112,7 @@ func main() {
 		FwMark:          uint32(*fwmark),
 		WireguardConfig: *wgConf,
 		Reserved:        *reserved,
+		TestURL:         *testUrl,
 	}
 
 	switch {

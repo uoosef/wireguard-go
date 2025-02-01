@@ -17,9 +17,7 @@ import (
 	"github.com/bepass-org/warp-plus/wiresocks"
 )
 
-const connTestEndpoint = "http://1.1.1.1/cdn-cgi/trace"
-
-func usermodeTunTest(ctx context.Context, l *slog.Logger, tnet *netstack.Net) error {
+func usermodeTunTest(ctx context.Context, l *slog.Logger, tnet *netstack.Net, url string) error {
 	ctx, cancel := context.WithDeadline(ctx, time.Now().Add(5*time.Second))
 	defer cancel()
 
@@ -34,7 +32,7 @@ func usermodeTunTest(ctx context.Context, l *slog.Logger, tnet *netstack.Net) er
 			DialContext:           tnet.DialContext,
 			ResponseHeaderTimeout: 5 * time.Second,
 		}}
-		resp, err := client.Head(connTestEndpoint)
+		resp, err := client.Head(url)
 		if err != nil {
 			l.Error("connection test failed")
 			continue
