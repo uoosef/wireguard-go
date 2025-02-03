@@ -135,14 +135,6 @@ func (peer *Peer) SendBuffers(buffers [][]byte, trick bool) error {
 	}
 	peer.endpoint.Unlock()
 
-	if !trick {
-		for i := range buffers {
-			if len(buffers[i]) > 3 && buffers[i][0] > 0 && buffers[i][0] < 5 {
-				copy(buffers[i][1:4], peer.reserved[:])
-			}
-		}
-	}
-
 	err := peer.device.net.bind.Send(buffers, endpoint)
 	if err == nil {
 		var totalLen uint64

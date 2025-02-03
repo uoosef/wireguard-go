@@ -213,27 +213,35 @@ func initiateHandshake(ctx context.Context, serverAddr netip.AddrPort, privateKe
 		return 0, err
 	}
 	defer conn.Close()
-
-	numPackets := randomInt(8, 15)
-	randomPacket := make([]byte, 100)
+	var Wheader []byte
+	clist := []byte{0xDC, 0xDE, 0xD3, 0xD9, 0xD0, 0xEC, 0xEE, 0xE3}
+	Wheader = []byte{
+		clist[randomInt(0, uint64(len(clist)-1))],
+		0x00, 0x00, 0x00, 0x01, 0x08,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x44, 0xD0,
+	}
+	_, err = rand.Read(Wheader[6:14])
+	if err != nil {
+		panic(err)
+	}
+	numPackets := randomInt(20, 50)
+	maxpLen := uint64(len(Wheader) + 120)
+	randomPacket := make([]byte, maxpLen)
 	for i := uint64(0); i < numPackets; i++ {
-		select {
-		case <-ctx.Done():
-			return 0, ctx.Err()
-		default:
-			packetSize := randomInt(40, 100)
-			_, err := rand.Read(randomPacket[:packetSize])
-			if err != nil {
-				return 0, fmt.Errorf("error generating random packet: %w", err)
-			}
-
-			_, err = conn.Write(randomPacket[:packetSize])
-			if err != nil {
-				return 0, fmt.Errorf("error sending random packet: %w", err)
-			}
-
-			time.Sleep(time.Duration(randomInt(20, 250)) * time.Millisecond)
+		packetSize := randomInt(uint64(len(Wheader)+10), maxpLen)
+		_, err := rand.Read(randomPacket[len(Wheader):packetSize])
+		if err != nil {
+			return 0, fmt.Errorf("error sending random packet: %w", err)
 		}
+		copy(randomPacket[0:], Wheader)
+
+		_, err = conn.Write(randomPacket[:packetSize])
+		if err != nil {
+			return 0, fmt.Errorf("error sending random packet: %w", err)
+		}
+
+		time.Sleep(time.Duration(randomInt(80, 150)) * time.Millisecond)
 	}
 
 	_, err = initiationPacket.WriteTo(conn)
