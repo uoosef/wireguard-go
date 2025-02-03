@@ -50,8 +50,8 @@ func (e *SNICurveExtension) Read(b []byte) (n int, err error) {
 	return e.Len(), io.EOF
 }
 
-// makeTLSHelloPacketWithSNICurve creates a TLS hello packet with SNICurve.
-func (d *Dialer) makeTLSHelloPacketWithSNICurve(plainConn net.Conn, config *tls.Config, sni string) (*tls.UConn, error) {
+// MakeTLSHelloPacketWithSNICurve creates a TLS hello packet with SNICurve.
+func (d *Dialer) MakeTLSHelloPacketWithSNICurve(plainConn net.Conn, config *tls.Config, sni string) (*tls.UConn, error) {
 	SNICurveSize := 1200
 
 	utlsConn := tls.UClient(plainConn, config, tls.HelloCustom)
@@ -136,7 +136,7 @@ func (d *Dialer) TLSDial(plainDialer *net.Dialer, network, addr string) (net.Con
 		RootCAs:    certpool.Roots(),
 	}
 
-	utlsConn, handshakeErr := d.makeTLSHelloPacketWithSNICurve(plainConn, &config, sni)
+	utlsConn, handshakeErr := d.MakeTLSHelloPacketWithSNICurve(plainConn, &config, sni)
 	if handshakeErr != nil {
 		_ = plainConn.Close()
 		return nil, handshakeErr
