@@ -115,11 +115,11 @@ socks() {
    echo -e "${green}socks://Og==@127.0.0.1:8086#warp_(usef)${rest}"
    echo "or"
    echo -e "${green}Manually create a SOCKS configuration with IP ${red}127.0.0.1 ${green}and port${red} 8086..${rest}"
-   echo -e "${blue}================================================${rest}"
+   echo -e "${blue} ____________________________________${rest}"
    echo -e "${yellow}To run again, type:${green} warp ${rest}or${green} usef ${rest}or${green} ./warp ${rest}or${green} warp-plus ${rest}"
-   echo -e "${blue}================================================${rest}"
-   echo -e "${green} If you get a 'Bad address' error, run ${yellow}[Arm]${rest}"
-   echo -e "${blue}================================================${rest}"
+   echo -e "${blue} ____________________________________${rest}"
+   echo -e "${green} If you get a 'Bad address' error, run ${yellow}[armeabi-v7a]${rest}"
+   echo -e "${blue} ____________________________________${rest}"
    echo -e "${blue}================================================${rest}"
    echo ""
 }
@@ -139,9 +139,9 @@ gool() {
     while true; do
         echo -e "${cyan}Choose an option: ${red}*${rest}"
         echo -e "${red}                  *${rest}"
-        echo -e "${cyan}[1] ${green}IPV4${red}          *${rest}"
-        echo -e "${cyan}[2] ${green}IPV6${red}          *${rest}"
-        echo -e "${cyan}[3] ${yellow}Back to Menu${red}  *${rest}"
+        echo -e "  [1] ${green}IPV4${red}          *${rest}"
+        echo -e "  [2] ${green}IPV6${red}          *${rest}"
+        echo -e "  [3] ${yellow}Back to Menu${red}  *${rest}"
         echo -e "${red}*******************${rest}"
 
         echo -en "${green}Please Choose: ${rest}"
@@ -254,9 +254,9 @@ psiphon_location() {
     while true; do
         echo -e "${cyan}Choose an option: ${red}*${rest}"
         echo -e "${red}                  *${rest}"
-        echo -e "${cyan}[1] ${green}IPV4${red}          *${rest}"
-        echo -e "${cyan}[2] ${green}IPV6${red}          *${rest}"
-        echo -e "${cyan}[3] ${yellow}Back to Menu${red}  *${rest}"
+        echo -e "  [1] ${green}IPV4${red}          *${rest}"
+        echo -e "  [2] ${green}IPV6${red}          *${rest}"
+        echo -e "  [3] ${yellow}Back to Menu${red}  *${rest}"
         echo -e "${red}*******************${rest}"
 
         echo -en "${green}Please Choose: ${rest}"
@@ -264,11 +264,11 @@ psiphon_location() {
 
         case $option in
             1)
-                echo -e "${green}Running Psiphon with IPV4...${rest}"
+                echo -e "${green}Running Psiphon with IPv4...${rest}"
                 warp --cfon --country $location -4
                 ;;
             2)
-                echo -e "${green}Running Psiphon with IPV6...${rest}"
+                echo -e "${green}Running Psiphon with IPv6...${rest}"
                 warp --cfon --country $location -6
                 ;;
             3)
@@ -276,7 +276,7 @@ psiphon_location() {
                 menu
                 ;;
             *)
-                echo -e "${red}Invalid option.${rest}"
+                echo -e "${red}INVALID OPTION.${rest}"
                 ;;
         esac
     done
@@ -289,13 +289,13 @@ uninstall() {
     home="/data/data/com.termux/files/home"
     if [ -f "$warp" ]; then
         rm -rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$PREFIX/bin/warp-plus" "warp" "/data/data/com.termux/files/home/.cache/warp-plus" > /dev/null 2>&1
-        echo -e "${red}*********************************${rest}"
+        echo -e "${blue} _____________________________${rest}"
         echo -e "${red}Uninstallation completed.${rest}"
-        echo -e "${red}*********************************${rest}"
+        echo -e "${blue} _____________________________${rest}"
     else
-        echo -e "${yellow} ____________________________________${rest}"
-        echo -e "${red} Not installed.Please Install First.${rest}${yellow}|"
-        echo -e "${yellow} ____________________________________${rest}"
+        echo -e "${blue} ____________________________________${rest}"
+        echo -e "${red} Not installed.Please Install First.${rest}${green}|"
+        echo -e "${blue} ____________________________________${rest}"
     fi
 }
 
@@ -306,36 +306,36 @@ warp_plus() {
         pkg install python -y
     fi
 
-    echo -e "${green}Downloading and running${red} Warp+ script...${rest}"
-    wget -O wa.py https://raw.githubusercontent.com/Ptechgithub/configs/main/wa.py
+    echo -e "${green} pleaase wait to download dependencies${red} Let's run warp+ script ...${rest}"
+    wget -O wa.py https://raw.githubusercontent.com/NiREvil/wireguard-go/refs/heads/master/warp/wa.py
     python wa.py
 }
 
 # Menu
 menu() {
     clear
-    echo -e "${gray}   Warp-Plus -- 2 February - v1.2.5  ${rest}"
     echo ""
-    echo -e "${background}    in the name of USEF GHOBADI 💎 ${rest}"
+    echo ""
+    echo ""
+    echo -e "${gray}                             ${blue} V1.2.5  ${rest}"
+    echo -e "${background}Many thanks to Mark & Usef ${rest}"
     echo -e "${red}*********************************${rest}"
-    echo -e "${blue}  ###${cyan} Warp-Plus in Termux ${blue}###${rest} ${red}  * ${rest}"
-    echo -e "${red}*********************************${rest}"
-    echo -e "1. ${green}Install Warp [${yellow}arm64-v8a${green}] ${red}           * ${rest}"
+    echo -e "  1. ${green}Install Warp [${gray}arm64-v8a${green}] ${red}     * ${rest}"
     echo -e "                              ${red}  * ${rest}"
-    echo -e "2. ${green}Install Warp [${gray}armeabi-v7a${green}] ${red}    * ${rest}"
+    echo -e "  2. ${green}Install Warp [${gray}armeabi-v7a${green}] ${red}  * ${rest}"
     echo -e "                              ${red}  * ${rest}"
-    echo -e "3. ${green}Uninstall${rest}${red}                     * ${rest}"
+    echo -e "  3. ${green}Uninstall${rest}${red}                     * ${rest}"
     echo -e "                              ${red}  * ${rest}"
-    echo -e "4. ${green}gool [${gray}warp ON warp${green}]${red}           * ${rest}"
+    echo -e "  4. ${green}Gool [${gray}warp ON warp${green}]${red}           * ${rest}"
     echo -e "                              ${red}  * ${rest}"
-    echo -e "${cyan}5]${rest} ${green}Psiphon [${yellow}+ All Locations${green}]${red}    * ${rest}"
+    echo -e "  5. ${green}psiphon [${gray}+ All Locations${green}]${red}     * ${rest}"
     echo -e "                              ${red}  * ${rest}"
-    echo -e "${cyan}6]${rest} ${green}Warp to ${red}Warp plus${green} [${yellow}Free GB${green}]${rest}${red}  * ${rest}"
-    echo -e "                              ${red}  * ${rest}"
-    echo -e "${red}0]${rest} ${green}Exit                         ${red}* ${rest}"
+    echo -e "  6. ${green}Warp To Warp plus ${green} [${gray}Free GB${green}]${rest}${red}   * ${rest}"
+    echo -e "                               ${red} * ${rest}"
+    echo -e "  x. ${gray}Revised Diana ${red}   *  ${rest}"
     echo -e "${red}*********************************${rest}"
 
-    echo -en "${cyan}Please enter your selection [${yellow}0-6${green}]:${rest}"
+    echo -en "${background}Please enter your selection [0-6]:${rest}"
     read -r choice
 
     case "$choice" in
@@ -361,13 +361,14 @@ menu() {
             ;;
         0)
             echo -e "${red}*********************************${rest}"
-            echo -e "${cyan}By 🖐${rest}"
+            echo -e "${gray} See you later my friend 🤘🏿.${rest}"
+            echo -e "${red}*********************************${rest}"
             exit
             ;;
         *)
-            echo -e "${red}*********************************${rest}"
-            echo -e "${red}Invalid choice. Please select a valid option.${rest}"
-            echo -e "${red}*********************************${rest}"
+            echo -e "${red}************************************${rest}"
+            echo -e " Invalid choice. Please select a valid option.${rest}"
+            echo -e "${red}************************************${rest}"
             ;;
     esac
 }
