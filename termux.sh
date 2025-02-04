@@ -314,32 +314,24 @@ warp_plus() {
 # Menu
 menu() {
     clear
-    echo ""
-    echo ""
-    echo ""
-    echo -e "${gray}                             ${blue} V1.2.5  ${rest}"
-    echo -e "${background}Many thanks to Mark & Usef ${rest}"
-    echo -e "${red}*********************************${rest}"
-    echo -e "  1. ${green}Install Warp [${gray}arm64-v8a${green}] ${red}     * ${rest}"
-    echo -e "                              ${red}  * ${rest}"
-    echo -e "  2. ${green}Install Warp [${gray}armeabi-v7a${green}] ${red}  * ${rest}"
-    echo -e "                              ${red}  * ${rest}"
-    echo -e "  3. ${green}Uninstall${rest}${red}                     * ${rest}"
-    echo -e "                              ${red}  * ${rest}"
-    echo -e "  4. ${green}Gool [${gray}warp ON warp${green}]${red}           * ${rest}"
-    echo -e "                              ${red}  * ${rest}"
-    echo -e "  5. ${green}psiphon [${gray}+ All Locations${green}]${red}     * ${rest}"
-    echo -e "                              ${red}  * ${rest}"
-    echo -e "  6. ${green}Warp To Warp plus ${green} [${gray}Free GB${green}]${rest}${red}   * ${rest}"
-    echo -e "                               ${red} * ${rest}"
-    echo -e "  x. ${gray}Revised Diana ${red}   *  ${rest}"
-    echo -e "${red}*********************************${rest}"
+    echo "  ╭───────────────────────────────────╮"
+    echo "  │        Welcome to Warp Menu         │"
+    echo "  ├───────────────────────────────────┤"
+    echo "  │ 1. Install Warp [arm64-v8a]        │"
+    echo "  │ 2. Install Warp [armeabi-v7a]     │"
+    echo "  │ 3. Uninstall Warp                  │"
+    echo "  │ 4. Gool [warp ON]                 │"
+    echo "  │ 5. Psiphon [+ All Locations]       │"
+    echo "  │ 6. Warp To Warp plus [Free GB]   │"
+    echo "  │ x. Revised Diana                   │"
+    echo "  │ 0. Exit                          │"
+    echo "  ╰───────────────────────────────────╯"
 
-    echo -en "${background}Please enter your selection [0-6]:${rest}"
+    echo -en "  Please enter your selection [0-6/x]: "
     read -r choice
 
     case "$choice" in
-       1)
+        1)
             install
             warp
             ;;
@@ -360,16 +352,22 @@ menu() {
             warp_plus
             ;;
         0)
-            echo -e "${red}*********************************${rest}"
-            echo -e "${gray} See you later my friend 🤘🏿.${rest}"
-            echo -e "${red}*********************************${rest}"
+            echo "  ╭───────────────────────────────╮"
+            echo "  │   See you later my friend    │"
+            echo "  ╰───────────────────────────────╯"
             exit
             ;;
+        x)
+            echo "  ╭───────────────────────────────╮"
+            echo "  │      Revised by Diana    │"
+            echo "  ╰───────────────────────────────╯"
+            ;;
         *)
-            echo -e "${red}************************************${rest}"
-            echo -e " Invalid choice. Please select a valid option.${rest}"
-            echo -e "${red}************************************${rest}"
+            echo "  ╭───────────────────────────────────╮"
+            echo "  │  Invalid choice. Please try again.  │"
+            echo "  ╰───────────────────────────────────╯"
             ;;
     esac
 }
 menu
+
