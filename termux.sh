@@ -1,12 +1,16 @@
 #!/bin/bash
 
-RED='\033[1;31m'
-GREEN='\033[1;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[1;34m'
-CYAN='\033[1;36m'
-WHITE='\033[1;37m'
+# Colors 
 RESET='\033[0m'
+BOLD='\033[1m'
+BLACK='\033[0;30m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[0;37m'
 
 # Check Dependencies build
 check_dependencies_build() {
@@ -308,26 +312,24 @@ warp_plus() {
 }
 
 # Menu
-show_menu() {
+menu() {
     clear
-    echo -e "${BLUE}==============================================${RESET}"
-    echo -e "${CYAN}           WARP VPN Installer Menu           ${RESET}"
-    echo -e "${BLUE}==============================================${RESET}"
-    echo -e "${GREEN} 1)${WHITE} نصب WARP (نسخه arm64-v8a)"
-    echo -e "${GREEN} 2)${WHITE} نصب WARP (نسخه armeabi-v7a)"
-    echo -e "${GREEN} 3)${WHITE} حذف WARP"
-    echo -e "${GREEN} 4)${WHITE} تغییر موقعیت مکانی (Gool Mode)"
-    echo -e "${GREEN} 5)${WHITE} Psiphon + لیست کشورها"
-    echo -e "${GREEN} 6)${WHITE} ارتقا به WARP+ (دریافت حجم رایگان)"
-    echo -e "${GREEN} 0)${WHITE} خروج"
-    echo -e "${BLUE}==============================================${RESET}"
-    echo -en "${YELLOW} لطفاً یک گزینه را انتخاب کنید: ${RESET}"
-}
+    echo -e "${BOLD}${CYAN}╔══════════════════════════════════════╗${RESET}"
+    echo -e "${BOLD}${CYAN}║        ${YELLOW}WARP CONFIGURATOR v1.2.5${CYAN}        ║${RESET}"
+    echo -e "${BOLD}${CYAN}╠══════════════════════════════════════╣${RESET}"
+    echo -e "${BOLD}${GREEN}║ 1) ${WHITE}Install Warp [ARM64-v8a]${RESET}${CYAN}        ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 2) ${WHITE}Install Warp [ARMv7]${RESET}${CYAN}            ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 3) ${WHITE}Uninstall Warp${RESET}${CYAN}                  ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 4) ${WHITE}Gool [Warp over Warp]${RESET}${CYAN}           ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 5) ${WHITE}Psiphon [Multi-Location]${RESET}${CYAN}        ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 6) ${WHITE}Warp to Warp+ [Free GB]${RESET}${CYAN}         ║${RESET}"
+    echo -e "${BOLD}${CYAN}╠══════════════════════════════════════╣${RESET}"
+    echo -e "${BOLD}${RED}║ 0) ${WHITE}Exit${RESET}${CYAN}                             ║${RESET}"
+    echo -e "${BOLD}${CYAN}╚══════════════════════════════════════╝${RESET}"
 
-# اجرای تابع منو و دریافت ورودی کاربر
-while true; do
-    show_menu
+    echo -en "${BOLD}${YELLOW}Select an option: ${RESET}"
     read -r choice
+
     case "$choice" in
         1) install ;;
         2) install_arm ;;
@@ -336,13 +338,13 @@ while true; do
         5) psiphon_location ;;
         6) warp_plus ;;
         0) 
-            echo -e "${RED}خروج از برنامه...${RESET}"
-            exit
+            echo -e "${BOLD}${GREEN}Goodbye! Stay secure. 🛡️${RESET}"
+            exit 0
             ;;
-        *) 
-            echo -e "${RED} گزینه نامعتبر! لطفاً عدد صحیح وارد کنید.${RESET}"
-            sleep 1
+        *)
+            echo -e "${BOLD}${RED}Invalid option. Press Enter to continue...${RESET}"
+            read
+            menu
             ;;
     esac
-done
-
+}
