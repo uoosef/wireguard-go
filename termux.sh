@@ -314,18 +314,18 @@ warp_plus() {
 # Menu
 menu() {
     clear
-    echo -e "${BOLD}${CYAN}╔════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${CYAN}║                      ${YELLOW}WARP CONFIGURATOR v1.2.5${CYAN}                      ║${RESET}"
-    echo -e "${BOLD}${CYAN}╠════════════════════════════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${GREEN}║ 1) ${WHITE}Install Warp [ARM64-v8a]${RESET}${CYAN}                              ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 2) ${WHITE}Install Warp [ARMv7]${RESET}${CYAN}                                  ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 3) ${WHITE}Uninstall Warp${RESET}${CYAN}                                        ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 4) ${WHITE}Gool [Warp over Warp]${RESET}${CYAN}                                 ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 5) ${WHITE}Psiphon [Multi-Location]${RESET}${CYAN}                              ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 6) ${WHITE}Warp to Warp+ [Free GB]${RESET}${CYAN}                               ║${RESET}"
-    echo -e "${BOLD}${CYAN}╠════════════════════════════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${RED}║ 0) ${WHITE}Exit${RESET}${CYAN}                                               ║${RESET}"
-    echo -e "${BOLD}${CYAN}╚════════════════════════════════════════════════════════════╝${RESET}"
+    echo -e "${BOLD}${CYAN}╔═════════════════════════════════════════════╗${RESET}"
+    echo -e "${BOLD}${CYAN}║             ${YELLOW}WARP CONFIGURATOR v1.2.5${CYAN}              ║${RESET}"
+    echo -e "${BOLD}${CYAN}╠═════════════════════════════════════════════╣${RESET}"
+    echo -e "${BOLD}${GREEN}║ 1) ${WHITE}Install Warp [ARM64-v8a]${RESET}${CYAN}               ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 2) ${WHITE}Install Warp [ARMv7]${RESET}${CYAN}                   ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 3) ${WHITE}Uninstall Warp${RESET}${CYAN}                         ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 4) ${WHITE}Gool [Warp over Warp]${RESET}${CYAN}                  ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 5) ${WHITE}Psiphon [Multi-Location]${RESET}${CYAN}               ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 6) ${WHITE}Warp to Warp+ [Free GB]${RESET}${CYAN}                ║${RESET}"
+    echo -e "${BOLD}${CYAN}╠═════════════════════════════════════════════╣${RESET}"
+    echo -e "${BOLD}${RED}║ 0) ${WHITE}Exit${RESET}${CYAN}                                     ║${RESET}"
+    echo -e "${BOLD}${CYAN}╚═════════════════════════════════════════════╝${RESET}"
 
     echo -en "${BOLD}${YELLOW}Select an option: ${RESET}"
     read -r choice
