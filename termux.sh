@@ -358,15 +358,15 @@ menu() {
         0) 
     read -r choice
 
-            echo -e "${BOLD}${GREEN} Poof, Thanks god, see you${RESET}"
+            echo -e "${BOLD}${YELLOW} Thank goodness for small miracles 🙌${RESET}"
             exit 0
             ;;
         *)
             echo ""
-            echo -e "${BOLD}${RED}INVALID OPTION.${RESET}"
-            echo -e "${BOLD}${WHITE}  😒Pay more attention psycho, Or you might${RESET}"
-            echo -e "${BOLD}${WHITE}  Find yourself accidentally signing up for a llama yoga class 🧘🏋️${RESET}"
-            echo -e "${BOLD}${RED}Press ENTER to continue ... ${RESET}"
+            echo -e "${BOLD}${RED} INVALID OPTION.${RESET}"
+            echo -e "${BOLD}${WHITE} Pay more attention psycho 😒, Or you might find yourself${RESET}"
+            echo -e "${BOLD}${WHITE} accidentally signing up for a llama yoga class 🧘🏋️${RESET}"
+            echo -e "${BOLD}${RED} Press ENTER to continue ... ${RESET}"
             read
             menu
             ;;
