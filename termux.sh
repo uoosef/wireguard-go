@@ -18,7 +18,7 @@ check_dependencies_build() {
 
     for dep in "${dependencies[@]}"; do
         if ! dpkg -s "${dep}" &> /dev/null; then
-            echo -e "${yellow}${dep} is not installed. Installing...${rest}"
+            echo -e "${BOLD}${YELLOW}${dep} is not installed. Installing...${RESET}"
             pkg install "${dep}" -y
         fi
     done
@@ -30,7 +30,7 @@ check_dependencies() {
 
     for dep in "${dependencies[@]}"; do
         if ! dpkg -s "${dep}" &> /dev/null; then
-            echo -e "${yellow}${dep} is not installed. Installing...${rest}"
+            echo -e "${BOLD}${YELLOW}${dep} is not installed. Installing...${RESET}"
             pkg install "${dep}" -y
         fi
     done
@@ -39,12 +39,12 @@ check_dependencies() {
 # Install
 install() {
     if command -v warp &> /dev/null || command -v usef &> /dev/null; then
-        echo -e "${green}Warp is already installed.${rest}"
+        echo -e "${BOLD}${GREEN}Warp is already installed.${RESET}"
         return
     fi
 
-    echo -e "${red}*********************************${rest}"
-    echo -e "${green}Installing Warp...${rest}"
+    echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+    echo -e "${BOLD}${GREEN}Installing Warp...${RESET}"
     pkg update -y && pkg upgrade -y
     pacman -Syu openssh = apt update; apt full-upgrade -y; apt install -y openssh
     check_dependencies
@@ -57,23 +57,23 @@ install() {
         cp warp "$PREFIX/bin/warp-plus" &&
         cp warp "$PREFIX/bin/warp"; then
         rm "README.md" "LICENSE" "warp-plus_android-arm64.zip"
-        echo "================================================"
-        echo -e "${green}Warp installed successfully.${rest}"
+        echo "${BOLD}${BLUE}═══════════════════════════════"
+        echo -e "${BOLD}${GREEN}Warp installed successfully.${RESET}"
         socks
     else
-        echo -e "${red}Error installing Warp.${rest}"
+        echo -e "${BOLD}${GREEN}Error installing Warp.${RESET}"
     fi
 }
 
 # Install arm
 install_arm() {
     if command -v warp &> /dev/null || command -v usef &> /dev/null; then
-        echo -e "${green}Warp is already installed.${rest}"
+        echo -e "${BOLD}${GREEN}Warp is already installed.${RESET}"
         return
     fi
 
-    echo -e "${red}*********************************${rest}"
-    echo -e "${green}Installing Warp...${rest}"
+    echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+    echo -e "${BOLD}${GREEN}Installing Warp...${RESET}"
     pkg update -y && pkg upgrade -y
     pacman -Syu openssh = apt update; apt full-upgrade -y; apt install -y openssh
     check_dependencies
@@ -85,7 +85,7 @@ install_arm() {
         armhf) ARCH="arm5" ;;
         arm) ARCH="arm7" ;;
         aarch64) ARCH="arm64" ;;
-        *) echo -e "${red}Unsupported architecture.${rest}"; return ;;
+        *) echo -e "${BOLD}${RED}Unsupported architecture.${RESET}"; return ;;
     esac
 
     WARP_URL="https://github.com/bepass-org/warp-plus/releases/latest/download/warp-plus_linux-$ARCH.zip"
@@ -98,70 +98,75 @@ install_arm() {
         cp warp "$PREFIX/bin/warp-plus" &&
         cp warp "$PREFIX/bin/warp"; then
         rm "README.md" "LICENSE" "warp-plus_linux-$ARCH.zip"
-        echo -e "${blue}================================================${rest}"
-        echo -e "${blue}================================================${rest}"
-        echo -e "${green}Warp installed successfully.${rest}"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${GREEN}Warp installed successfully.${RESET}"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
         socks
     else
-        echo -e "${red}Error installing Warp.${rest}"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${RED}Error installing Warp.${RESET}"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
     fi
 }
 
 # Get socks config
 socks() {
    echo ""
-   echo -e "${yellow}Copy this Config to ${red}V2ray${green} Or ${red}Nekobox ${yellow}and Exclude Termux${rest}"
+   echo -e "${YELLOW}Copy this Config to ${RED}V2ray${GREEN} Or ${RED}Nekobox ${YELLOW}and Exclude Termux${RESET}"
    echo ""
-   echo -e "${green}socks://Og==@127.0.0.1:8086#warp_(usef)${rest}"
+   echo -e "${GREEN}socks://Og==@127.0.0.1:8086#warp_(usef)${RESET}"
    echo "or"
-   echo -e "${green}Manually create a SOCKS configuration with IP ${red}127.0.0.1 ${green}and port${red} 8086..${rest}"
-   echo -e "${blue} ____________________________________${rest}"
-   echo -e "${yellow}To run again, type:${green} warp ${rest}or${green} usef ${rest}or${green} ./warp ${rest}or${green} warp-plus ${rest}"
-   echo -e "${blue} ____________________________________${rest}"
-   echo -e "${green} If you get a 'Bad address' error, run ${yellow}[armeabi-v7a]${rest}"
-   echo -e "${blue} ____________________________________${rest}"
-   echo -e "${blue}================================================${rest}"
+   echo -e "${GREEN}Manually create a SOCKS configuration with IP ${RED}127.0.0.1 ${GREEN}and port${RED} 8086..${RESET}"
+   echo -e "${BOLD}${BLUE} ═══════════════════════════════${RESET}"
+   echo -e "${YELLOW}To run again, type:${GREEN} warp ${RESET}or${GREEN} usef ${RESET}or${GREEN} ./warp ${RESET}or${GREEN} warp-plus ${RESET}"
+   echo -e "${BOLD}${BLUE} ═══════════════════════════════${RESET}"
+   echo -e "${BOLD}${GREEN} If you get a 'Bad address' error, run ${YELLOW}[armeabi-v7a]${RESET}"
+   echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
    echo ""
 }
 
 # Gool (warp in warp)
 gool() {
     if ! command -v warp &> /dev/null || ! command -v usef &> /dev/null; then
-        echo -e "${red}*********************************${rest}"
-        echo -e "${green}Please install Warp first.${rest}"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${RED}Please install Warp first.${RESET}"
         return
     fi
 
-    echo -e "${red}*********************************${rest}"
-    echo -e "${green}This option changes your current location to the nearest and best location.${rest}"
-    echo -e "${red}*********************************${rest}"
+    echo -e "${BOLD}${BLUE}═════════════════════════════════════════════════════════════════════════${RESET}"
+    echo -e "${BOLD}${GREEN}This option changes your current location to the neaRESET and best location.${RESET}"
+    echo -e "${BOLD}${BLUE}═════════════════════════════════════════════════════════════════════════${RESET}"
 
     while true; do
-        echo -e "${cyan}Choose an option: ${red}*${rest}"
-        echo -e "${red}                  *${rest}"
-        echo -e "  [1] ${green}IPV4${red}          *${rest}"
-        echo -e "  [2] ${green}IPV6${red}          *${rest}"
-        echo -e "  [3] ${yellow}Back to Menu${red}  *${rest}"
-        echo -e "${red}*******************${rest}"
+        echo -e "${BOLD}${CYAN}Choose an option: ${BLUE}║${RESET}"
+        echo -e "${BOLD}${BLUE}                  ║${RESET}"
+        echo -e "  [1] ${BOLD}${GREEN}IPV4${BOLD}${BLUE}          ║${RESET}"
+        echo -e "  [2] ${BOLD}${GREEN}IPV6${BOLD}${RED}          ║${RESET}"
+        echo -e "  [3] ${BOLD}${YELLOW}Back to Menu${BOLD}${BLUE}  ║${RESET}"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
 
-        echo -en "${green}Please Choose: ${rest}"
+        echo -en "${BOLD}${GREEN}Please Choose: ${RESET}"
         read -r option
 
         case $option in
             1)
-                echo -e "${green}Running Warp with IPV4...${rest}"
+                echo -e "${BOLD}${GREEN}Running Warp with IPV4...${RESET}"
                 warp --gool -4
                 ;;
             2)
-                echo -e "${green}Running Warp with IPV6...${rest}"
+                echo -e "${BOLD}${GREEN}Running Warp with IPV6...${RESET}"
                 warp --gool -6
                 ;;
             3)
-                echo -e "${red}Back to Menu.${rest}"
+                echo -e "${BOLD}${RED}Back to Menu.${RESET}"
                 menu
                 ;;
             *)
-                echo -e "${red}Invalid option.${rest}"
+
+                echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+                echo -e "${BOLD}${RED}Invalid option.${RESET}"
+                echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+
                 ;;
         esac
     done
@@ -170,46 +175,46 @@ gool() {
 # Psiphon
 psiphon_location() {
     if ! command -v warp &> /dev/null || ! command -v usef &> /dev/null; then
-        echo -e "${red}*********************************${rest}"
-        echo -e "${green}Please install Warp first.${rest}"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${ref}Please install Warp first.${RESET}"
         return
     fi
-    echo -e "${red}*********************************${rest}"
-    echo -e "${cyan}Please choose a location from the list below by entering its number:${rest}"
+    echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}Please choose a location from the list below by entering its number:${RESET}"
     echo ""
-    echo -e "${red} 1)${yellow} Austria (AT)${rest}"
-    echo -e "${red} 2)${yellow} Belgium (BE)${rest}"
-    echo -e "${red} 3)${yellow} Bulgaria (BG)${rest}"
-    echo -e "${red} 4)${yellow} Brazil (BR)${rest}"
-    echo -e "${red} 5)${yellow} Canada (CA)${rest}"
-    echo -e "${red} 6)${yellow} Switzerland (CH)${rest}"
-    echo -e "${red} 7)${yellow} Czech Republic (CZ)${rest}"
-    echo -e "${red} 8)${yellow} Germany (DE)${rest}"
-    echo -e "${red} 9)${yellow} Denmark (DK)${rest}"
-    echo -e "${red}10)${yellow} Estonia (EE)${rest}"
-    echo -e "${red}11)${yellow} Spain (ES)${rest}"
-    echo -e "${red}12)${yellow} Finland (FI)${rest}"
-    echo -e "${red}13)${yellow} France (FR)${rest}"
-    echo -e "${red}14)${yellow} United Kingdom (GB)${rest}"
-    echo -e "${red}15)${yellow} Hungary (HU)${rest}"
-    echo -e "${red}16)${yellow} Ireland (IE)${rest}"
-    echo -e "${red}17)${yellow} India (IN)${rest}"
-    echo -e "${red}18)${yellow} Italy (IT)${rest}"
-    echo -e "${red}19)${yellow} Japan (JP)${rest}"
-    echo -e "${red}20)${yellow} Latvia (LV)${rest}"
-    echo -e "${red}21)${yellow} Netherlands (NL)${rest}"
-    echo -e "${red}22)${yellow} Norway (NO)${rest}"
-    echo -e "${red}23)${yellow} Poland (PL)${rest}"
-    echo -e "${red}24)${yellow} Romania (RO)${rest}"
-    echo -e "${red}25)${yellow} Serbia (RS)${rest}"
-    echo -e "${red}26)${yellow} Sweden (SE)${rest}"
-    echo -e "${red}27)${yellow} Singapore (SG)${rest}"
-    echo -e "${red}28)${yellow} Slovakia (SK)${rest}"
-    echo -e "${red}29)${yellow} Ukraine (UA)${rest}"
-    echo -e "${red}30)${yellow} United States (US)${rest}"
+    echo -e "${RED} 1)${YELLOW} Austria (AT)${RESET}"
+    echo -e "${RED} 2)${YELLOW} Belgium (BE)${RESET}"
+    echo -e "${RED} 3)${YELLOW} Bulgaria (BG)${RESET}"
+    echo -e "${RED} 4)${YELLOW} Brazil (BR)${RESET}"
+    echo -e "${RED} 5)${YELLOW} Canada (CA)${RESET}"
+    echo -e "${RED} 6)${YELLOW} Switzerland (CH)${RESET}"
+    echo -e "${RED} 7)${YELLOW} Czech Republic (CZ)${RESET}"
+    echo -e "${RED} 8)${YELLOW} Germany (DE)${RESET}"
+    echo -e "${RED} 9)${YELLOW} Denmark (DK)${RESET}"
+    echo -e "${RED}10)${YELLOW} Estonia (EE)${RESET}"
+    echo -e "${RED}11)${YELLOW} Spain (ES)${RESET}"
+    echo -e "${RED}12)${YELLOW} Finland (FI)${RESET}"
+    echo -e "${RED}13)${YELLOW} France (FR)${RESET}"
+    echo -e "${RED}14)${YELLOW} United Kingdom (GB)${RESET}"
+    echo -e "${RED}15)${YELLOW} Hungary (HU)${RESET}"
+    echo -e "${RED}16)${YELLOW} Ireland (IE)${RESET}"
+    echo -e "${RED}17)${YELLOW} India (IN)${RESET}"
+    echo -e "${RED}18)${YELLOW} Italy (IT)${RESET}"
+    echo -e "${RED}19)${YELLOW} Japan (JP)${RESET}"
+    echo -e "${RED}20)${YELLOW} Latvia (LV)${RESET}"
+    echo -e "${RED}21)${YELLOW} Netherlands (NL)${RESET}"
+    echo -e "${RED}22)${YELLOW} Norway (NO)${RESET}"
+    echo -e "${RED}23)${YELLOW} Poland (PL)${RESET}"
+    echo -e "${RED}24)${YELLOW} Romania (RO)${RESET}"
+    echo -e "${RED}25)${YELLOW} Serbia (RS)${RESET}"
+    echo -e "${RED}26)${YELLOW} Sweden (SE)${RESET}"
+    echo -e "${RED}27)${YELLOW} Singapore (SG)${RESET}"
+    echo -e "${RED}28)${YELLOW} Slovakia (SK)${RESET}"
+    echo -e "${RED}29)${YELLOW} Ukraine (UA)${RESET}"
+    echo -e "${RED}30)${YELLOW} United States (US)${RESET}"
     echo ""
 
-    echo -en "${green}Enter the ${yellow}number${green} of the location [${yellow}default: 1${green}]: ${rest}"
+    echo -en "${GREEN}Enter the ${YELLOW}number${BOLD}${GREEN} of the location [${YELLOW}default: 1${BOLD}${GREEN}]: ${RESET}"
     read -r choice
     choice=${choice:-1}
 
@@ -247,36 +252,38 @@ psiphon_location() {
         *) echo "Invalid choice. Please select a valid location number." ;;
     esac
 
-    echo -e "${red}*********************************${rest}"
-    echo -e "${green}Selected location: $location${rest}"
-    echo -e "${blue}*********************************${rest}"
+    echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+    echo -e "${BOLD}${GREEN}Selected location: $location${RESET}"
+    echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
 
     while true; do
-        echo -e "${cyan}Choose an option: ${red}*${rest}"
-        echo -e "${red}                  *${rest}"
-        echo -e "  [1] ${green}IPV4${red}          *${rest}"
-        echo -e "  [2] ${green}IPV6${red}          *${rest}"
-        echo -e "  [3] ${yellow}Back to Menu${red}  *${rest}"
-        echo -e "${red}*******************${rest}"
+        echo -e "${BOLD}${CYAN}Choose an option: ${BOLD}${BLUE}║${RESET}"
+        echo -e "${BOLD}${BLUE}                  ║${RESET}"
+        echo -e "  [1] ${BOLD}${GREEN}IPV4${BOLD}${BLUE}          ║${RESET}"
+        echo -e "  [2] ${BOLD}${GREEN}IPV6${BOLD}${BLUE}          ║${RESET}"
+        echo -e "  [3] ${BOLD}${YELLOW}Back to Menu${BOLD}${BLUE}  ║${RESET}"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
 
-        echo -en "${green}Please Choose: ${rest}"
+        echo -en "${BOLD}${GREEN}Please Choose: ${RESET}"
         read -r option
 
         case $option in
             1)
-                echo -e "${green}Running Psiphon with IPv4...${rest}"
+                echo -e "${BOLD}${GREEN}Running Psiphon with IPv4...${RESET}"
                 warp --cfon --country $location -4
                 ;;
             2)
-                echo -e "${green}Running Psiphon with IPv6...${rest}"
+                echo -e "${BOLD}${GREEN}Running Psiphon with IPv6...${RESET}"
                 warp --cfon --country $location -6
                 ;;
             3)
-                echo -e "${red}Back to Menu.${rest}"
+                echo -e "${BOLD}${RED}Back to Menu.${RESET}"
                 menu
                 ;;
             *)
-                echo -e "${red}INVALID OPTION.${rest}"
+                echo -e "${BOLD}${BLUE}═══════════════════════${RESET}"
+                echo -e "${BOLD}${RED}INVALID OPTION.${RESET}"
+                echo -e "${BOLD}${BLUE}═══════════════════════${RESET}"
                 ;;
         esac
     done
@@ -289,13 +296,13 @@ uninstall() {
     home="/data/data/com.termux/files/home"
     if [ -f "$warp" ]; then
         rm -rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$PREFIX/bin/warp-plus" "warp" "/data/data/com.termux/files/home/.cache/warp-plus" > /dev/null 2>&1
-        echo -e "${blue} _____________________________${rest}"
-        echo -e "${red}Uninstallation completed.${rest}"
-        echo -e "${blue} _____________________________${rest}"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${RED}Uninstallation completed.${RESET}"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
     else
-        echo -e "${blue} ____________________________________${rest}"
-        echo -e "${red} Not installed.Please Install First.${rest}${green}|"
-        echo -e "${blue} ____________________________________${rest}"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${RED} Not installed.Please Install First.${RESET}${GREEN}|"
+        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
     fi
 }
 
@@ -306,7 +313,7 @@ warp_plus() {
         pkg install python -y
     fi
 
-    echo -e "${green} pleaase wait to download dependencies${red} Let's run warp+ script ...${rest}"
+    echo -e "${BOLD}${GREEN} pleaase wait to download dependencies${BOLD}${RED} Let's run warp+ script ...${RESET}"
     wget -O wa.py https://raw.githubusercontent.com/NiREvil/wireguard-go/refs/heads/master/warp/wa.py
     python wa.py
 }
@@ -315,16 +322,18 @@ warp_plus() {
 menu() {
     clear
     echo -e "${BOLD}${CYAN}╔═════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${CYAN}║             ${YELLOW}WARP CONFIGURATOR v1.2.5${CYAN}              ║${RESET}"
+    echo -e "${BOLD}${CYAN}║       ${BOLD}${YELLOW}WARP PLUS v1.2.5${CYAN}             ║${RESET}"
+    echo -e "${BOLD}${CYAN}║ ${YELLOW} specialy thank to Mark and Usef${CYAN}    ║${RESET}"
     echo -e "${BOLD}${CYAN}╠═════════════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${GREEN}║ 1) ${WHITE}Install Warp [ARM64-v8a]${RESET}${CYAN}               ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 2) ${WHITE}Install Warp [ARMv7]${RESET}${CYAN}                   ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 3) ${WHITE}Uninstall Warp${RESET}${CYAN}                         ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 4) ${WHITE}Gool [Warp over Warp]${RESET}${CYAN}                  ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 5) ${WHITE}Psiphon [Multi-Location]${RESET}${CYAN}               ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 6) ${WHITE}Warp to Warp+ [Free GB]${RESET}${CYAN}                ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 1) ${WHITE}Install Warp [ARM64-v8a]${RESET}${CYAN}                 ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 2) ${WHITE}Install Warp [ARMv7]${RESET}${CYAN}                     ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 3) ${WHITE}Uninstall Warp${RESET}${CYAN}                           ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 4) ${WHITE}Gool [Warp over Warp]${RESET}${CYAN}                    ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 5) ${WHITE}Psiphon [Multi-Location]${RESET}${CYAN}                 ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 6) ${WHITE}Warp to Warp+ [Free GB]${RESET}${CYAN}                  ║${RESET}"
+    echo -e "${BOLD}${RED}║ x) ${WHITE}Revised by Diana${RESET}${CYAN}                           ║${RESET}"
     echo -e "${BOLD}${CYAN}╠═════════════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${RED}║ 0) ${WHITE}Exit${RESET}${CYAN}                                     ║${RESET}"
+    echo -e "${BOLD}${RED}║ 0) ${WHITE}Exit${RESET}${CYAN}                                        ║${RESET}"
     echo -e "${BOLD}${CYAN}╚═════════════════════════════════════════════╝${RESET}"
 
     echo -en "${BOLD}${YELLOW}Select an option: ${RESET}"
