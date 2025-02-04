@@ -330,21 +330,43 @@ menu() {
     echo -en "${BOLD}${YELLOW}Select an option: ${RESET}"
     read -r choice
 
+# Main menu loop
+while true; do
+    display_menu
+    read -r choice
+
     case "$choice" in
-        1) install ;;
-        2) install_arm ;;
-        3) uninstall ;;
-        4) gool ;;
-        5) psiphon_location ;;
-        6) warp_plus ;;
-        0) 
-            echo -e "${BOLD}${GREEN}Goodbye! Stay secure. 🛡️${RESET}"
-            exit 0
+        1)
+            install
+            ;;
+        2)
+            install_arm
+            ;;
+        3)
+            uninstall
+            ;;
+        4)
+            gool
+            ;;
+        5)
+            psiphon_location
+            ;;
+        6)
+            warp_plus
+            ;;
+        0)
+            echo -e "${red}*********************************${rest}"
+            echo -e "${gray} See you later my friend 🤘🏿.${rest}"
+            echo -e "${red}*********************************${rest}"
+            exit
             ;;
         *)
-            echo -e "${BOLD}${RED}Invalid option. Press Enter to continue...${RESET}"
-            read
-            menu
+            echo -e "${red}************************************${rest}"
+            echo -e " Invalid choice. Please select a valid option.${rest}"
+            echo -e "${red}************************************${rest}"
             ;;
     esac
-}
+
+    echo -en "${green}Press Enter to continue...${rest}"
+    read -r
+done
