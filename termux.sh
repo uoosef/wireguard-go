@@ -186,9 +186,9 @@ psiphon_location() {
         return
     fi
     echo -e ""
-    echo -e "${CYAN}═════════════════════════════════════════════════════════════════${RESET}"
-    echo -e "${BOLD}${CYAN}Please choose a location from the list below by entering its number:${RESET}"
-    echo ""
+    echo -e ""
+    echo -e "${CYAN}═════════════════════════════════════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}Choose a location from the list below by entering its number:${RESET}"
     echo -e "${RED} 1)${CYAN} Austria (AT)${RESET}"
     echo -e "${RED} 2)${CYAN} Belgium (BE)${RESET}"
     echo -e "${RED} 3)${CYAN} Bulgaria (BG)${RESET}"
@@ -219,10 +219,11 @@ psiphon_location() {
     echo -e "${RED}28)${CYAN} Slovakia (SK)${RESET}"
     echo -e "${RED}29)${CYAN} Ukraine (UA)${RESET}"
     echo -e "${RED}30)${CYAN} United States (US)${RESET}"
-    echo ""
+    echo -e""
 
     echo -e ""
-    echo -en "${GREEN}Enter the ${CYAN}number${BOLD}${GREEN} of the location [${CYAN}default: 1${BOLD}${GREEN}]: ${RESET}"
+    echo -en "${GREEN}Enter the ${BOLD}${CYAN}number${RESET}${GREEN} of the location:${RESET}"
+    echo -e "${GREEN}Default is:${REEET}${BOLD}${RED} [1]${RESET}"
     read -r choice
     choice=${choice:-1}
 
