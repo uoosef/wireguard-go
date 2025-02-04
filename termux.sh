@@ -314,59 +314,40 @@ warp_plus() {
 # Menu
 menu() {
     clear
-    echo -e "${BOLD}${CYAN}╔══════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${CYAN}║        ${YELLOW}WARP CONFIGURATOR v1.2.5${CYAN}        ║${RESET}"
-    echo -e "${BOLD}${CYAN}╠══════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${GREEN}║ 1) ${WHITE}Install Warp [ARM64-v8a]${RESET}${CYAN}        ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 2) ${WHITE}Install Warp [ARMv7]${RESET}${CYAN}            ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 3) ${WHITE}Uninstall Warp${RESET}${CYAN}                  ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 4) ${WHITE}Gool [Warp over Warp]${RESET}${CYAN}           ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 5) ${WHITE}Psiphon [Multi-Location]${RESET}${CYAN}        ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 6) ${WHITE}Warp to Warp+ [Free GB]${RESET}${CYAN}         ║${RESET}"
-    echo -e "${BOLD}${CYAN}╠══════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${RED}║ 0) ${WHITE}Exit${RESET}${CYAN}                             ║${RESET}"
-    echo -e "${BOLD}${CYAN}╚══════════════════════════════════════╝${RESET}"
+    echo -e "${BOLD}${CYAN}╔════════════════════════════════════════════════════════════╗${RESET}"
+    echo -e "${BOLD}${CYAN}║                      ${YELLOW}WARP CONFIGURATOR v1.2.5${CYAN}                      ║${RESET}"
+    echo -e "${BOLD}${CYAN}╠════════════════════════════════════════════════════════════╣${RESET}"
+    echo -e "${BOLD}${GREEN}║ 1) ${WHITE}Install Warp [ARM64-v8a]${RESET}${CYAN}                              ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 2) ${WHITE}Install Warp [ARMv7]${RESET}${CYAN}                                  ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 3) ${WHITE}Uninstall Warp${RESET}${CYAN}                                        ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 4) ${WHITE}Gool [Warp over Warp]${RESET}${CYAN}                                 ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 5) ${WHITE}Psiphon [Multi-Location]${RESET}${CYAN}                              ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 6) ${WHITE}Warp to Warp+ [Free GB]${RESET}${CYAN}                               ║${RESET}"
+    echo -e "${BOLD}${CYAN}╠════════════════════════════════════════════════════════════╣${RESET}"
+    echo -e "${BOLD}${RED}║ 0) ${WHITE}Exit${RESET}${CYAN}                                               ║${RESET}"
+    echo -e "${BOLD}${CYAN}╚════════════════════════════════════════════════════════════╝${RESET}"
 
     echo -en "${BOLD}${YELLOW}Select an option: ${RESET}"
     read -r choice
 
-# Main menu loop
-while true; do
-    display_menu
-    read -r choice
-
     case "$choice" in
-        1)
-            install
-            ;;
-        2)
-            install_arm
-            ;;
-        3)
-            uninstall
-            ;;
-        4)
-            gool
-            ;;
-        5)
-            psiphon_location
-            ;;
-        6)
-            warp_plus
-            ;;
-        0)
-            echo -e "${red}*********************************${rest}"
-            echo -e "${gray} See you later my friend 🤘🏿.${rest}"
-            echo -e "${red}*********************************${rest}"
-            exit
+        1) install ;;
+        2) install_arm ;;
+        3) uninstall ;;
+        4) gool ;;
+        5) psiphon_location ;;
+        6) warp_plus ;;
+        0) 
+            echo -e "${BOLD}${GREEN}Goodbye! Stay secure. 🛡️${RESET}"
+            exit 0
             ;;
         *)
-            echo -e "${red}************************************${rest}"
-            echo -e " Invalid choice. Please select a valid option.${rest}"
-            echo -e "${red}************************************${rest}"
+            echo -e "${BOLD}${RED}Invalid option. Press Enter to continue...${RESET}"
+            read
+            menu
             ;;
     esac
+}
 
-    echo -en "${green}Press Enter to continue...${rest}"
-    read -r
-done
+# Call the menu function
+menu
