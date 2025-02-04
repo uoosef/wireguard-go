@@ -163,7 +163,6 @@ gool() {
                 ;;
             *)
 
-                echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
                 echo -e "${BOLD}${RED}Invalid option.${RESET}"
                 echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
 
@@ -175,12 +174,11 @@ gool() {
 # Psiphon
 psiphon_location() {
     if ! command -v warp &> /dev/null || ! command -v usef &> /dev/null; then
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         echo -e "${ref}Please install Warp first.${RESET}"
         return
     fi
-    echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
-    echo -e "${BOLD}${CYAN}Please choose a location from the list below by entering its number:${RESET}"
+    echo -e "${BOLD}${CYAN}════════════════════════════════════════════════════════════${RESET}"
+    echo -e "${BOLD}${GREEN}Please choose a location from the list below by entering its number:${RESET}"
     echo ""
     echo -e "${RED} 1)${YELLOW} Austria (AT)${RESET}"
     echo -e "${RED} 2)${YELLOW} Belgium (BE)${RESET}"
@@ -252,9 +250,9 @@ psiphon_location() {
         *) echo "Invalid choice. Please select a valid location number." ;;
     esac
 
-    echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}═════════════════${RESET}"
     echo -e "${BOLD}${GREEN}Selected location: $location${RESET}"
-    echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}═════════════════${RESET}"
 
     while true; do
         echo -e "${BOLD}${CYAN}Choose an option: ${BOLD}${CYAN}║${RESET}"
@@ -281,9 +279,9 @@ psiphon_location() {
                 menu
                 ;;
             *)
-                echo -e "${BOLD}${CYAN}═══════════════════════${RESET}"
+                echo -e "${BOLD}${CYAN}═════════════${RESET}"
                 echo -e "${BOLD}${RED}INVALID OPTION.${RESET}"
-                echo -e "${BOLD}${CYAN}═══════════════════════${RESET}"
+                echo -e "${BOLD}${CYAN}═════════════${RESET}"
                 ;;
         esac
     done
@@ -296,13 +294,11 @@ uninstall() {
     home="/data/data/com.termux/files/home"
     if [ -f "$warp" ]; then
         rm -rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$PREFIX/bin/warp-plus" "warp" "/data/data/com.termux/files/home/.cache/warp-plus" > /dev/null 2>&1
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}══════════════════════════${RESET}"
         echo -e "${BOLD}${RED}Uninstallation completed.${RESET}"
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
     else
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}═════════════════════════════${RESET}"
         echo -e "${BOLD}${RED} Not installed.Please Install First.${RESET}${GREEN}|"
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
     fi
 }
 
@@ -322,8 +318,8 @@ warp_plus() {
 menu() {
     clear
     echo -e "${BOLD}${CYAN}╔═════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${CYAN}║               ${BOLD}${YELLOW}WARP PLUS v1.2.5${CYAN}               ║${RESET}"
-    echo -e "${BOLD}${CYAN}║            ${BOLD}${YELLOW}Thank to Mark and Usef${CYAN}            ║${RESET}"
+    echo -e "${BOLD}${CYAN}║              ${BOLD}${YELLOW}WARP PLUS v1.2.5${CYAN}               ║${RESET}"
+    echo -e "${BOLD}${CYAN}║          ${BOLD}${YELLOW}Thanks to Mark and Usef${CYAN}            ║${RESET}"
     echo -e "${BOLD}${CYAN}╠═════════════════════════════════════════════╣${RESET}"
     echo -e "${BOLD}${GREEN}║ 1) ${WHITE}Install Warp [ARM64-v8a]${RESET}${CYAN}                 ║${RESET}"
     echo -e "${BOLD}${GREEN}║ 2) ${WHITE}Install Warp [ARMv7]${RESET}${CYAN}                     ║${RESET}"
@@ -346,17 +342,20 @@ menu() {
         4) gool ;;
         5) psiphon_location ;;
         6) warp_plus ;;
+        x) gool ;;
         0) 
-            echo -e "${BOLD}${GREEN}Goodbye! Stay secure. 🛡️${RESET}"
+            echo -e "${BOLD}${GREEN}Poof, Thanks god, see you, Stay secure 🛡️${RESET}"
             exit 0
             ;;
         *)
             echo -e "${BOLD}${RED}Invalid option. Press Enter to continue...${RESET}"
+            echo -e "${BOLD}${YELLOW}Pay more attention psycho 😒; ${RESET}"
+            echo -e "${BOLD}${YELLOW}Or you might find yourself accidentally signing up for a llama yoga class!${RESET}"
+            echo -e "${BOLD}${RED}Press Enter to continue ... ${RESET}"
             read
             menu
             ;;
     esac
 }
 
-# Call the menu function
 menu
