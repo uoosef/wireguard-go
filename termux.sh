@@ -7,7 +7,7 @@ BLACK='\033[0;30m'
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
+CYAN='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 WHITE='\033[0;37m'
@@ -43,7 +43,7 @@ install() {
         return
     fi
 
-    echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
     echo -e "${BOLD}${GREEN}Installing Warp...${RESET}"
     pkg update -y && pkg upgrade -y
     pacman -Syu openssh = apt update; apt full-upgrade -y; apt install -y openssh
@@ -57,7 +57,7 @@ install() {
         cp warp "$PREFIX/bin/warp-plus" &&
         cp warp "$PREFIX/bin/warp"; then
         rm "README.md" "LICENSE" "warp-plus_android-arm64.zip"
-        echo "${BOLD}${BLUE}═══════════════════════════════"
+        echo "${BOLD}${CYAN}═══════════════════════════════"
         echo -e "${BOLD}${GREEN}Warp installed successfully.${RESET}"
         socks
     else
@@ -72,7 +72,7 @@ install_arm() {
         return
     fi
 
-    echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
     echo -e "${BOLD}${GREEN}Installing Warp...${RESET}"
     pkg update -y && pkg upgrade -y
     pacman -Syu openssh = apt update; apt full-upgrade -y; apt install -y openssh
@@ -98,14 +98,14 @@ install_arm() {
         cp warp "$PREFIX/bin/warp-plus" &&
         cp warp "$PREFIX/bin/warp"; then
         rm "README.md" "LICENSE" "warp-plus_linux-$ARCH.zip"
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         echo -e "${BOLD}${GREEN}Warp installed successfully.${RESET}"
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         socks
     else
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         echo -e "${BOLD}${RED}Error installing Warp.${RESET}"
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
     fi
 }
 
@@ -117,33 +117,33 @@ socks() {
    echo -e "${GREEN}socks://Og==@127.0.0.1:8086#warp_(usef)${RESET}"
    echo "or"
    echo -e "${GREEN}Manually create a SOCKS configuration with IP ${RED}127.0.0.1 ${GREEN}and port${RED} 8086..${RESET}"
-   echo -e "${BOLD}${BLUE} ═══════════════════════════════${RESET}"
+   echo -e "${BOLD}${CYAN} ═══════════════════════════════${RESET}"
    echo -e "${YELLOW}To run again, type:${GREEN} warp ${RESET}or${GREEN} usef ${RESET}or${GREEN} ./warp ${RESET}or${GREEN} warp-plus ${RESET}"
-   echo -e "${BOLD}${BLUE} ═══════════════════════════════${RESET}"
+   echo -e "${BOLD}${CYAN} ═══════════════════════════════${RESET}"
    echo -e "${BOLD}${GREEN} If you get a 'Bad address' error, run ${YELLOW}[armeabi-v7a]${RESET}"
-   echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+   echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
    echo ""
 }
 
 # Gool (warp in warp)
 gool() {
     if ! command -v warp &> /dev/null || ! command -v usef &> /dev/null; then
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         echo -e "${BOLD}${RED}Please install Warp first.${RESET}"
         return
     fi
 
-    echo -e "${BOLD}${BLUE}═════════════════════════════════════════════════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}═════════════════════════════════════════════════════════════════════════${RESET}"
     echo -e "${BOLD}${GREEN}This option changes your current location to the neaRESET and best location.${RESET}"
-    echo -e "${BOLD}${BLUE}═════════════════════════════════════════════════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}═════════════════════════════════════════════════════════════════════════${RESET}"
 
     while true; do
-        echo -e "${BOLD}${CYAN}Choose an option: ${BLUE}║${RESET}"
-        echo -e "${BOLD}${BLUE}                  ║${RESET}"
-        echo -e "  [1] ${BOLD}${GREEN}IPV4${BOLD}${BLUE}          ║${RESET}"
+        echo -e "${BOLD}${CYAN}Choose an option: ${CYAN}║${RESET}"
+        echo -e "${BOLD}${CYAN}                  ║${RESET}"
+        echo -e "  [1] ${BOLD}${GREEN}IPV4${BOLD}${CYAN}          ║${RESET}"
         echo -e "  [2] ${BOLD}${GREEN}IPV6${BOLD}${RED}          ║${RESET}"
-        echo -e "  [3] ${BOLD}${YELLOW}Back to Menu${BOLD}${BLUE}  ║${RESET}"
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "  [3] ${BOLD}${YELLOW}Back to Menu${BOLD}${CYAN}  ║${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
 
         echo -en "${BOLD}${GREEN}Please Choose: ${RESET}"
         read -r option
@@ -163,9 +163,9 @@ gool() {
                 ;;
             *)
 
-                echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+                echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
                 echo -e "${BOLD}${RED}Invalid option.${RESET}"
-                echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+                echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
 
                 ;;
         esac
@@ -175,11 +175,11 @@ gool() {
 # Psiphon
 psiphon_location() {
     if ! command -v warp &> /dev/null || ! command -v usef &> /dev/null; then
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         echo -e "${ref}Please install Warp first.${RESET}"
         return
     fi
-    echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
     echo -e "${BOLD}${CYAN}Please choose a location from the list below by entering its number:${RESET}"
     echo ""
     echo -e "${RED} 1)${YELLOW} Austria (AT)${RESET}"
@@ -252,17 +252,17 @@ psiphon_location() {
         *) echo "Invalid choice. Please select a valid location number." ;;
     esac
 
-    echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
     echo -e "${BOLD}${GREEN}Selected location: $location${RESET}"
-    echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
 
     while true; do
-        echo -e "${BOLD}${CYAN}Choose an option: ${BOLD}${BLUE}║${RESET}"
-        echo -e "${BOLD}${BLUE}                  ║${RESET}"
-        echo -e "  [1] ${BOLD}${GREEN}IPV4${BOLD}${BLUE}          ║${RESET}"
-        echo -e "  [2] ${BOLD}${GREEN}IPV6${BOLD}${BLUE}          ║${RESET}"
-        echo -e "  [3] ${BOLD}${YELLOW}Back to Menu${BOLD}${BLUE}  ║${RESET}"
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}Choose an option: ${BOLD}${CYAN}║${RESET}"
+        echo -e "${BOLD}${CYAN}                  ║${RESET}"
+        echo -e "  [1] ${BOLD}${GREEN}IPV4${BOLD}${CYAN}          ║${RESET}"
+        echo -e "  [2] ${BOLD}${GREEN}IPV6${BOLD}${CYAN}          ║${RESET}"
+        echo -e "  [3] ${BOLD}${YELLOW}Back to Menu${BOLD}${CYAN}  ║${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
 
         echo -en "${BOLD}${GREEN}Please Choose: ${RESET}"
         read -r option
@@ -281,9 +281,9 @@ psiphon_location() {
                 menu
                 ;;
             *)
-                echo -e "${BOLD}${BLUE}═══════════════════════${RESET}"
+                echo -e "${BOLD}${CYAN}═══════════════════════${RESET}"
                 echo -e "${BOLD}${RED}INVALID OPTION.${RESET}"
-                echo -e "${BOLD}${BLUE}═══════════════════════${RESET}"
+                echo -e "${BOLD}${CYAN}═══════════════════════${RESET}"
                 ;;
         esac
     done
@@ -296,13 +296,13 @@ uninstall() {
     home="/data/data/com.termux/files/home"
     if [ -f "$warp" ]; then
         rm -rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$PREFIX/bin/warp-plus" "warp" "/data/data/com.termux/files/home/.cache/warp-plus" > /dev/null 2>&1
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         echo -e "${BOLD}${RED}Uninstallation completed.${RESET}"
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
     else
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         echo -e "${BOLD}${RED} Not installed.Please Install First.${RESET}${GREEN}|"
-        echo -e "${BOLD}${BLUE}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
     fi
 }
 
@@ -322,8 +322,8 @@ warp_plus() {
 menu() {
     clear
     echo -e "${BOLD}${CYAN}╔═════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}${CYAN}║       ${BOLD}${YELLOW}WARP PLUS v1.2.5${CYAN}             ║${RESET}"
-    echo -e "${BOLD}${CYAN}║ ${YELLOW} specialy thank to Mark and Usef${CYAN}    ║${RESET}"
+    echo -e "${BOLD}${CYAN}║               ${BOLD}${YELLOW}WARP PLUS v1.2.5${CYAN}               ║${RESET}"
+    echo -e "${BOLD}${CYAN}║            ${BOLD}${YELLOW}Thank to Mark and Usef${CYAN}            ║${RESET}"
     echo -e "${BOLD}${CYAN}╠═════════════════════════════════════════════╣${RESET}"
     echo -e "${BOLD}${GREEN}║ 1) ${WHITE}Install Warp [ARM64-v8a]${RESET}${CYAN}                 ║${RESET}"
     echo -e "${BOLD}${GREEN}║ 2) ${WHITE}Install Warp [ARMv7]${RESET}${CYAN}                     ║${RESET}"
@@ -331,9 +331,9 @@ menu() {
     echo -e "${BOLD}${GREEN}║ 4) ${WHITE}Gool [Warp over Warp]${RESET}${CYAN}                    ║${RESET}"
     echo -e "${BOLD}${GREEN}║ 5) ${WHITE}Psiphon [Multi-Location]${RESET}${CYAN}                 ║${RESET}"
     echo -e "${BOLD}${GREEN}║ 6) ${WHITE}Warp to Warp+ [Free GB]${RESET}${CYAN}                  ║${RESET}"
-    echo -e "${BOLD}${RED}║ x) ${WHITE}Revised by Diana${RESET}${CYAN}                           ║${RESET}"
+    echo -e "${BOLD}${RED}║ x) ${WHITE}Revised by Diana${RESET}${CYAN}                         ║${RESET}"
     echo -e "${BOLD}${CYAN}╠═════════════════════════════════════════════╣${RESET}"
-    echo -e "${BOLD}${RED}║ 0) ${WHITE}Exit${RESET}${CYAN}                                        ║${RESET}"
+    echo -e "${BOLD}${RED}║ 0) ${WHITE}Exit${RESET}${CYAN}                                     ║${RESET}"
     echo -e "${BOLD}${CYAN}╚═════════════════════════════════════════════╝${RESET}"
 
     echo -en "${BOLD}${YELLOW}Select an option: ${RESET}"
