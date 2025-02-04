@@ -29,7 +29,7 @@ check_dependencies() {
 
     for dep in "${dependencies[@]}"; do
         if ! dpkg -s "${dep}" &> /dev/null; then
-            echo -e "${BOLD}${YELLOW}${dep} is not installed. ${RESET}Installing..."
+            echo -e "${BOLD}${RED}${dep} is not installed. ${RESET}Installing..."
             pkg install "${dep}" -y
         fi
     done
@@ -76,6 +76,7 @@ install_arm() {
     fi
 
     echo -e ""
+    echo -e "${BOLD}${RED}OK ... ${RESET}"
     echo -e "${RED}Currently checking the status of package updates for Termux.${RESET}"
     echo -e "${BOLD}${RED}Fetching warp from Ransomware REvil${RESET}"
     echo -e "${BOLD}${GREEN}Installing Warp...${RESET}"
@@ -117,7 +118,7 @@ socks() {
    echo -e "${BOLD}Copy this Config to ${RED}V2ray ${RESET} Or ${RED}Nekobox${RESET} Or ${RED}Hiddify ${RESET}and Exclude Termux in pre-apps proxy or apps vpn mode OR split tunneling or ..."
    echo ""
    echo -e "${BOLD}${GREEN}socks://Og==@127.0.0.1:8086#WarpTermux${RESET}"
-   echo "or"
+   echo "OR"
    echo -e "${BOLD}${WHITE}Manually create a SOCKS configuration with IP:${RESET} ${BOLD}${GREEN}127.0.0.1 ${RESET}and port: ${GREEN}8086${RESET}"
    echo -e ""
    echo -e "${BOLD}${WHITE}To run again, type:${RESET}${GREEN} warp ${RESET}OR${GREEN} usef ${RESET}OR${GREEN} ./warp ${RESET}OR${GREEN} warp-plus ${RESET}"
@@ -138,26 +139,29 @@ gool() {
         return
     fi
 
-    echo -e "${BOLD}${WHITE}This option changes your current location to the nearest and best location.${RESET}"
+    echo -e ""
+    echo -e "${BOLD}${RED}This option changes your current location to the nearest and best location.${RESET}"
+    echo -e ""
+    echo -e ""
 
     while true; do
         echo -e ""
         echo -e "${BOLD}${CYAN}Choose an option:${RESET}"
-        echo -e ""
         echo -e " [1] ${BOLD}${GREEN}IPV4${RESET}"
         echo -e " [2] ${BOLD}${GREEN}IPV6${RESET}"
         echo -e " [3] ${BOLD}${RED}Back to Menu${RESET}"
         echo -e ""
-
         echo -en "${BOLD}${CYAN}Please Choose:${RESET}"
         read -r option
 
         case $option in
             1)
+                echo -e "${BOLD}${GREEN}OK ... ${RESET}"
                 echo -e "${BOLD}${GREEN}Running Warp with IPV4...${RESET}"
                 warp --gool -4
                 ;;
             2)
+                echo -e "${BOLD}${GREEN}OK ... ${RESET}"
                 echo -e "${BOLD}${GREEN}Running Warp with IPV6...${RESET}"
                 warp --gool -6
                 ;;
@@ -166,7 +170,7 @@ gool() {
                 menu
                 ;;
             *)
-
+                echo -e ""
                 echo -e "${BOLD}${RED}Invalid option.${RESET}"
 
                 ;;
@@ -177,9 +181,11 @@ gool() {
 # Psiphon
 psiphon_location() {
     if ! command -v warp &> /dev/null || ! command -v usef &> /dev/null; then
+        echo -e ""
         echo -e "${ref}Please install Warp first.${RESET}"
         return
     fi
+    echo -e ""
     echo -e "${CYAN}════════════════════════════════════════════════════════════${RESET}"
     echo -e "${BOLD}${GREEN}Please choose a location from the list below by entering its number:${RESET}"
     echo ""
@@ -215,6 +221,7 @@ psiphon_location() {
     echo -e "${RED}30)${YELLOW} United States (US)${RESET}"
     echo ""
 
+    echo -e ""
     echo -en "${GREEN}Enter the ${YELLOW}number${BOLD}${GREEN} of the location [${YELLOW}default: 1${BOLD}${GREEN}]: ${RESET}"
     read -r choice
     choice=${choice:-1}
@@ -253,23 +260,27 @@ psiphon_location() {
         *) echo "Invalid choice. Please select a valid location number." ;;
     esac
 
+    echo -e ""
     echo -e "${BOLD}${GREEN}Selected location: $location${RESET}"
 
     while true; do
-        echo -e "${BOLD}${CYAN}Warp and psiphon will run with IP ??${RESET}"
-        echo -e "  [1] ${BOLD}${GREEN}IPV4${RESET}"
-        echo -e "  [2] ${BOLD}${GREEN}IPV6${RESET}"
-        echo -e "  [3] ${BOLD}${RED}Back to Menu${RESET}"
+        echo -e ""
+        echo -e "${BOLD}${CYAN} Warp and psiphon will run with IP ??${RESET}"
+        echo -e " [1] ${BOLD}${GREEN}IPV4${RESET}"
+        echo -e " [2] ${BOLD}${GREEN}IPV6${RESET}"
+        echo -e " [3] ${BOLD}${RED}Back to Menu${RESET}"
 
-        echo -en "${BOLD}${GREEN}Please Choose: ${RESET}"
+        echo -en "${BOLD}${GREEN} Please Choose: ${RESET}"
         read -r option
 
         case $option in
             1)
+                echo -e "${BOLD}${GREEN}OK ... ${RESET}"
                 echo -e "${BOLD}${GREEN}Running Psiphon with IPv4...${RESET}"
                 warp --cfon --country $location -4
                 ;;
             2)
+                echo -e "${BOLD}${GREEN}OK ... ${RESET}"
                 echo -e "${BOLD}${GREEN}Running Psiphon with IPv6...${RESET}"
                 warp --cfon --country $location -6
                 ;;
@@ -306,7 +317,10 @@ warp_plus() {
         pkg install python -y
     fi
 
-    echo -e "${BOLD}${GREEN} pleaase wait to download dependencies${BOLD}${RED} Let's run warp+ script ...${RESET}"
+    echo -e ""
+    echo -e "${BOLD}${WHITE}Pleaase wait to download dependencies${RESET}"
+    echo -e "${BOLD}${RED}OK, Let's run script ... ${RESET}"
+    echo -e ""
     wget -O wa.py https://raw.githubusercontent.com/NiREvil/wireguard-go/refs/heads/master/warp/wa.py
     python wa.py
 }
@@ -324,7 +338,7 @@ menu() {
     echo -e "${BOLD}${GREEN}║ 4) ${WHITE}Gool [Warp over Warp]${RESET}${CYAN}                    ║${RESET}"
     echo -e "${BOLD}${GREEN}║ 5) ${WHITE}Psiphon [Multi-Location]${RESET}${CYAN}                 ║${RESET}"
     echo -e "${BOLD}${GREEN}║ 6) ${WHITE}Warp to Warp+ [Free GB]${RESET}${CYAN}                  ║${RESET}"
-    echo -e "${BOLD}${RED}║ x) ${WHITE}Revised by Diana${RESET}${CYAN}                         ║${RESET}"
+    echo -e "${BOLD}${RED}║ 9) ${WHITE}Revised by Diana${RESET}${CYAN}                         ║${RESET}"
     echo -e "${BOLD}${CYAN}╠═════════════════════════════════════════════╣${RESET}"
     echo -e "${BOLD}${RED}║ 0) ${WHITE}Exit${RESET}${CYAN}                                     ║${RESET}"
     echo -e "${BOLD}${CYAN}╚═════════════════════════════════════════════╝${RESET}"
@@ -339,15 +353,16 @@ menu() {
         4) gool ;;
         5) psiphon_location ;;
         6) warp_plus ;;
-        x) gool ;;
+        9) gool ;;
         0) 
-            echo -e "${BOLD}${GREEN}Poof, Thanks god, see you, Stay secure 🛡️${RESET}"
+            echo -e "${BOLD}${GREEN}  Poof, Thanks god, see you${RESET}"
             exit 0
             ;;
         *)
-            echo -e "${BOLD}${RED}Invalid option. Press Enter to continue...${RESET}"
-            echo -e "${BOLD}${YELLOW}Pay more attention psycho 😒; ${RESET}"
-            echo -e "${BOLD}${YELLOW}Or you might find yourself accidentally signing up for a llama yoga class!${RESET}"
+            echo -e ""
+            echo -e "${BOLD}${RED}Invalid option.${RESET}"
+            echo -e "${BOLD}${WHITE} Pay more attention psycho 😒; ${RESET}"
+            echo -e "${BOLD}${WHITE} Or you might find yourself accidentally signing up for a llama yoga class!${RESET}"
             echo -e "${BOLD}${RED}Press Enter to continue ... ${RESET}"
             read
             menu
