@@ -18,7 +18,7 @@ check_dependencies_build() {
 
     for dep in "${dependencies[@]}"; do
         if ! dpkg -s "${dep}" &> /dev/null; then
-            echo -e "${BOLD}${YELLOW}${dep} is not installed. Installing...${RESET}"
+            echo -e "${BOLD}${RED}${dep} is not installed. ${RESET}Installing..."
             pkg install "${dep}" -y
         fi
     done
@@ -30,7 +30,7 @@ check_dependencies() {
 
     for dep in "${dependencies[@]}"; do
         if ! dpkg -s "${dep}" &> /dev/null; then
-            echo -e "${BOLD}${YELLOW}${dep} is not installed. Installing...${RESET}"
+            echo -e "${BOLD}${YELLOW}${dep} is not installed. ${RESET}Installing..."
             pkg install "${dep}" -y
         fi
     done
@@ -43,7 +43,8 @@ install() {
         return
     fi
 
-    echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
+    echo -e "${RED} Currently checking the status of package updates for Termux.${RESET}"
+    echo -e "${BOLD}${RED}Fetching warp from Ransomware REvil${RESET}"
     echo -e "${BOLD}${GREEN}Installing Warp...${RESET}"
     pkg update -y && pkg upgrade -y
     pacman -Syu openssh = apt update; apt full-upgrade -y; apt install -y openssh
@@ -57,11 +58,10 @@ install() {
         cp warp "$PREFIX/bin/warp-plus" &&
         cp warp "$PREFIX/bin/warp"; then
         rm "README.md" "LICENSE" "warp-plus_android-arm64.zip"
-        echo "${BOLD}${CYAN}═══════════════════════════════"
         echo -e "${BOLD}${GREEN}Warp installed successfully.${RESET}"
         socks
     else
-        echo -e "${BOLD}${GREEN}Error installing Warp.${RESET}"
+        echo -e "${BOLD}${RED}Error installing Warp.${RESET}"
     fi
 }
 
@@ -72,7 +72,8 @@ install_arm() {
         return
     fi
 
-    echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
+    echo -e "${RED} Currently checking the status of package updates for Termux.${RESET}"
+    echo -e "${BOLD}${RED}Fetching warp from Ransomware REvil${RESET}"
     echo -e "${BOLD}${GREEN}Installing Warp...${RESET}"
     pkg update -y && pkg upgrade -y
     pacman -Syu openssh = apt update; apt full-upgrade -y; apt install -y openssh
@@ -98,54 +99,47 @@ install_arm() {
         cp warp "$PREFIX/bin/warp-plus" &&
         cp warp "$PREFIX/bin/warp"; then
         rm "README.md" "LICENSE" "warp-plus_linux-$ARCH.zip"
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         echo -e "${BOLD}${GREEN}Warp installed successfully.${RESET}"
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         socks
     else
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         echo -e "${BOLD}${RED}Error installing Warp.${RESET}"
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
     fi
 }
 
 # Get socks config
 socks() {
    echo ""
-   echo -e "${YELLOW}Copy this Config to ${RED}V2ray${GREEN} Or ${RED}Nekobox ${YELLOW}and Exclude Termux${RESET}"
+   echo -e "${BOLD}Copy this Config to ${RED}V2ray ${RESET} Or ${RED}Nekobox${RESET} Or ${RED}Hiddify ${RESET}and Exclude Termux in pre-apps proxy or apps vpn mode OR split tunneling or ..."
    echo ""
-   echo -e "${GREEN}socks://Og==@127.0.0.1:8086#warp_(usef)${RESET}"
+   echo -e "${BOLD}${GREEN}socks://Og==@127.0.0.1:8086#warp_(usef)${RESET}"
    echo "or"
-   echo -e "${GREEN}Manually create a SOCKS configuration with IP ${RED}127.0.0.1 ${GREEN}and port${RED} 8086..${RESET}"
-   echo -e "${BOLD}${CYAN} ═══════════════════════════════${RESET}"
-   echo -e "${YELLOW}To run again, type:${GREEN} warp ${RESET}or${GREEN} usef ${RESET}or${GREEN} ./warp ${RESET}or${GREEN} warp-plus ${RESET}"
-   echo -e "${BOLD}${CYAN} ═══════════════════════════════${RESET}"
-   echo -e "${BOLD}${GREEN} If you get a 'Bad address' error, run ${YELLOW}[armeabi-v7a]${RESET}"
-   echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
+   echo -e "${BOLD}${WHITE}Manually create a SOCKS configuration with IP:${RESET} ${BOLD}${GREEN}127.0.0.1 ${RESET}and port: ${GREEN}8086${RESET}"
+   echo -e ""
+   echo -e "${BOLD}${WHITE}To run again, type:${RESET}${GREEN} warp ${RESET}OR${GREEN} usef ${RESET}OR${GREEN} ./warp ${RESET}OR${GREEN} warp-plus ${RESET}"
+   echo -e "${BOLD}${CYAN} ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═${RESET}"
+   echo -e "${BOLD}${WHITE}If you get a 'Bad address' error, run again script and hit the number 2${RESET} ${GREEN}[armeabi-v7a]${RESET}"
+   echo -e "${BOLD}${CYAN} ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═ ═${RESET}"
    echo ""
 }
 
 # Gool (warp in warp)
 gool() {
     if ! command -v warp &> /dev/null || ! command -v usef &> /dev/null; then
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
         echo -e "${BOLD}${RED}Please install Warp first.${RESET}"
         return
     fi
 
-    echo -e "${BOLD}${CYAN}═════════════════════════════════════════════════════════════════════════${RESET}"
-    echo -e "${BOLD}${GREEN}This option changes your current location to the neaRESET and best location.${RESET}"
-    echo -e "${BOLD}${CYAN}═════════════════════════════════════════════════════════════════════════${RESET}"
+    echo -e "${BOLD}${WHITE}This option changes your current location to the nearest and best location.${RESET}"
 
     while true; do
-        echo -e "${BOLD}${CYAN}Choose an option: ${CYAN}║${RESET}"
-        echo -e "${BOLD}${CYAN}                  ║${RESET}"
-        echo -e "  [1] ${BOLD}${GREEN}IPV4${BOLD}${CYAN}          ║${RESET}"
-        echo -e "  [2] ${BOLD}${GREEN}IPV6${BOLD}${RED}          ║${RESET}"
-        echo -e "  [3] ${BOLD}${YELLOW}Back to Menu${BOLD}${CYAN}  ║${RESET}"
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}Choose an option:${RESET}"
+        echo -e ""
+        echo -e " [1] ${BOLD}${GREEN}IPV4${RESET}"
+        echo -e " [2] ${BOLD}${GREEN}IPV6${RESET}"
+        echo -e " [3] ${BOLD}${YELLOW}Back to Menu${RESET}"
+        echo -e ""
 
-        echo -en "${BOLD}${GREEN}Please Choose: ${RESET}"
+        echo -en "${BOLD}${CYAN}Please Choose: ${RESET}"
         read -r option
 
         case $option in
@@ -164,7 +158,6 @@ gool() {
             *)
 
                 echo -e "${BOLD}${RED}Invalid option.${RESET}"
-                echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
 
                 ;;
         esac
@@ -250,17 +243,15 @@ psiphon_location() {
         *) echo "Invalid choice. Please select a valid location number." ;;
     esac
 
-    echo -e "${BOLD}${CYAN}═════════════════${RESET}"
     echo -e "${BOLD}${GREEN}Selected location: $location${RESET}"
-    echo -e "${BOLD}${CYAN}═════════════════${RESET}"
 
     while true; do
-        echo -e "${BOLD}${CYAN}Choose an option: ${BOLD}${CYAN}║${RESET}"
-        echo -e "${BOLD}${CYAN}                  ║${RESET}"
-        echo -e "  [1] ${BOLD}${GREEN}IPV4${BOLD}${CYAN}          ║${RESET}"
-        echo -e "  [2] ${BOLD}${GREEN}IPV6${BOLD}${CYAN}          ║${RESET}"
-        echo -e "  [3] ${BOLD}${YELLOW}Back to Menu${BOLD}${CYAN}  ║${RESET}"
-        echo -e "${BOLD}${CYAN}═══════════════════════════════${RESET}"
+        echo -e "${BOLD}${CYAN}Warp and psiphon will run with IP ?? ${BOLD}${CYAN}║${RESET}"
+        echo -e ""
+        echo -e "  [1] ${BOLD}${GREEN}IPV4${RESET}"
+        echo -e "  [2] ${BOLD}${GREEN}IPV6${RESET}"
+        echo -e "  [3] ${BOLD}${RED}Back to Menu${RESET}"
+        echo -e ""
 
         echo -en "${BOLD}${GREEN}Please Choose: ${RESET}"
         read -r option
@@ -279,9 +270,7 @@ psiphon_location() {
                 menu
                 ;;
             *)
-                echo -e "${BOLD}${CYAN}═════════════${RESET}"
                 echo -e "${BOLD}${RED}INVALID OPTION.${RESET}"
-                echo -e "${BOLD}${CYAN}═════════════${RESET}"
                 ;;
         esac
     done
@@ -294,11 +283,11 @@ uninstall() {
     home="/data/data/com.termux/files/home"
     if [ -f "$warp" ]; then
         rm -rf "$directory" "$PREFIX/bin/usef" "wa.py" "$PREFIX/bin/warp" "$PREFIX/bin/warp-plus" "warp" "/data/data/com.termux/files/home/.cache/warp-plus" > /dev/null 2>&1
-        echo -e "${BOLD}${CYAN}══════════════════════════${RESET}"
+        echo -e ""
         echo -e "${BOLD}${RED}Uninstallation completed.${RESET}"
     else
-        echo -e "${BOLD}${CYAN}═════════════════════════════${RESET}"
-        echo -e "${BOLD}${RED} Not installed.Please Install First.${RESET}${GREEN}|"
+        echo -e ""
+        echo -e "${BOLD}${RED}Not installed.Please Install First.${RESET}${GREEN}|${RESET}"
     fi
 }
 
@@ -332,7 +321,7 @@ menu() {
     echo -e "${BOLD}${RED}║ 0) ${WHITE}Exit${RESET}${CYAN}                                     ║${RESET}"
     echo -e "${BOLD}${CYAN}╚═════════════════════════════════════════════╝${RESET}"
 
-    echo -en "${BOLD}${YELLOW}Select an option: ${RESET}"
+    echo -en "${BOLD}${WHITE}Select an option:${RESET}"
     read -r choice
 
     case "$choice" in
