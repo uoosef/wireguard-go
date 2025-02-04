@@ -145,12 +145,12 @@ gool() {
 
     while true; do
         echo ""
-        echo -e "${BOLD}${CYAN} Warp ON Warp will run with IP ??${RESET}"
+        echo -e "${BOLD}${CYAN}GOOL will run with IP ??${RESET}"
         echo -e " [1] ${BOLD}${GREEN}With IPv4${RESET}"
         echo -e " [2] ${BOLD}${GREEN}With IPv6${RESET}"
         echo -e " [3] ${BOLD}${RED}Back to Menu${RESET}"
         echo ""
-        echo -en "${BOLD}${CYAN} Please Choose:${RESET}"
+        echo -en "${BOLD}${CYAN}Please Choose:${RESET}"
         read -r option
 
         case $option in
@@ -186,9 +186,9 @@ psiphon_location() {
     fi
     echo ""
     echo ""
-    echo -e "${BOLD}${CYAN}═════════════════════════════════════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}══════════════════════════════════════════════════════════════${RESET}"
     echo -e "${BOLD}${CYAN} Choose a location from the list below by entering its number:${RESET}"
-    echo -e "${BOLD}${CYAN}═════════════════════════════════════════════════════════════${RESET}"
+    echo -e "${BOLD}${CYAN}══════════════════════════════════════════════════════════════${RESET}"
     echo -e "${RED} 1)${CYAN} Austria (AT)${RESET}"
     echo -e "${RED} 2)${CYAN} Belgium (BE)${RESET}"
     echo -e "${RED} 3)${CYAN} Bulgaria (BG)${RESET}"
@@ -264,12 +264,12 @@ psiphon_location() {
 
     while true; do
         echo ""
-        echo -e "${BOLD}${CYAN} WARP PLUS and Psiphon will run with IP ??${RESET}"
+        echo -e "${BOLD}${CYAN}WARP PLUS & Psiphon will run with IP ??${RESET}"
         echo -e " [1] ${BOLD}${CYAN}With IPv4${RESET}"
         echo -e " [2] ${BOLD}${CYAN}With IPv6${RESET}"
         echo -e " [3] ${BOLD}${RED}Back to Menu${RESET}"
 
-        echo -en "${BOLD}${GREEN} Please Choose: ${RESET}"
+        echo -en "${BOLD}${GREEN}Please Choose: ${RESET}"
         read -r option
 
         case $option in
@@ -333,8 +333,8 @@ menu() {
     echo -e "${BOLD}${CYAN}║              ${BOLD}${GREEN}WARP PLUS v1.2.5${BOLD}${CYAN}               ║${RESET}"
     echo -e "${BOLD}${CYAN}║          ${BOLD}${GREEN}Thanks to Mark and Usef${BOLD}${CYAN}            ║${RESET}"
     echo -e "${BOLD}${CYAN}╠═════════════════════════════════════════════╣${BOLD}${RESET}"
-    echo -e "${BOLD}${GREEN}║ 1) ${WHITE}Install Warp${RESET}${BOLD}${GREEN} arm64-v8a${RESET}${BOLD}${CYAN}                  ║${RESET}"
-    echo -e "${BOLD}${GREEN}║ 2) ${WHITE}Install Warp${RESET}${BOLD}${GREEN} armeabi-v7a${RESET}${BOLD}${CYAN}                ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 1) ${WHITE}Install Warp${RESET}${BOLD}${GREEN} arm64-v8a${RESET}${BOLD}${CYAN}                   ║${RESET}"
+    echo -e "${BOLD}${GREEN}║ 2) ${WHITE}Install Warp${RESET}${BOLD}${GREEN} armeabi-v7a${RESET}${BOLD}${CYAN}                 ║${RESET}"
     echo -e "${BOLD}${GREEN}║ 3) ${WHITE}Uninstall Warp${RESET}${BOLD}${CYAN}                           ║${RESET}"
     echo -e "${BOLD}${GREEN}║ 4) ${WHITE}Gool${RESET}${BOLD}${GREEN} Warp ON Warp${RESET}${BOLD}${CYAN}                        ║${RESET}"
     echo -e "${BOLD}${GREEN}║ 5) ${WHITE}Psiphon${RESET}${BOLD}${GREEN} Multi-Location${RESET}${BOLD}${CYAN}                   ║${RESET}"
@@ -364,8 +364,8 @@ menu() {
         *)
             echo ""
             echo -e "${BOLD}${RED}INVALID OPTION.${RESET}"
-            echo -e "${BOLD}${WHITE} Pay more attention psycho 😒 ${RESET}"
-            echo -e "${BOLD}${WHITE} Or you might find yourself accidentally signing up for a llama yoga class!${RESET}"
+            echo -e "${BOLD}${WHITE}  😒Pay more attention psycho, Or you might${RESET}"
+            echo -e "${BOLD}${WHITE}  Find yourself accidentally signing up for a llama yoga class 🧘🏋️${RESET}"
             echo -e "${BOLD}${RED}Press ENTER to continue ... ${RESET}"
             read
             menu
