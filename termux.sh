@@ -1,16 +1,12 @@
 #!/bin/bash
 
-# Colors
-red='\033[0;31m'
-green='\033[0;32m'
-yellow='\033[0;33m'
-blue='\033[0;34m'
-purple='\033[0;35m'
-cyan='\033[0;36m'
-background='\033[0;30;47m'
-gray='\033[0;37m'
-grayb='\033[5;37m'
-rest='\033[0m'
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[1;34m'
+CYAN='\033[1;36m'
+WHITE='\033[1;37m'
+RESET='\033[0m'
 
 # Check Dependencies build
 check_dependencies_build() {
@@ -312,62 +308,41 @@ warp_plus() {
 }
 
 # Menu
-menu() {
+show_menu() {
     clear
-    echo "  ╭───────────────────────────────────╮"
-    echo "  │        Welcome to Warp Menu         │"
-    echo "  ├───────────────────────────────────┤"
-    echo "  │ 1. Install Warp [arm64-v8a]        │"
-    echo "  │ 2. Install Warp [armeabi-v7a]     │"
-    echo "  │ 3. Uninstall Warp                  │"
-    echo "  │ 4. Gool [warp ON]                 │"
-    echo "  │ 5. Psiphon [+ All Locations]       │"
-    echo "  │ 6. Warp To Warp plus [Free GB]   │"
-    echo "  │ x. Revised Diana                   │"
-    echo "  │ 0. Exit                          │"
-    echo "  ╰───────────────────────────────────╯"
+    echo -e "${BLUE}==============================================${RESET}"
+    echo -e "${CYAN}           WARP VPN Installer Menu           ${RESET}"
+    echo -e "${BLUE}==============================================${RESET}"
+    echo -e "${GREEN} 1)${WHITE} نصب WARP (نسخه arm64-v8a)"
+    echo -e "${GREEN} 2)${WHITE} نصب WARP (نسخه armeabi-v7a)"
+    echo -e "${GREEN} 3)${WHITE} حذف WARP"
+    echo -e "${GREEN} 4)${WHITE} تغییر موقعیت مکانی (Gool Mode)"
+    echo -e "${GREEN} 5)${WHITE} Psiphon + لیست کشورها"
+    echo -e "${GREEN} 6)${WHITE} ارتقا به WARP+ (دریافت حجم رایگان)"
+    echo -e "${GREEN} 0)${WHITE} خروج"
+    echo -e "${BLUE}==============================================${RESET}"
+    echo -en "${YELLOW} لطفاً یک گزینه را انتخاب کنید: ${RESET}"
+}
 
-    echo -en "  Please enter your selection [0-6/x]: "
+# اجرای تابع منو و دریافت ورودی کاربر
+while true; do
+    show_menu
     read -r choice
-
     case "$choice" in
-        1)
-            install
-            warp
-            ;;
-        2)
-            install_arm
-            warp
-            ;;
-        3)
-            uninstall
-            ;;
-        4)
-            gool
-            ;;
-        5)
-            psiphon_location
-            ;;
-        6)
-            warp_plus
-            ;;
-        0)
-            echo "  ╭───────────────────────────────╮"
-            echo "  │   See you later my friend    │"
-            echo "  ╰───────────────────────────────╯"
+        1) install ;;
+        2) install_arm ;;
+        3) uninstall ;;
+        4) gool ;;
+        5) psiphon_location ;;
+        6) warp_plus ;;
+        0) 
+            echo -e "${RED}خروج از برنامه...${RESET}"
             exit
             ;;
-        x)
-            echo "  ╭───────────────────────────────╮"
-            echo "  │      Revised by Diana    │"
-            echo "  ╰───────────────────────────────╯"
-            ;;
-        *)
-            echo "  ╭───────────────────────────────────╮"
-            echo "  │  Invalid choice. Please try again.  │"
-            echo "  ╰───────────────────────────────────╯"
+        *) 
+            echo -e "${RED} گزینه نامعتبر! لطفاً عدد صحیح وارد کنید.${RESET}"
+            sleep 1
             ;;
     esac
-}
-menu
+done
 
