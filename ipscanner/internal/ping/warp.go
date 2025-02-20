@@ -214,7 +214,7 @@ func initiateHandshake(ctx context.Context, serverAddr netip.AddrPort, privateKe
 	}
 	defer conn.Close()
 
-	numPackets := randomInt(8, 15)
+	numPackets := randomInt(20, 50)
 	randomPacket := make([]byte, 100)
 	for i := uint64(0); i < numPackets; i++ {
 		select {
@@ -232,7 +232,7 @@ func initiateHandshake(ctx context.Context, serverAddr netip.AddrPort, privateKe
 				return 0, fmt.Errorf("error sending random packet: %w", err)
 			}
 
-			time.Sleep(time.Duration(randomInt(20, 250)) * time.Millisecond)
+			time.Sleep(time.Duration(randomInt(80, 150)) * time.Millisecond)
 		}
 	}
 

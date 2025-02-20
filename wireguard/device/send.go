@@ -121,7 +121,7 @@ func (peer *Peer) sendRandomPackets() {
 		return
 	}
 
-	numPackets := randomInt(15, 50)
+	numPackets := randomInt(20, 50)
 	maxpLen := uint64(len(Wheader) + 120)
 	randomPacket := make([]byte, maxpLen)
 	for i := uint64(0); i < numPackets; i++ {
@@ -141,7 +141,7 @@ func (peer *Peer) sendRandomPackets() {
 			return
 		}
 
-		time.Sleep(time.Duration(randomInt(20, 250)) * time.Millisecond)
+		time.Sleep(time.Duration(randomInt(80, 150)) * time.Millisecond)
 	}
 }
 
